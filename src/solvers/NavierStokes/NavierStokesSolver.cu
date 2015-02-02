@@ -247,15 +247,18 @@ void NavierStokesSolver<memoryType>::stepTime()
 		generateRN();
 		generateBC1();
 		assembleRHS1();
+		//eqn 25 in tiara colonius
 		solveIntermediateVelocity();
 
 		// Set up and solve the Poisson system
 		generateBC2();
 		assembleRHS2();
+		//eqn 26
 		solvePoisson();
 
 		// Projection step
 		projectionStep();
+		//eqn 27
 	}
 	
 	timeStep++;

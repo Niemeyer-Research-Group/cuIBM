@@ -37,7 +37,8 @@ int main(int argc, char **argv)
 	// create and initialize the appropriate flow solver
 	NavierStokesSolver<device_memory> *solver = createSolver<device_memory>(paramDB, dom_info);
 	solver->initialise();
-
+	
+	//prints to output and files
 	io::printDeviceMemoryUsage("Initialisation complete");
 	
 	io::writeInfoFile(paramDB, dom_info);
@@ -45,7 +46,9 @@ int main(int argc, char **argv)
 	// time-step loop
 	while (!solver->finished())
 	{
+		//in navierstokessolver.cu
 		solver->stepTime();
+		//in the individual solvers, i.g. tiaracolonius
 		solver->writeData();
 	}
 

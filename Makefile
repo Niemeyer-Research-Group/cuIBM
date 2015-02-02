@@ -7,7 +7,7 @@
 CC = nvcc $(OSXOPTS)
 
 # compiler options
-# -arch=compute_20: compile to use double precision on GPU
+# -arch=compute_20: compile to use double precision on GPU use _12 -03 for your shitty computer
 # -O3: optimization flag
 CCFLAGS = -arch=compute_20 -O3
 

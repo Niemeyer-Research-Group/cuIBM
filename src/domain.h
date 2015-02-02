@@ -20,11 +20,13 @@ public:
 	int   nx, ///< number of cells in the x-direction
 	      ny; ///< number of cells in the y-direction
 	
+	//vecH is an array stored on the Host
 	vecH  x,  ///< x-coordinates of the nodes
 	      y,  ///< y-coordinates of the nodes
 	      dx, ///< cell-widths in the x-direction
 	      dy; ///< cell-widths in the y-direction
 	
+	//vecD is an array stored on the Device, its vecH on the device
 	vecD  xD,  ///< x-coordinates of the nodes stored on the device
 	      yD,  ///< y-coordinates of the nodes stored on the device
 	      dxD, ///< x- cell widths stored on the device

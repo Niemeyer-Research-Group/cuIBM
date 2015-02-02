@@ -19,6 +19,7 @@
 template <typename memoryType>
 void TairaColoniusSolver<memoryType>::initialise()
 {	
+	//gets and sets number of points in the x and y from dominfo
 	int nx = NavierStokesSolver<memoryType>::domInfo->nx,
         ny = NavierStokesSolver<memoryType>::domInfo->ny;
 	
@@ -27,6 +28,7 @@ void TairaColoniusSolver<memoryType>::initialise()
 	
 	NavierStokesSolver<memoryType>::initialiseCommon();
 	
+	//sizes the arrays to matcht he domain and sets initial variables in those arrays
 	NSWithBody<memoryType>::initialiseBodies();
 	int totalPoints  = NSWithBody<memoryType>::B.totalPoints; 
 	
@@ -39,6 +41,7 @@ void TairaColoniusSolver<memoryType>::initialise()
 		// which gives 12*2 velocity nodes influence by a boundary point in 2D
 		E.resize(2*totalPoints, numUV, 24*totalPoints);
 	}
+	//sets up various matricies required to solve, A,G,H,D,E,Q etc
 	NavierStokesSolver<memoryType>::assembleMatrices();
 }
 
@@ -57,6 +60,10 @@ void TairaColoniusSolver<memoryType>::writeData()
 	int          numBodies  = NSWithBody<memoryType>::B.numBodies;
 
 	// calculate forces using the T&C method
+	//kernels defined in NavierStokes/kernels
+	//calculate force called from NSwithBody
+	//calulates drag in each direction (left right, top bottom, eventually north south)
+	//then calculates lift in the same way and combines
 	calculateForce();
 	
 	// print to file
