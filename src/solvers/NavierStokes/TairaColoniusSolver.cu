@@ -18,7 +18,7 @@
  */
 template <typename memoryType>
 void TairaColoniusSolver<memoryType>::initialise()
-{	
+{
 	//gets and sets number of points in the x and y from dominfo
 	int nx = NavierStokesSolver<memoryType>::domInfo->nx,
         ny = NavierStokesSolver<memoryType>::domInfo->ny;
@@ -30,7 +30,7 @@ void TairaColoniusSolver<memoryType>::initialise()
 	
 	//sizes the arrays to matcht he domain and sets initial variables in those arrays
 	NSWithBody<memoryType>::initialiseBodies();
-	int totalPoints  = NSWithBody<memoryType>::B.totalPoints; 
+	int totalPoints  = NSWithBody<memoryType>::B.totalPoints;
 	
 	NavierStokesSolver<memoryType>::initialiseArrays(numUV, numP+2*totalPoints);
 	if(totalPoints > 0)

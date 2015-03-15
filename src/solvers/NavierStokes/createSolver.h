@@ -14,6 +14,7 @@
 #include "DiffusionSolver.h"
 #include "DFModifiedSolver.h"
 #include "DFImprovedSolver.h"
+#include "TCFSISolver.h"
 
 
 // create the appropriate Navier-Stokes solver

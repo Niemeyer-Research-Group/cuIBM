@@ -115,6 +115,18 @@ interpolationType interpolationTypeFromString(string &s)
 		return LINEAR;
 }
 
+//converts string to fsi type
+fsiType fsiTypeFromString(string &s)
+{
+	if (s == "off")
+		return off;
+	else if (s == "on")
+		return on;
+	else
+		return off;
+}
+
+
 /**
  * \brief Fills the database with the simulation parameters.
  *
@@ -131,6 +143,7 @@ void parseSimulation(const YAML::Node &node, parameterDB &DB)
 	string ibmSch = "NAVIER_STOKES",
 	       convSch = "EULER_EXPLICIT",
 	       diffSch = "EULER_IMPLICIT",
+	       fsiTyp = "off",
 	       interpType = "LINEAR";
 	bool   restart = false;
 
@@ -140,6 +153,7 @@ void parseSimulation(const YAML::Node &node, parameterDB &DB)
 	node["nsave"] >> nsave;
 	node["nt"] >> nt;
 	node["ibmScheme"] >> ibmSch;
+	node["fsiType"] >> fsiTyp;
 	try
 	{
 		node["restart"] >> restart;
@@ -185,6 +199,7 @@ void parseSimulation(const YAML::Node &node, parameterDB &DB)
 	DB[dbKey]["nt"].set<int>(nt);
 	DB[dbKey]["restart"].set<bool>(restart);
 	DB[dbKey]["ibmScheme"].set<ibmScheme>(ibmSchemeFromString(ibmSch));
+	DB[dbKey]["fsiType"].set<fsiType>(fsiTypeFromString(fsiTyp));
 	DB[dbKey]["convTimeScheme"].set<timeScheme>(timeSchemeFromString(convSch));
 	DB[dbKey]["diffTimeScheme"].set<timeScheme>(timeSchemeFromString(diffSch));
 	DB[dbKey]["interpolationType"].set<interpolationType>(interpolationTypeFromString(interpType));

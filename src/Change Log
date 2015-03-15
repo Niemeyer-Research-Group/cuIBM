@@ -1,0 +1,9 @@
+/*
+Chris's change log
+2-6-15 Added fsi enum type to types.h
+2-6-15 Added fsi status output to io.printsimulationinfo
+2-6-15 Added fsi default typeset to io.initializedefaultDb
+2-6-15 Added fsi stuff to paramdb.cu
+2-6-15 added vectors on the host that contain body positions in file bodies.h
+
+2-10-15

@@ -43,7 +43,7 @@ class body
 
 	real velocity[2], ///< uniform translational velocity (x- and y-components)
 	     omega;       ///< uniform rotational velocity
-         
+
 	real xOscillation[3],     ///< amplitude, angular frequency and phase difference of oscillation in the x-direction
          yOscillation[3],     ///< amplitude, angular frequency and phase difference of oscillation in the y-direction
          pitchOscillation[3]; ///< amplitude, angular frequency and phase difference of pitch oscillation

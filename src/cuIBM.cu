@@ -20,7 +20,6 @@
 #include "io/io.h"
 #include "solvers/NavierStokes/createSolver.h"
 
-
 int main(int argc, char **argv)
 {
 	// initialize the computational domain
@@ -46,9 +45,9 @@ int main(int argc, char **argv)
 	// time-step loop
 	while (!solver->finished())
 	{
-		//in navierstokessolver.cu
 		solver->stepTime();
-		//in the individual solvers, i.g. tiaracolonius
+		//solver->stepTime();
+		//in the individual solvers, e.g. tiaracolonius
 		solver->writeData();
 	}
 

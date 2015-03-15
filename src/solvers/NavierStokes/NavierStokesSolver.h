@@ -9,6 +9,7 @@
 
 #include <types.h>
 #include <domain.h>
+#include <bodies.h>
 #include <integrationScheme.h>
 #include <io/io.h>
 #include <parameterDB.h>
@@ -47,8 +48,11 @@ protected:
 	    q,			///< velocity flux vector
 		qStar,		///< intermediate velocity flux vector
 		qOld,		///< velocity flux vector at the previous time-step
+		qk,		///< velocity flux vector at current sub-step
+		qkOld,		///< velocity flux vector at the previous sub-step
 		lambda,		///< pressure vector (and body forces if immersed body)
-		rn,			///< explicit terms of the momentum equation
+		lambdak,	///< pressure vector and body forces at substep
+		rn,		///< explicit terms of the momentum equation
 		bc1,		///< inhomogeneous boundary conditions from the discrete Laplacian operator
 		bc2,		///< inhomogeneous boundary conditions from the discrete continuity equation
 		rhs1,		///< right hand-side of the system for the intermediate velocity flux vector
@@ -88,65 +92,68 @@ protected:
 	
 	// assemble matrices of the intermediate flux solver and the Poisson solver
 	void assembleMatrices();
-
+	
 	// generate the mass matrix and its inverse
 	void generateM();
-
+	
 	// generate the discrete Laplacian matrix
 	virtual void generateL();
-
+	
 	// generate the matrix resulting from the implicit flux terms
 	virtual void generateA(real alpha);
-
+	
 	// generate approximate inverse of the matrix resulting from implicit velocity terms
 	void generateBN();	
-
+	
 	// generate the discrete divergence matrix
 	virtual void generateQT();
-
+	
 	// does nothing
 	void updateQ(real gamma);
 	
 	// generate the matrix of the Poisson solver
 	virtual void generateC();
-
+	
 	// generate explicit terms of the momemtum equation
 	void generateRN();
-
+	
 	// generate explicit flux terms
 	void calculateExplicitQTerms();
-
+	
 	// calculates the 
 	virtual void calculateExplicitLambdaTerms();
 	
 	// generate inhomogeneous boundary conditions from the discrete Laplacian operator
 	virtual void generateBC1();
-
+	
 	// generate inhomogeneous boundary conditions from the discrete continuity equation
 	virtual void generateBC2();
-
+	
 	// assemble the right hand-side of the system for the intermediate flux
 	virtual void assembleRHS1();
-
+	
 	// assemble the right hand-side of the Poisson system.
 	void assembleRHS2();
-
+	
 	// solve for the intermediate flux velocity
 	virtual void solveIntermediateVelocity();
-
+	
 	// solve the Poisson system for the pressure (and the body forces if immersed body)
 	virtual void solvePoisson();
-
+	
 	// project the flux onto the divergence-free field
 	virtual void projectionStep();
-
+	
 	// doing nothing
 	void updateBoundaryConditions();
-
+	
 	// doing nothing
 	virtual void updateSolverState();
-
+	
 public:
+	//print stuff
+	void printShit();
+
 	// constructor -- copy the database and information about the computational grid
 	NavierStokesSolver(parameterDB *pDB=NULL, domain *dInfo=NULL);
 
@@ -154,7 +161,7 @@ public:
 	virtual void initialise();
 	
 	// calculate the variables at the next time step
-	void stepTime();
+	virtual void stepTime();
 	
 	// write numerical solution and number of iterations performed in each solver.
 	virtual void writeCommon();

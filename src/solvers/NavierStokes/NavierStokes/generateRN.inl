@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * \file generateRN.inl
  * \author Anush Krishnan (anush@bu.edu)
- * \brief Implementation of the methods to generate 
+ * \brief Implementation of the methods to generate
  *        the explicit terms of the momentum equation.
  */
 

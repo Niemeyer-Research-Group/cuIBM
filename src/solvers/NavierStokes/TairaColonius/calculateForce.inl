@@ -5,9 +5,7 @@
  *        to calculate forces acting on each immersed body.
  */
 
-
 #include <solvers/NavierStokes/kernels/calculateForce.h>
-
 
 /**
  * \brief Calculates forces acting on each immersed body.
@@ -34,9 +32,9 @@ void TairaColoniusSolver<memoryType>::calculateForce()
 	
 	dx = NavierStokesSolver<memoryType>::domInfo->dx[ NSWithBody<memoryType>::B.I[0] ],
 	dy = dx;
-	
+
 	f = View(NavierStokesSolver<memoryType>::lambda.begin() + nx*ny, NavierStokesSolver<memoryType>::lambda.end());
-	
+
 	// loop through bodies
 	for(int l=0; l < numBodies; l++)
 	{

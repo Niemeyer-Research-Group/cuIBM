@@ -179,6 +179,8 @@ void initialiseDefaultDB(parameterDB &DB)
 	DB[sim]["diffTimeScheme"].set<timeScheme>(EULER_IMPLICIT);
 	DB[sim]["ibmScheme"].set<ibmScheme>(TAIRA_COLONIUS);
 	DB[sim]["interpolationType"].set<interpolationType>(LINEAR);
+	DB[sim]["fsiType"].set<fsiType>(off);
+	DB[sim]["useIC"].set<useIC>(unused);
 
 	// velocity solver
 	string solver = "velocitySolve";
@@ -384,6 +386,28 @@ string stringFromTimeScheme(timeScheme s)
 		return "Unknown";
 }
 
+//converts fsitype to a string
+string stringFromFSIType(fsiType s)
+{
+	if (s == on)
+		return "On";
+	else if (s == off)
+		return "Off";
+	else
+		return "Unknown FSI Type";
+}
+
+//convers useIC to string
+string stringFromuseIC(useIC s)
+{
+	if( s==used )
+		return "used";
+	else if ( s== unused )
+		return "unused";
+	else
+		return "Unknown use initial conditions type";
+}
+
 /**
  * \brief Prints the parameters of the simulation.
  *
@@ -399,6 +423,8 @@ void printSimulationInfo(parameterDB &DB, domain &D)
 	     startStep = DB["simulation"]["startStep"].get<int>();
 	interpolationType interpType = DB["simulation"]["interpolationType"].get<interpolationType>();
 	ibmScheme ibmSchm = DB["simulation"]["ibmScheme"].get<ibmScheme>();
+	fsiType fsiTyp = DB["simulation"]["fsiType"].get<fsiType>();
+	useIC usic = DB["simulation"]["useIC"].get<useIC>();
 
 
     std::cout << '\n';
@@ -420,6 +446,9 @@ void printSimulationInfo(parameterDB &DB, domain &D)
 	std::cout << "nsave = " << nsave << '\n';
 	std::cout << "Convection time scheme = " << stringFromTimeScheme(DB["simulation"]["convTimeScheme"].get<timeScheme>()) << '\n';
 	std::cout << "Diffusion time scheme  = " << stringFromTimeScheme(DB["simulation"]["diffTimeScheme"].get<timeScheme>()) << '\n';
+	std::cout << "Fluid-Structure Interaction = " <<stringFromFSIType(DB["simulation"]["fsiType"].get<fsiType>()) <<'\n';
+	std::cout << "Using custom initial conditions? " <<stringFromuseIC(DB["simulation"]["useIC"].get<useIC>()) <<'\n';
+	//std::cout << "Fluid Structure interaction?" << <<'\n';
 	if(ibmSchm==FADLUN_ET_AL || ibmSchm==DIRECT_FORCING || ibmSchm==DIFFUSION || ibmSchm==DF_IMPROVED || ibmSchm==DF_MODIFIED || ibmSchm==FEA_MODIFIED)
 	{
 		std::cout << "Interpolation type: ";
@@ -526,13 +555,15 @@ void writeGrid(std::string &caseFolder, domain &D)
  * \param D information about the computational grid
  */
 template <>
-void writeData<vecH>(std::string &caseFolder, int n, vecH &q, vecH &lambda, domain &D)//, bodies &B)
+void writeData<vecH>(std::string &caseFolder, int n, vecH &q, vecH &lambda, domain &D, parameterDB &DB)//, bodies &B)
 {
 	std::string path;
-	std::stringstream out;
+	std::stringstream out,outq,outl;
 	int N;
 
 	out << caseFolder << '/' << std::setfill('0') << std::setw(7) << n;
+	outq << caseFolder << '/' << std::setfill('0') << std::setw(7) << n;
+	outl << caseFolder << '/' << std::setfill('0') << std::setw(7) << n;
 	path = out.str();
 
 	mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -553,6 +584,26 @@ void writeData<vecH>(std::string &caseFolder, int n, vecH &q, vecH &lambda, doma
 	file.write((char*)(&lambda[0]), N*sizeof(real));
 	file.close();
 	
+	//to make initial conditions files
+	//*
+	if(n == DB["simulation"]["nt"].get<int>()){
+		outq.str("");
+		outq << path << "/ICq";
+		outl.str("");
+		outl << path << "/ICl";
+		std::ofstream fileq(outq.str().c_str());
+		std::ofstream filel(outl.str().c_str());
+		for(int i=0; i < q.size(); i++){
+			fileq << q[i] <<"\n";
+		}
+		for(int i=0; i <lambda.size(); i++){
+			filel << lambda[i] << "\n";
+		}
+		fileq.close();
+		filel.close();
+	}
+	//*/
+
 	std::cout << "Data saved to folder " << path << std::endl;
 }
 
@@ -570,12 +621,12 @@ void writeData<vecH>(std::string &caseFolder, int n, vecH &q, vecH &lambda, doma
  * \param D information about the computational grid
  */
 template <>
-void writeData<vecD>(std::string &caseFolder, int n, vecD &q, vecD &lambda, domain &D)//, bodies &B)
+void writeData<vecD>(std::string &caseFolder, int n, vecD &q, vecD &lambda, domain &D, parameterDB &DB)//, bodies &B)
 {
 	vecH qH = q,
 	     lambdaH = lambda;
 	     
-	writeData(caseFolder, n, qH, lambdaH, D);
+	writeData(caseFolder, n, qH, lambdaH, D, DB);
 }
 
 /**

@@ -11,7 +11,6 @@
 #include "parameterDB.h"
 #include "body.h"
 
-
 /**
  * \class bodies
  * \brief Contains information about bodies in the flow.
@@ -30,22 +29,24 @@ public:
 		offsets,      ///< array index of the first point of each body
 		I,            ///< x-index of the cell in which a body point is located
 		J;            ///< y-index of the cell in which a body point is located
-	
+
 	cusp::array1d<int, memoryType>
 		startI,       ///< starting cell index of the bounding box of a body
 		startJ,       ///< starting cell index of the bounding box of a body
 		numCellsX,    ///< number of cells in the x-direction in the bounding box of a body
 		numCellsY;    ///< number of cells in the y-direction in the bounding box of a body
-		
+
 	cusp::array1d<real, memoryType>
 		xmin,  ///< lowest x-coordinate for the bounding box of a body
 		xmax,  ///< highest x-coordinate for the bounding box of a body
 		ymin,  ///< lowest y-coordinate for the bounding box of a body
 		ymax;  ///< highest y-coordinate for the bounding box of a body
-	
+
 	cusp::array1d<real, memoryType>
 		forceX,		///< force acting on a body in the x-direction
-		forceY;		///< force acting on a body in the y-direction
+		forceY,		///< force acting on a body in the y-direction
+		forceXold,	// old y force
+		forceYold;	// old x force
 
 	cusp::array1d<real, memoryType>
 		X,     ///< reference x-coordinates of the boundary points
@@ -57,15 +58,36 @@ public:
 		uB,    ///< x-velocity of the boundary points
 		vB;    ///< y-velocity of the boundary points
 
+        cusp::array1d<real, memoryType>
+		xk,	//x-coordinate of boundary points at substep k
+		yk,	//y-coordinate of boundary points at substep k
+	     	xkp1,	//x-coordinate of boundary points at substep k+1	//not needed?
+	     	ykp1;	//y-coordinate of boundary points at substep k+1	//not needed?
+
+	cusp::array1d<real, memoryType>
+		fXk,	//force X at substep k		//not needed?
+		fYk,	//force Y at substep k		//not needed?
+		fXkp1,	//force X at substep k+1	//not needed?
+		fYkp1;	//force Y at substep k+1	//not needed?
+
+	cusp::array1d<real, memoryType>
+		uBk,	//x-velocity of boundary points at substep k
+		vBk,	//y-velocity of boundary points at substep k
+		uBkp1,	//x-velocity of boundary points at substep k+1 //used in convergence check
+		vBkp1;	//y-velocity of boundary points at substep k+1
+
+	real centerVelocityU,
+	     centerVelocityV; // need to initialise these fools
+
 	// set initial position and velocity of each body
 	void initialise(parameterDB &db, domain &D);
-	
+
 	// store index of each cell that contains a boundary point
 	void calculateCellIndices(domain &D);
-	
+
 	// store indices of the bounding box of each body
 	void calculateBoundingBoxes(parameterDB &db, domain &D);
-	
+
 	// update position, velocity and neighbors of each body
 	void update(parameterDB &db, domain &D, real Time);
 

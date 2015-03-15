@@ -17,7 +17,7 @@ template <typename memoryType>
 void NSWithBody<memoryType>::initialiseBodies()
 {
 	NavierStokesSolver<memoryType>::logger.startTimer("initialiseBodies");
-	
+
 	parameterDB &db = *NavierStokesSolver<memoryType>::paramDB;
 	B.initialise(db, *NavierStokesSolver<memoryType>::domInfo);
 
@@ -25,10 +25,14 @@ void NSWithBody<memoryType>::initialiseBodies()
 	std::stringstream out;
 	out << folder << "/forces";
 	forceFile.open(out.str().c_str());
-	
+
+	std::stringstream out2;
+	out2<<folder<<"/myOutput";
+	output.open(out2.str().c_str());
+
 	NavierStokesSolver<memoryType>::logger.stopTimer("initialiseBodies");
 }
-	
+
 /**
  * \brief Updates location and motion of each immersed body at current time.
  */
@@ -36,12 +40,12 @@ template <typename memoryType>
 void NSWithBody<memoryType>::updateBodies()
 {
 	NavierStokesSolver<memoryType>::logger.startTimer("updateBodies");
-	
+
 	parameterDB &db = *NavierStokesSolver<memoryType>::paramDB;
 	real dt   = db["simulation"]["dt"].get<real>();
 	real Time = dt*(NavierStokesSolver<memoryType>::timeStep+1);
 	B.update(db, *NavierStokesSolver<memoryType>::domInfo, Time);
-	
+
 	NavierStokesSolver<memoryType>::logger.stopTimer("updateBodies");
 };
 
@@ -156,6 +160,7 @@ void NSWithBody<memoryType>::shutDown()
 {
 	io::printTimingInfo(NavierStokesSolver<memoryType>::logger);
 	forceFile.close();
+	output.close();
 	NavierStokesSolver<memoryType>::iterationsFile.close();
 }
 

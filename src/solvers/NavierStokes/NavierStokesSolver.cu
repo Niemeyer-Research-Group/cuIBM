@@ -34,7 +34,7 @@ void NavierStokesSolver<memoryType>::initialise()
 }
 
 /**
- * \bried Initializes parameters common to all Navier-Stokes solvers.
+ * \brief Initializes parameters common to all Navier-Stokes solvers.
  */
 template <typename memoryType>
 void NavierStokesSolver<memoryType>::initialiseCommon()
@@ -47,7 +47,7 @@ void NavierStokesSolver<memoryType>::initialiseCommon()
 	timeScheme convScheme = (*paramDB)["simulation"]["convTimeScheme"].get<timeScheme>(),
 	           diffScheme = (*paramDB)["simulation"]["diffTimeScheme"].get<timeScheme>();
 	intgSchm.initialise(convScheme, diffScheme);
-	
+
 	// initial values of timeStep
 	timeStep = (*paramDB)["simulation"]["startStep"].get<int>();
 	
@@ -82,23 +82,26 @@ void NavierStokesSolver<memoryType>::initialiseArrays(int numQ, int numLambda)
 	q.resize(numQ);
 	qStar.resize(numQ);
 	qOld.resize(numQ);
+	qk.resize(numQ);
+	qkOld.resize(numQ);
 	rn.resize(numQ);
 	H.resize(numQ);
 	bc1.resize(numQ);
 	rhs1.resize(numQ);
 	temp1.resize(numQ);
-	
+
 	cusp::blas::fill(rn, 0.0);
 	cusp::blas::fill(H, 0.0);
 	cusp::blas::fill(bc1, 0.0);
 	cusp::blas::fill(rhs1, 0.0);
 	cusp::blas::fill(temp1, 0.0);
-	
+
 	lambda.resize(numLambda);
+	lambdak.resize(numLambda);
 	bc2.resize(numLambda);
 	rhs2.resize(numLambda);
 	temp2.resize(numLambda);
-	
+
 	cusp::blas::fill(lambda, 0.0);
 	cusp::blas::fill(bc2, 0.0);
 	cusp::blas::fill(rhs2, 0.0);
@@ -106,9 +109,52 @@ void NavierStokesSolver<memoryType>::initialiseArrays(int numQ, int numLambda)
 	
 	initialiseFluxes();
 	initialiseBoundaryArrays();
-	
+
 	generateRN();
 	cusp::blas::scal(H, 1.0/intgSchm.gamma[subStep]);
+	
+	//if we are using initial conditions
+	if((*paramDB)["simulation"]["useIC"].get<useIC>()==1){
+		std::string path;
+		std::stringstream in;
+		
+		in << (*paramDB)["inputs"]["caseFolder"].get<std::string>();
+		
+		path = in.str();
+		in.str("");
+		in << path << "/ICq";
+		std::ifstream file(in.str().c_str());
+
+		std::string line;
+		std::stringstream ss;
+		//init flux
+		int i = 0;
+		real temp = 0.0;
+		while( std::getline(file, line)){
+			ss << line;
+			ss >> temp;
+			q[i] = temp; 
+			i++;
+			ss.clear();
+		}
+		file.close();
+		std::cout<<"Initialised custom flux!\n";
+		//init lambda
+		i = 0;
+		in.str("");
+		in << path << "/ICl";
+		std::ifstream file2(in.str().c_str());
+		while( std::getline(file2, line)){
+			ss << line;
+			ss >> temp;
+
+			lambda[i]=temp; 
+			i++;
+			ss.clear();
+		}
+		file2.close();
+		std::cout<<"Initialised custom lambda!\n";
+	}
 	std::cout << "Initialised arrays!" << std::endl;
 	
 	logger.stopTimer("initialiseArrays");
@@ -239,14 +285,16 @@ template <typename memoryType>
 void NavierStokesSolver<memoryType>::stepTime()
 {
 	qOld = q;
+	//number of substeps is 1 if adams-bashforth is being used
 	for(subStep=0; subStep < intgSchm.subSteps; subStep++)
 	{
+		//moves bodies if they have a preset motion
 		updateSolverState();
 
-		// Set up and solve the first system for the intermediate velocity
-		generateRN();
-		generateBC1();
-		assembleRHS1();
+		//Set up and solve the first system for the intermediate velocity
+		generateRN();//calculates diffusion, convection and timestepping matricies, 
+		generateBC1();//solve for bc1
+		assembleRHS1();//add bc1 and rn to get r1 eqn 22
 		//eqn 25 in tiara colonius
 		solveIntermediateVelocity();
 
@@ -258,6 +306,8 @@ void NavierStokesSolver<memoryType>::stepTime()
 
 		// Projection step
 		projectionStep();
+		//std::cin.get();
+		//printShit();
 		//eqn 27
 	}
 	
@@ -324,7 +374,7 @@ void NavierStokesSolver<memoryType>::assembleMatrices()
 	generateA(intgSchm.alphaImplicit[subStep]);
 	PC1 = new preconditioner< cusp::coo_matrix<int, real, memoryType> >(A, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>());
 	generateBN();	
-	
+
 	logger.stopTimer("assembleMatrices");
 
 	generateQT();
@@ -526,7 +576,7 @@ void NavierStokesSolver<memoryType>::writeCommon()
 	// write the velocity fluxes and the pressure values
 	if (timeStep % nsave == 0)
 	{
-		io::writeData(folder, timeStep, q, lambda, *domInfo);
+		io::writeData(folder, timeStep, q, lambda, *domInfo, *paramDB);
 	}
 	
 	// write the number of iterations for each solve
@@ -568,6 +618,14 @@ NavierStokesSolver<memoryType>::NavierStokesSolver(parameterDB *pDB, domain *dIn
 	paramDB = pDB;
 	domInfo = dInfo;
 }
+
+template <typename memoryType>
+void NavierStokesSolver<memoryType>::printShit(){
+	cusp::print(q);
+}
+
+
+
 
 // include inline files
 #include "NavierStokes/generateM.inl"

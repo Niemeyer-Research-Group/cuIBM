@@ -27,14 +27,29 @@ template <typename memoryType>
 NavierStokesSolver<memoryType>* createSolver(parameterDB &paramDB, domain &domInfo)
 {
 	ibmScheme ibm = paramDB["simulation"]["ibmScheme"].get<ibmScheme>();
+	fsiType fsiT = paramDB["simulation"]["fsiType"].get<fsiType>();
+
 	NavierStokesSolver<memoryType> *solver = 0;
 	switch(ibm)
 	{
 		case SAIKI_BIRINGEN:
 			break;
 		case TAIRA_COLONIUS:
-			solver = new TairaColoniusSolver<memoryType>(&paramDB, &domInfo);
-			break;
+			if (fsiT == 1)
+			{
+				solver = new TairaColoniusSolver<memoryType>(&paramDB, &domInfo);
+				break;
+			}
+			else if (fsiT == 0)
+			{
+				solver = new TCFSISolver<memoryType>(&paramDB, &domInfo);
+				break;
+			}
+			else
+			{
+				std::cout << "Unknown FSI Type... exiting\n";
+				break;
+			}
 		case NAVIER_STOKES:
 			solver = new NavierStokesSolver<memoryType>(&paramDB, &domInfo);
 			break;

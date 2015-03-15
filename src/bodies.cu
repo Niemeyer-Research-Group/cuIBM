@@ -39,6 +39,12 @@ void bodies<memoryType>::initialise(parameterDB &db, domain &D)
 	
 	forceX.resize(numBodies);
 	forceY.resize(numBodies);
+	forceXold.resize(numBodies);
+	forceYold.resize(numBodies);
+	fXk.resize(numBodies);
+	fYk.resize(numBodies);
+	fXkp1.resize(numBodies);
+	fYkp1.resize(numBodies);
 
 	// calculate offsets, number of points in each body and the total number of points
 	totalPoints = 0;
@@ -52,6 +58,10 @@ void bodies<memoryType>::initialise(parameterDB &db, domain &D)
 	// fill up coordinates of body points
 	X.resize(totalPoints);
 	Y.resize(totalPoints);
+	xk.resize(totalPoints);
+	yk.resize(totalPoints);
+	xkp1.resize(totalPoints);
+	ykp1.resize(totalPoints);
 	ds.resize(totalPoints);
 	ones.resize(totalPoints);
 	cusp::blas::fill(ones, 1.0);
@@ -62,13 +72,19 @@ void bodies<memoryType>::initialise(parameterDB &db, domain &D)
 			X[i+offsets[k]] = (*B)[k].X[i];
 			Y[i+offsets[k]] = (*B)[k].Y[i];
 		}
-	}	
+	}
 	x.resize(totalPoints);
 	y.resize(totalPoints);
 	uB.resize(totalPoints);
 	vB.resize(totalPoints);
+	uBk.resize(totalPoints);
+	vBk.resize(totalPoints);
+	uBkp1.resize(totalPoints);
+	vBkp1.resize(totalPoints);
 	I.resize(totalPoints);
 	J.resize(totalPoints);
+	centerVelocityU = 0;
+	centerVelocityV = 0;
 
 	bodiesMove = false;
 	for(int k=0; k<numBodies; k++)
@@ -228,37 +244,59 @@ void bodies<memoryType>::update(parameterDB &db, domain &D, real Time)
 
 	// views of the vectors that store the coordinates and velocities of all the body points
 	View    XView, YView, xView, yView, onesView, uBView, vBView;
-	
+
 	// body data
 	std::vector<body> *B = db["flow"]["bodies"].get<std::vector<body> *>();
-	
+
 	for(int l=0; l<numBodies; l++)
 	{
 		// update the location and velocity of the body
 		(*B)[l].update(Time);
-		
+
 		// create the views for the current body
 		if(l < numBodies-1)
 		{
 			XView    = View(X.begin()+offsets[l], X.begin()+offsets[l+1]);
 			YView    = View(Y.begin()+offsets[l], Y.begin()+offsets[l+1]);
-			xView    = View(x.begin()+offsets[l], x.begin()+offsets[l+1]);
-			yView    = View(y.begin()+offsets[l], y.begin()+offsets[l+1]);
 			onesView = View(ones.begin()+offsets[l], ones.begin()+offsets[l+1]);
 			uBView   = View(uB.begin()+offsets[l], uB.begin()+offsets[l+1]);
 			vBView   = View(vB.begin()+offsets[l], vB.begin()+offsets[l+1]);
+			xView    = View(x.begin()+offsets[l], x.begin()+offsets[l+1]);
+			yView    = View(y.begin()+offsets[l], y.begin()+offsets[l+1]);
+			/*
+			if (D["simulation"]["fsiType"].get<fsiType>() == 0)//fsi on
+			{ //use k values
+				uBView   = View(uBk.begin()+offsets[l], uBk.begin()+offsets[l+1]);
+				vBView   = View(vBk.begin()+offsets[l], vBk.begin()+offsets[l+1]);
+				xView    = View(xk.begin()+offsets[l], xk.begin()+offsets[l+1]);
+				yView    = View(yk.begin()+offsets[l], yk.begin()+offsets[l+1]);
+			}
+			else if(
+			*/
 		}
 		else
 		{
 			XView    = View(X.begin()+offsets[l], X.end());
 			YView    = View(Y.begin()+offsets[l], Y.end());
-			xView    = View(x.begin()+offsets[l], x.end());
-			yView    = View(y.begin()+offsets[l], y.end());
 			onesView = View(ones.begin()+offsets[l], ones.end());
-			uBView   = View(uB.begin()+offsets[l], uB.end());
-			vBView   = View(vB.begin()+offsets[l], vB.end());
+			/*
+			if (D["simulation"]["fsiType"].get<fsiType>() == 0)//fsi on
+			{ //use k values
+				xView    = View(xk.begin()+offsets[l], xk.end());
+				yView    = View(yk.begin()+offsets[l], yk.end());
+				uBView   = View(uBk.begin()+offsets[l], uBk.end());
+				vBView   = View(vBk.begin()+offsets[l], vBk.end());
+			}
+			else if (D["simulation"]["fsiType"].get<fsiType>() == 1)//fsi off
+			{
+			*/
+				xView    = View(x.begin()+offsets[l], x.end());
+				yView    = View(y.begin()+offsets[l], y.end());
+				uBView   = View(uB.begin()+offsets[l], uB.end());
+				vBView   = View(vB.begin()+offsets[l], vB.end());
+			//}
 		}
-		
+
 		// update postitions	
 		// x-coordinates
 		cusp::blas::axpbypcz( onesView, XView, onesView, xView, (*B)[l].Xc[0],  cos((*B)[l].Theta), -(*B)[l].X0[0]*cos((*B)[l].Theta) );
@@ -266,14 +304,14 @@ void bodies<memoryType>::update(parameterDB &db, domain &D, real Time)
 		// y-coordinates
 		cusp::blas::axpbypcz( onesView, XView, onesView, yView, (*B)[l].Xc[1],  sin((*B)[l].Theta), -(*B)[l].X0[0]*sin((*B)[l].Theta) );
 		cusp::blas::axpbypcz( yView,    YView, onesView, yView,           1.0,  cos((*B)[l].Theta), -(*B)[l].X0[1]*cos((*B)[l].Theta) );
-	
+
 		// update velocities
 		// x-velocities
 		cusp::blas::axpbypcz(onesView, yView, onesView, uBView, (*B)[l].vel[0], -(*B)[l].angVel,  (*B)[l].angVel*(*B)[l].Xc[1]);
 		// y-velocities
 		cusp::blas::axpbypcz(onesView, xView, onesView, vBView, (*B)[l].vel[1],  (*B)[l].angVel, -(*B)[l].angVel*(*B)[l].Xc[0]);
 	}
-	
+
 	if(numBodies)
 		calculateCellIndices(D);
 }

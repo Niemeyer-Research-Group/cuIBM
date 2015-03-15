@@ -107,6 +107,22 @@ enum preconditionerType
 };
 
 /**
+ * \enum Fluid structure interaction type
+ * \brief is fsi on or off?
+ */
+enum fsiType
+{
+	on,	//fsi on
+	off	//fsi off
+};
+
+enum useIC
+{
+	used,	//use a custom ic
+	unused	//don't use a custom ic
+};
+
+/**
  * \typedef real
  * \brief Is a \c float or a \c double depending on the machine precision.
  */

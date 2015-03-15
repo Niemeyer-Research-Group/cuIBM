@@ -1,9 +1,11 @@
 - type: simulation
   dt: 0.01
-  nt: 300
-  nsave: 50
+  nt: 1000
+  nsave: 200
   timeScheme: [ADAMS_BASHFORTH_2, CRANK_NICOLSON]
   ibmScheme: TAIRA_COLONIUS
+  fsiType: off
+  useIC: used
   linearSolvers:
     - system: velocity
       solver: CG

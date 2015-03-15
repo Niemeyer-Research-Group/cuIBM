@@ -10,6 +10,7 @@ CC = nvcc $(OSXOPTS)
 # -arch=compute_20: compile to use double precision on GPU use _12 -03 for your shitty computer
 # -O3: optimization flag
 CCFLAGS = -arch=compute_20 -O3
+#CCFLAGS = -arch=compute_12 -O3
 
 # variables
 RM = rm
@@ -175,6 +176,9 @@ cylinderRe100:
 cylinderRe150:
 	bin/cuIBM -caseFolder cases/cylinder/Re150
 
+cylinderRe1000:
+	bin/cuIBM -caseFolder cases/cylinder/Re1000
+
 cylinderDirectForcing:
 	bin/cuIBM -caseFolder cases/cylinder/Re40 -ibmScheme DirectForcing
 
@@ -195,3 +199,8 @@ flappingRe75:
 
 oscillatingCylinders:
 	time bin/cuIBM -caseFolder cases/oscillatingCylinders
+
+test1:
+	bin/cuIBM -caseFolder cases/test/1
+test2:
+	bin/cuIBM -caseFolder cases/test/2
