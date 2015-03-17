@@ -103,8 +103,13 @@ void TCFSISolver<memoryType>::stepTime()
 	//qold = q
 	NavierStokesSolver<memoryType>::qOld = NavierStokesSolver<memoryType>::q;
 	//set velocity flux for fsi loop
-	NavierStokesSolver<memoryType>::qk = NavierStokesSolver<memoryType>::q; 
-
+	NavierStokesSolver<memoryType>::qk = NavierStokesSolver<memoryType>::q; //not needed
+	//guess uB at n+1
+	NSWithBody<memoryType>::B.uBk = NSWithBody<memoryType>::B.uB; //not needed
+	//NSWithBody<memoryType>::B.vBk = NSWithBody<memoryType>::B.vB; //guess vB at n+1
+	NSWithBody<memoryType>::B.xk = NSWithBody<memoryType>::B.x; //not needed
+	//NSWithBody<memoryType>::B.yk = NSWithBody<memoryType>::B.y;	
+	
 	int k = 0;
 	isSub = true;
 
@@ -116,12 +121,7 @@ void TCFSISolver<memoryType>::stepTime()
 	NavierStokesSolver<memoryType>::assembleRHS1();
 	NavierStokesSolver<memoryType>::solveIntermediateVelocity();
 	
-	NSWithBody<memoryType>::B.uBk = NSWithBody<memoryType>::B.uB; //guess uB at n+1
-	//NSWithBody<memoryType>::B.vBk = NSWithBody<memoryType>::B.vB; //guess vB at n+1
-	NSWithBody<memoryType>::B.xk = NSWithBody<memoryType>::B.x;
-	//NSWithBody<memoryType>::B.yk = NSWithBody<memoryType>::B.y;
-	//guess that the body will keep moving the same way it was in the previous time step
-	//might need to impose a check to make sure things don't run away from thier positions.
+
 	if (NavierStokesSolver<memoryType>::timeStep < 50)
 	{
 		////set qkold to equal qk
@@ -144,6 +144,7 @@ void TCFSISolver<memoryType>::stepTime()
 	}
 	else
 	{
+	std::cout<<"k   \tPosition   \tNew Velocity   \tNum Velocity   \tNew Force   \tOld Force   \tCalculated Force\n";
 		do
 		{
 			////set qkold to equal qk
@@ -166,8 +167,7 @@ void TCFSISolver<memoryType>::stepTime()
 
 			////solve the structure equation for Xk+1 and uBk+1(step 3) and update structure location (step 4)
 			TCFSISolver<memoryType>::solveStructure();
-
-			//std::cout<<k<<"\t"<<std::cout<<NSWithBody<memoryType>::B.uBkp1[0]<<NSWithBody<memoryType>::B.forceX[0]<<std::endl;
+			std::cout<<k<<"   \t"<<NSWithBody<memoryType>::B.xk[0]<<"   \t"<<NSWithBody<memoryType>::B.uBkp1[0]<<"   \t"<<1-1/(1+.5*1.57*(NavierStokesSolver<memoryType>::timeStep-49)*.01)<<"   \t"<<NSWithBody<memoryType>::B.forceX[0]<<"   \t"<<NSWithBody<memoryType>::B.forceXold[0]<<"   \t"<<0.785/((0.785*(NavierStokesSolver<memoryType>::timeStep-49)*.01+1)*(0.785*(NavierStokesSolver<memoryType>::timeStep-49)*.01+1))<<std::endl;
 			////do something to make sure the points didn't move realitive to each other, this isn't neccesary for non rotaty movement
 			//update which cells are inside the boundary
 			k++;
