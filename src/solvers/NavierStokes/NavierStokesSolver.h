@@ -151,9 +151,6 @@ protected:
 	virtual void updateSolverState();
 	
 public:
-	//print stuff
-	void printShit();
-
 	// constructor -- copy the database and information about the computational grid
 	NavierStokesSolver(parameterDB *pDB=NULL, domain *dInfo=NULL);
 

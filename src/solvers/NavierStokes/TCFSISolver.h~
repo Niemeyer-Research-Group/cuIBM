@@ -47,6 +47,8 @@ private:
 	// calculate forces acting on each immersed body
 	virtual void calculateForce();
 	
+	//bounding box
+	void calculateBoundingBoxes(parameterDB &db, domain &D);
 	//initialise FSI
 	void initialiseFSI(int bodypoints);
 	
@@ -67,8 +69,6 @@ private:
 	void generateE();
 	
 public:
-	//std::ofstream output;
-	
 	// constructor -- copy the database and information about the computational grid
 	TCFSISolver(parameterDB *pDB=NULL, domain *dInfo=NULL);
 	

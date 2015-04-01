@@ -47,6 +47,12 @@ private:
 	// calculate forces acting on each immersed body
 	virtual void calculateForce();
 	
+	//bounding box
+	void calculateBoundingBoxes(parameterDB &db, domain &D);
+
+	//cell indicies
+	void calculateCellIndices(domain &D);
+
 	//initialise FSI
 	void initialiseFSI(int bodypoints);
 	

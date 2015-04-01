@@ -50,7 +50,6 @@ void TCFSISolver<memoryType>::calculateForce()
 			cusp::blas::fill(fView, 0.0);
 		}
 		cusp::multiply(ET, fTemp, F);
-		cusp::print(F);
 		NSWithBody<memoryType>::B.forceX[l] = (dx*dy)/dx*thrust::reduce(F.begin(), F.end());
 
 		// y-component of the force
@@ -65,4 +64,5 @@ void TCFSISolver<memoryType>::calculateForce()
 		cusp::multiply(ET, fTemp, F);
 		NSWithBody<memoryType>::B.forceY[l] = (dx*dy)/dy*thrust::reduce(F.begin(), F.end());
 	}
+	std::cout<<"calcforce.inl\n";
 }

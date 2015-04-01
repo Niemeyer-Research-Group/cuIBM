@@ -4,11 +4,9 @@
  * \brief Implementation of the methods of the class \c NavierStokesSolver.
  */
 
-
 #include "NavierStokesSolver.h"
 #include <sys/stat.h>
 #include <io/io.h>
-
 
 //##############################################################################
 //                              INITIALISE
@@ -112,7 +110,7 @@ void NavierStokesSolver<memoryType>::initialiseArrays(int numQ, int numLambda)
 
 	generateRN();
 	cusp::blas::scal(H, 1.0/intgSchm.gamma[subStep]);
-	
+	//*
 	//if we are using initial conditions
 	if((*paramDB)["simulation"]["useIC"].get<useIC>()==1){
 		std::string path;
@@ -127,6 +125,7 @@ void NavierStokesSolver<memoryType>::initialiseArrays(int numQ, int numLambda)
 
 		std::string line;
 		std::stringstream ss;
+
 		//init flux
 		int i = 0;
 		real temp = 0.0;
@@ -155,6 +154,7 @@ void NavierStokesSolver<memoryType>::initialiseArrays(int numQ, int numLambda)
 		file2.close();
 		std::cout<<"Initialised custom lambda!\n";
 	}
+	//*/
 	std::cout << "Initialised arrays!" << std::endl;
 	
 	logger.stopTimer("initialiseArrays");
@@ -306,8 +306,6 @@ void NavierStokesSolver<memoryType>::stepTime()
 
 		// Projection step
 		projectionStep();
-		//std::cin.get();
-		//printShit();
 		//eqn 27
 	}
 	
@@ -618,14 +616,6 @@ NavierStokesSolver<memoryType>::NavierStokesSolver(parameterDB *pDB, domain *dIn
 	paramDB = pDB;
 	domInfo = dInfo;
 }
-
-template <typename memoryType>
-void NavierStokesSolver<memoryType>::printShit(){
-	cusp::print(q);
-}
-
-
-
 
 // include inline files
 #include "NavierStokes/generateM.inl"
