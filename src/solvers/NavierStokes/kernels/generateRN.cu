@@ -300,23 +300,23 @@ void convectionTermUBottomTop(real *rn, real *H, real *q, \
 			ul, ur,
 			Hn, cTerm, dTerm;
 	/// Calculate the Diffusion Term and Velocity Components for the convection term
-	if(I==0){
-		u0x	= 0.5*(bcLeft[0] + u);
-		u1x	= 0.5*(u + q[I+1]/dy[0]);
-		ul	= bcLeft[0];
-		ur	= q[I+1]/dy[0];
+	if(I==0){//botleft
+		u0x	= 0.5*(bcLeft[0] + u);//west
+		u1x	= 0.5*(u + q[I+1]/dy[0]);//east
+		ul	= bcLeft[0];//West
+		ur	= q[I+1]/dy[0];//East
 	}
-	else if(I==nx-2){
-		u0x	= 0.5*(q[I-1]/dy[0] + u);
-		u1x	= 0.5*(u + bcRight[0]);
-		ul	= q[I-1]/dy[0];
-		ur	= bcRight[0];
+	else if(I==nx-2){//botright
+		u0x	= 0.5*(q[I-1]/dy[0] + u);//west
+		u1x	= 0.5*(u + bcRight[0]);//east
+		ul	= q[I-1]/dy[0];//West
+		ur	= bcRight[0];//East
 	}
-	else{
-		u0x	= 0.5*(q[I-1]/dy[0] + u);
-		u1x	= 0.5*(u + q[I+1]/dy[0]);
-		ul	= q[I-1]/dy[0];
-		ur	= q[I+1]/dy[0];
+	else{//botmiddle
+		u0x	= 0.5*(q[I-1]/dy[0] + u);//west
+		u1x	= 0.5*(u + q[I+1]/dy[0]);//east
+		ul	= q[I-1]/dy[0];//West
+		ur	= q[I+1]/dy[0];//East
 	}
 	/// Convection Term
 	Hn = H[I];

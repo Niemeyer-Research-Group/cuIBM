@@ -152,7 +152,7 @@ protected:
 	
 public:
 	//print stuff
-	//void printShit();
+	void printShit();
 
 	// constructor -- copy the database and information about the computational grid
 	NavierStokesSolver(parameterDB *pDB=NULL, domain *dInfo=NULL);

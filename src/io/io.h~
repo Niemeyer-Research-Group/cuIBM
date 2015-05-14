@@ -67,7 +67,7 @@ namespace io
 
 	// write numerical data at a given time-step
 	template <typename Vector>
-	void writeData(std::string &caseFolder, int n, Vector &q, Vector &lambda, domain &D);//, bodies &B);
+	void writeData(std::string &caseFolder, int n, Vector &q, Vector &lambda, &qo, domain &D, parameterDB &DB);//, bodies &B);
 	
 	// print device memory usage
 	void printDeviceMemoryUsage(char *label);

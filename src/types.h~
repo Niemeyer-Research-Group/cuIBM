@@ -118,8 +118,8 @@ enum fsiType
 
 enum useIC
 {
-	on,	//use a custom ic
-	off	//don't use a custom ic
+	used,	//use a custom ic
+	unused	//don't use a custom ic
 };
 
 /**

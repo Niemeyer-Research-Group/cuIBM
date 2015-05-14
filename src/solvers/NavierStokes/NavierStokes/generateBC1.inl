@@ -166,30 +166,30 @@ template <>
 void NavierStokesSolver<host_memory>::generateBC1()
 {
 	logger.startTimer("generateBC1");
-	
-	real alpha = intgSchm.alphaImplicit[subStep];
-	
+
+	real alpha = intgSchm.alphaImplicit[subStep]; //0.5 for crank-nicholson
+
 	// raw pointers from cusp arrays
 	real *dx  = thrust::raw_pointer_cast(&(domInfo->dx[0])),
 	     *dy  = thrust::raw_pointer_cast(&(domInfo->dy[0]));
-	
+
 	real dx0, dx1, dy0, dy1,
-	     nu = (*paramDB)["flow"]["nu"].get<real>(),
+	     nu = (*paramDB)["flow"]["nu"].get<real>(), //viscosity
          dt = (*paramDB)["simulation"]["dt"].get<real>();
 
 	boundaryCondition **bcInfo = (*paramDB)["flow"]["boundaryConditions"].get<boundaryCondition **>();
-	
+
 	real C,     // coefficient that the boundary velocity is multiplied with for the diffusion term
 	     beta;  // coefficient that is used to convect the velocity to the boundary 
-	
+
 	int  nx = domInfo->nx,
 	     ny = domInfo->ny;
-	
+
 	int  numU  = (nx-1)*ny;
-	
+
 	// zero the bc1 vector
 	cusp::blas::fill(bc1, 0.0);
-		
+
 	/// bottom
 	if(bcInfo[YMINUS][0].type == DIRICHLET)
 	{
@@ -201,7 +201,7 @@ void NavierStokesSolver<host_memory>::generateBC1()
 		{
 			bc1[I] += bc[YMINUS][I] * C * 0.5*(dx[I] + dx[I+1]);
 		}
-		
+
 		/// v
 		C	= alpha * 2.0 * nu / (dy[0] * (dy[0]+dy[1]));		
 		for(int I=0; I<nx; I++)
@@ -211,7 +211,7 @@ void NavierStokesSolver<host_memory>::generateBC1()
 
 	}
 	//else if(F.nbc.bottom_type==BC_CONVECTIVE)
-	
+
 	/// top
 	if(bcInfo[YPLUS][0].type == DIRICHLET)
 	{
@@ -223,7 +223,7 @@ void NavierStokesSolver<host_memory>::generateBC1()
 		{
 			bc1[I+(nx-1)*(ny-1)] += bc[YPLUS][I] * C * 0.5*(dx[I] + dx[I+1]);
 		}
-		
+
 		// v
 		C	= alpha * 2.0 * nu / (dy[ny-1] * (dy[ny-1]+dy[ny-2]));
 		for(int I=0; I<nx; I++)
@@ -243,7 +243,7 @@ void NavierStokesSolver<host_memory>::generateBC1()
 			bc[YPLUS][I] = (1.0-beta)*bc[YPLUS][I] + beta*q[I + (nx-1)*(ny-1)]/dy[ny-1];
 			bc1[I + (nx-1)*(ny-1)] += bc[YPLUS][I] * C * 0.5*(dx[I] + dx[I+1]);
 		}
-		
+
 		/// v
 		beta = bcInfo[YPLUS][1].value * dt / dy[ny-1];
 		C	= alpha * 2.0 * nu / (dy[ny-1] * (dy[ny-1]+dy[ny-2]));

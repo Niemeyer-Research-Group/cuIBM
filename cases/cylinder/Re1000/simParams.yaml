@@ -1,6 +1,6 @@
 - type: simulation
   dt: 0.0025
-  nt: 4800
+  nt: 4000
   nsave: 200
   timeScheme: [ADAMS_BASHFORTH_2, CRANK_NICOLSON]
   ibmScheme: TAIRA_COLONIUS

@@ -122,6 +122,12 @@ enum useIC
 	unused	//don't use a custom ic
 };
 
+enum wallSlip
+{
+	slip,
+	noSlip
+};
+
 /**
  * \typedef real
  * \brief Is a \c float or a \c double depending on the machine precision.

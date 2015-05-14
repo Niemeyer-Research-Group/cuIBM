@@ -25,11 +25,12 @@ void NSWithBody<memoryType>::initialiseBodies()
 	std::stringstream out;
 	out << folder << "/forces";
 	forceFile.open(out.str().c_str());
+	//std::cout<<"forces\n\n";
 
 	std::stringstream out2;
 	out2<<folder<<"/myOutput";
 	output.open(out2.str().c_str());
-	output<<"derp";
+	//std::cout<<"myoutput\n\n";
 
 	NavierStokesSolver<memoryType>::logger.stopTimer("initialiseBodies");
 }

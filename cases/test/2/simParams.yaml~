@@ -1,11 +1,12 @@
 - type: simulation
-  dt: 0.0025
-  nt: 2400
-  nsave: 200
+  dt: 0.01
+  nt: 4000
+  nsave: 250
   timeScheme: [ADAMS_BASHFORTH_2, CRANK_NICOLSON]
   ibmScheme: TAIRA_COLONIUS
   fsiType: on
-  useIC: on
+  useIC: off
+  wallSlip: slip
   linearSolvers:
     - system: velocity
       solver: CG
@@ -16,4 +17,4 @@
       solver: CG
       preconditioner: SMOOTHED_AGGREGATION
       tolerance: 1e-5
-      maxIterations: 20000
+      maxIterations: 50000

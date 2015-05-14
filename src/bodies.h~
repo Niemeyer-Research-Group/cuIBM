@@ -44,7 +44,9 @@ public:
 
 	cusp::array1d<real, memoryType>
 		forceX,		///< force acting on a body in the x-direction
-		forceY;		///< force acting on a body in the y-direction
+		forceY,		///< force acting on a body in the y-direction
+		forceXold,	// old y force
+		forceYold;	// old x force
 
 	cusp::array1d<real, memoryType>
 		X,     ///< reference x-coordinates of the boundary points
@@ -74,6 +76,8 @@ public:
 		uBkp1,	//x-velocity of boundary points at substep k+1 //used in convergence check
 		vBkp1;	//y-velocity of boundary points at substep k+1
 
+	cusp::array1d<bool, memoryType>
+		converged;
 	real centerVelocityU,
 	     centerVelocityV; // need to initialise these fools
 

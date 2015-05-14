@@ -46,7 +46,6 @@ int main(int argc, char **argv)
 	while (!solver->finished())
 	{
 		solver->stepTime();
-		//solver->stepTime();
 		//in the individual solvers, e.g. tiaracolonius
 		solver->writeData();
 	}

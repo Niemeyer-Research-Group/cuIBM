@@ -6,12 +6,21 @@ cuIBM - A GPU-based Immersed Boundary Method code
 push changes to both Github and the 
 [old Bitbucket repository](https://bitbucket.org/anushk/cuibm) and keep the 
 code synchronised.**
+[Chris github](https://github.com/chrisminar/cuIBM).
 
 Currently, cuIBM runs only on Unix-based systems and has been tested on 
 Ubuntu 12.04. It is not supported on Windows.
 
 Installation instructions
 -------------------------
+### New Features:
+Since forking from the original project the following has been added:
+#### Fluid Structure Interaction
+Immeresed boundary supports free movement in the x direction.
+Only works for one body
+
+#### New Test Cases
+test1 and test2 can now be made
 
 ### Dependencies
 

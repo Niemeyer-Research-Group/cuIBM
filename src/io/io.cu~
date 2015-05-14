@@ -181,6 +181,7 @@ void initialiseDefaultDB(parameterDB &DB)
 	DB[sim]["interpolationType"].set<interpolationType>(LINEAR);
 	DB[sim]["fsiType"].set<fsiType>(off);
 	DB[sim]["useIC"].set<useIC>(unused);
+	DB[sim]["wallSlip"].set<wallSlip>(noSlip);
 
 	// velocity solver
 	string solver = "velocitySolve";
@@ -408,6 +409,16 @@ string stringFromuseIC(useIC s)
 		return "Unknown use initial conditions type";
 }
 
+string stringFromwallSlip(wallSlip s)
+{
+	if( s == slip )
+		return "slip";
+	else if (s == noSlip )
+		return "noSlip";
+	else
+		return "unknown slip type";
+}
+
 /**
  * \brief Prints the parameters of the simulation.
  *
@@ -425,6 +436,7 @@ void printSimulationInfo(parameterDB &DB, domain &D)
 	ibmScheme ibmSchm = DB["simulation"]["ibmScheme"].get<ibmScheme>();
 	fsiType fsiTyp = DB["simulation"]["fsiType"].get<fsiType>();
 	useIC usic = DB["simulation"]["useIC"].get<useIC>();
+	wallSlip wlslp = DB["simulation"]["wallSlip"].get<wallSlip>();
 
 
     std::cout << '\n';
@@ -555,15 +567,16 @@ void writeGrid(std::string &caseFolder, domain &D)
  * \param D information about the computational grid
  */
 template <>
-void writeData<vecH>(std::string &caseFolder, int n, vecH &q, vecH &lambda, domain &D, parameterDB &DB)//, bodies &B)
+void writeData<vecH>(std::string &caseFolder, int n, vecH &q, vecH &lambda, vecH &qo, domain &D, parameterDB &DB)//, bodies &B)
 {
 	std::string path;
-	std::stringstream out,outq,outl;
+	std::stringstream out,outq,outl,outqo;
 	int N;
 
 	out << caseFolder << '/' << std::setfill('0') << std::setw(7) << n;
 	outq << caseFolder << '/' << std::setfill('0') << std::setw(7) << n;
 	outl << caseFolder << '/' << std::setfill('0') << std::setw(7) << n;
+	outqo << caseFolder << '/' <<std::setfill('0') << std::setw(7) << n;
 	path = out.str();
 
 	mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -583,7 +596,7 @@ void writeData<vecH>(std::string &caseFolder, int n, vecH &q, vecH &lambda, doma
 	file.write((char*)(&N), sizeof(int));
 	file.write((char*)(&lambda[0]), N*sizeof(real));
 	file.close();
-	
+
 	//to make initial conditions files
 	//*
 	if(n == DB["simulation"]["nt"].get<int>()){
@@ -591,16 +604,24 @@ void writeData<vecH>(std::string &caseFolder, int n, vecH &q, vecH &lambda, doma
 		outq << path << "/ICq";
 		outl.str("");
 		outl << path << "/ICl";
+		outqo.str("");
+		outqo << path << "/ICqo";
+		
 		std::ofstream fileq(outq.str().c_str());
 		std::ofstream filel(outl.str().c_str());
+		std::ofstream fileqo(outqo.str().c_str());
 		for(int i=0; i < q.size(); i++){
 			fileq << q[i] <<"\n";
 		}
 		for(int i=0; i <lambda.size(); i++){
 			filel << lambda[i] << "\n";
 		}
+		for(int i=0; i < q.size(); i++){
+			fileqo << qo[i] << "\n";
+		}
 		fileq.close();
 		filel.close();
+		fileqo.close();
 	}
 	//*/
 
@@ -621,12 +642,13 @@ void writeData<vecH>(std::string &caseFolder, int n, vecH &q, vecH &lambda, doma
  * \param D information about the computational grid
  */
 template <>
-void writeData<vecD>(std::string &caseFolder, int n, vecD &q, vecD &lambda, domain &D, parameterDB &DB)//, bodies &B)
+void writeData<vecD>(std::string &caseFolder, int n, vecD &q, vecD &lambda, vecD &qo, domain &D, parameterDB &DB)//, bodies &B)
 {
 	vecH qH = q,
-	     lambdaH = lambda;
+	     lambdaH = lambda,
+	     qoH = qo;
 	     
-	writeData(caseFolder, n, qH, lambdaH, D);
+	writeData(caseFolder, n, qH, lambdaH, qoH, D, DB);
 }
 
 /**

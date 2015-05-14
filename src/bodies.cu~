@@ -39,10 +39,13 @@ void bodies<memoryType>::initialise(parameterDB &db, domain &D)
 	
 	forceX.resize(numBodies);
 	forceY.resize(numBodies);
+	forceXold.resize(numBodies);
+	forceYold.resize(numBodies);
 	fXk.resize(numBodies);
 	fYk.resize(numBodies);
 	fXkp1.resize(numBodies);
 	fYkp1.resize(numBodies);
+	convergence.resize(numBodies);
 
 	// calculate offsets, number of points in each body and the total number of points
 	totalPoints = 0;

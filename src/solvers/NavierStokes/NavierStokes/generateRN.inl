@@ -7,6 +7,7 @@
 
 
 #include <solvers/NavierStokes/kernels/generateRN.h>
+#include <types.h>
 
 #define BSZ 16
 
@@ -96,6 +97,7 @@ void NavierStokesSolver<device_memory>::calculateExplicitQTerms()
  * \brief Generates explicit terms that arise from the velocity fluxes (on the host).
  *        Includes the time derivative, convection and diffusion terms.
  *        Currently incomplete. Need to fill in the diffusion terms.
+ *        Slip terms don't work either
  */
 template <>
 void NavierStokesSolver<host_memory>::calculateExplicitQTerms()
@@ -118,9 +120,10 @@ void NavierStokesSolver<host_memory>::calculateExplicitQTerms()
 	     *xplus  = thrust::raw_pointer_cast(&(bc[XPLUS][0])),
 	     *yminus = thrust::raw_pointer_cast(&(bc[YMINUS][0])),
 	     *yplus  = thrust::raw_pointer_cast(&(bc[YPLUS][0]));
-	     
+
 	real dt = (*paramDB)["simulation"]["dt"].get<real>();
-	
+	wallSlip myslip = (*paramDB)["simulation"]["wallSlip"].get<wallSlip>();
+
 	for(int j=0; j<ny; j++)
 	{
 		// convection terms for the x-momentum equation
@@ -138,16 +141,27 @@ void NavierStokesSolver<host_memory>::calculateExplicitQTerms()
 				east = (u + xplus[j])/2.0 * (u + xplus[j])/2.0;
 			else
 				east = (u + q[Iu+1]/dy[j])/2.0 * (u + q[Iu+1]/dy[j])/2.0;
-			if(j==0)
+			if(j == 0 && myslip == slip)
+				south = 0;//SLIP WALL
+			else if(j==0)
 				south = yminus[i] * (yminus[i+(nx-1)]+yminus[i+1+(nx-1)])/2.0;
 			else
 				south = (q[Iu-(nx-1)]/dy[j-1] + u)/2.0 * (q[Iv-nx]/dx[i] + q[Iv-nx+1]/dx[i+1])/2.0;
-			if(j==ny-1)
+			if (j == ny-1 && myslip == slip)
+				north = 0;//SLIP WALL
+			else if (j==ny-1)
 				north = yplus[i] * (yplus[i+(nx-1)]+yplus[i+1+(nx-1)])/2.0;
 			else
 				north = (u + q[Iu+(nx-1)]/dy[j+1])/2.0 * (q[Iv]/dx[i] + q[Iv+1]/dx[i+1])/2.0;
-				
-			H[Iu]  = -(east-west)/(0.5*(dx[i]+dx[i+1])) -(north-south)/dy[j];
+
+			if ( myslip == slip ) //slip wall
+			{
+				H[Iu]  = -(east-west)/(0.5*(dx[i]+dx[i+1])) - 2*(north-south)/dy[j];
+			}
+			else
+			{
+				H[Iu]  = -(east-west)/(0.5*(dx[i]+dx[i+1])) - (north-south)/dy[j];
+			}
 			cTerm = gamma*H[Iu] + zeta*Hn;
 			dTerm = alpha*0;
 			rn[Iu] = (u/dt + cTerm + dTerm) * 0.5*(dx[i]+dx[i+1]);

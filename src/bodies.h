@@ -76,6 +76,8 @@ public:
 		uBkp1,	//x-velocity of boundary points at substep k+1 //used in convergence check
 		vBkp1;	//y-velocity of boundary points at substep k+1
 
+	cusp::array1d<bool, memoryType>
+		converged;
 	real centerVelocityU,
 	     centerVelocityV; // need to initialise these fools
 
