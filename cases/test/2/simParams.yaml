@@ -1,12 +1,19 @@
 - type: simulation
   dt: 0.01
+<<<<<<< HEAD
   nt: 6000
+=======
+  nt: 2000
+>>>>>>> 62dcb2cbce0388289acb72183e411edebabcbef4
   nsave: 250
   timeScheme: [ADAMS_BASHFORTH_2, CRANK_NICOLSON]
   ibmScheme: TAIRA_COLONIUS
   fsiType: on
   useIC: off
+<<<<<<< HEAD
   wallSlip: slip
+=======
+>>>>>>> 62dcb2cbce0388289acb72183e411edebabcbef4
   linearSolvers:
     - system: velocity
       solver: CG

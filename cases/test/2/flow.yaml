@@ -1,5 +1,9 @@
 - type: flow
+<<<<<<< HEAD
   nu: 0.006666667
+=======
+  nu: 0.025
+>>>>>>> 62dcb2cbce0388289acb72183e411edebabcbef4
   initialVelocity: [1.0, 0.0]
   boundaryConditions:
     - location: xMinus

@@ -1,6 +1,7 @@
 - direction: x
   start: -15.0
   subDomains:
+<<<<<<< HEAD
     - end: -2.0
       cells: 132
       stretchRatio: 0.980392156
@@ -9,11 +10,22 @@
       stretchRatio: 1.0
     - end: 15.0
       cells: 132
+=======
+    - end: -1.0
+      cells: 136
+      stretchRatio: 0.980392156
+    - end: 5.0
+      cells: 300
+      stretchRatio: 1.0
+    - end: 15.0
+      cells: 121
+>>>>>>> 62dcb2cbce0388289acb72183e411edebabcbef4
       stretchRatio: 1.02
 
 - direction: y
   start: -15.0
   subDomains:
+<<<<<<< HEAD
     - end: -2.0
       cells: 132
       stretchRatio: 0.980392156
@@ -22,4 +34,14 @@
       stretchRatio: 1.0
     - end: 15.0
       cells: 132
+=======
+    - end: -1.0
+      cells: 136
+      stretchRatio: 0.980392156
+    - end: 1.0
+      cells: 100
+      stretchRatio: 1.0
+    - end: 15.0
+      cells: 136
+>>>>>>> 62dcb2cbce0388289acb72183e411edebabcbef4
       stretchRatio: 1.02

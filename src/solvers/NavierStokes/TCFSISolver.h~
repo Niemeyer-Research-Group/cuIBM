@@ -49,10 +49,13 @@ private:
 	
 	//bounding box
 	void calculateBoundingBoxes(parameterDB &db, domain &D);
+<<<<<<< HEAD
 
 	//cell indicies
 	void calculateCellIndices(domain &D);
 
+=======
+>>>>>>> 62dcb2cbce0388289acb72183e411edebabcbef4
 	//initialise FSI
 	void initialiseFSI(int bodypoints);
 	
