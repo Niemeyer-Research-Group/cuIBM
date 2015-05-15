@@ -25,10 +25,10 @@ void TCFSISolver<memoryType>::solveStructure()
 	
 	forcey = NSWithBody<memoryType>::B.forceY[0];
 	Mred = 2;
-	Ured = 4;
+	Ured = 3;
 	Cy = forcey*2;
 	dt  = db["simulation"]["dt"].get<real>();
-	alpha_ = .9;
+	alpha_ = 0.1;
 	NumP = NSWithBody<memoryType>::B.numPoints[0], //only looks at the first immeresed body
 	tol = 0.000001;
 	
@@ -36,7 +36,8 @@ void TCFSISolver<memoryType>::solveStructure()
 	     *vB_r   = thrust::raw_pointer_cast(&NSWithBody<memoryType>::B.vB[0]),
 	     *y_r    = thrust::raw_pointer_cast(&NSWithBody<memoryType>::B.y[0]),
 	     *yk_r   = thrust::raw_pointer_cast(&NSWithBody<memoryType>::B.yk[0]),
-	     *ykp1_r = thrust::raw_pointer_cast(&NSWithBody<memoryType>::B.ykp1[0]);
+	     *ykp1_r = thrust::raw_pointer_cast(&NSWithBody<memoryType>::B.ykp1[0]),
+	     *test_r = thrust::raw_pointer_cast(&NSWithBody<memoryType>::B.test[0]);
 
 	bool *con_r  = thrust::raw_pointer_cast(&NSWithBody<memoryType>::B.converged[0]);
 
@@ -46,7 +47,6 @@ void TCFSISolver<memoryType>::solveStructure()
 	kernels::vorticityInducedVibrationsSC<<<dimGrid,dimBlock>>>(vBk_r, vB_r, y_r, ykp1_r, forcey, Mred, Ured, Cy, dt, alpha_);
 	
 	//check for convergence
-	NSWithBody<memoryType>::B.converged[0] = true;
 	kernels::checkConvergencePosition<<<dimGrid,dimBlock>>>(tol, con_r, yk_r, ykp1_r);
 
 	NavierStokesSolver<memoryType>::logger.stopTimer("solveStructure");

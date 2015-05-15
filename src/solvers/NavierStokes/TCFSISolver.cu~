@@ -147,29 +147,26 @@ void TCFSISolver<memoryType>::stepTime()
 			TCFSISolver<memoryType>::generateBC2(); //new bc2 based on ubk to enforce no slip
 			NavierStokesSolver<memoryType>::assembleRHS2(); //QT*qStar + bc2
 			TCFSISolver<memoryType>::solvePoisson();
-
 			
 			////projection step
 			TCFSISolver<memoryType>::projectionStep();
-
 			
 			////compute the forces exerted on the boundary by the fluid(step 2)
 			TCFSISolver<memoryType>::calculateForce();
 			
 			////solve the structure equation for Xk+1 and uBk+1(step 3) and update structure location (step 4)
+			NSWithBody<memoryType>::B.converged[0] = true;
 			TCFSISolver<memoryType>::solveStructure();
 			k++;
 			TCFSISolver<memoryType>::printFSI();
-		//}while(TCFSISolver<memoryType>::checkConvergence(k) == false);
+		//}while(k<1);
 		}while(NSWithBody<memoryType>::B.converged[0] == false);
 	}
 	//update iterating variables
-	NavierStokesSolver<memoryType>::logger.startTimer("TRANSFER");
 	NavierStokesSolver<memoryType>::q = NavierStokesSolver<memoryType>::qk;
 	NSWithBody<memoryType>::B.vB = NSWithBody<memoryType>::B.vBk;
 	//NSWithBody<memoryType>::B.x=NSWithBody<memoryType>::B.xk;
 	NSWithBody<memoryType>::B.y=NSWithBody<memoryType>::B.yk;
-	NavierStokesSolver<memoryType>::logger.stopTimer("TRANSFER");
 	//NSWithBody<memoryType>::B.uB = NSWithBody<memoryType>::B.uBk;
 
 	NavierStokesSolver<memoryType>::timeStep++;
@@ -210,7 +207,8 @@ void TCFSISolver<memoryType>::printFSI()
 	//std::cout<<NSWithBody<memoryType>::B.yk[0]<<"   \t"<<NSWithBody<memoryType>::B.vBk[0]<<"   \t"<<NSWithBody<memoryType>::B.forceY[0]<<"\n";
 	NSWithBody<memoryType>::output<<NavierStokesSolver<memoryType>::timeStep*0.01<<"  \t";
 	NSWithBody<memoryType>::output<<NSWithBody<memoryType>::B.ykp1[0]<<"  \t";
-	NSWithBody<memoryType>::output<<NSWithBody<memoryType>::B.yk[0]<<"  \t";
+	//NSWithBody<memoryType>::output<<NSWithBody<memoryType>::B.yk[0]<<"  \t";
+	//NSWithBody<memoryType>::output<<NSWithBody<memoryType>::B.test[0]<<"  \t";
 	NSWithBody<memoryType>::output<<NSWithBody<memoryType>::B.forceY[0]<<"  \t";
 	NSWithBody<memoryType>::output<<NSWithBody<memoryType>::B.vBk[0]<<"\n";
 }

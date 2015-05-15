@@ -78,6 +78,10 @@ public:
 
 	cusp::array1d<bool, memoryType>
 		converged;
+
+	cusp::array1d<bool, memoryType>
+		test;
+
 	real centerVelocityU,
 	     centerVelocityV; // need to initialise these fools
 

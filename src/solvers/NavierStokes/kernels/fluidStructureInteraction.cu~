@@ -1,18 +1,15 @@
-
-
-
 #include <solvers/NavierStokes/kernels/fluidStructureInteraction.h>
 
 namespace kernels
 {
 
 __global__
-void vorticityInducedVibrationsSC(real *vBk, real* vB, real *y, real *ykp1, real forcey, real Mred, real Ured, real Cy, real dt, real alpha_)
+void vorticityInducedVibrationsSC(real *vBk, real *vB, real *y, real *ykp1, real forcey, real Mred, real Ured, real Cy, real dt, real alpha_)
 {
 	int i = threadIdx.x;
 
 	//calculate new body velocity
-	vBk[i] = alpha_*(vB[i] + dt*Cy/(2.0*Mred) - dt*4*3.14159*3.14159*y[0]/(Ured*Ured) - dt*dt*2.0*3.14159*3.14159*vB[i]/(Ured*Ured))  / (1.0 + dt*dt*2*3.14159*3.14159/(Ured*Ured)) +(1-alpha_)*vBk[i];
+	vBk[i] = alpha_*((vB[i] + dt*Cy/(2.0*Mred) - dt*4*3.14159*3.14159*y[0]/(Ured*Ured) - dt*dt*2.0*3.14159*3.14159*vB[i]/(Ured*Ured))  / (1.0 + dt*dt*2*3.14159*3.14159/(Ured*Ured))) +(1-alpha_)*vBk[i];
 	
 	//calculate new body position
 	ykp1[i] = y[i] + (vBk[i] + vB[i])*0.5*dt;
@@ -48,10 +45,9 @@ void checkConvergencePosition(real tol, bool *flag, real *yk, real *ykp1)
 {
 	int i = threadIdx.x;
 	//check if yi is out of tolerance
-	if (ykp1[i] - yk[i] > tol || yk[i] - ykp1[i] >tol)
-	{
+	if ((ykp1[i] - yk[i]) >= tol)
 		flag[0] = false;
-	}
+	if ((yk[i] - ykp1[i]) >= tol)
 	//update yk
 	yk[i] = ykp1[i];
 

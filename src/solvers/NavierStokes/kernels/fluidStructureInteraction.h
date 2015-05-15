@@ -4,7 +4,7 @@
 namespace kernels
 {
 __global__
-void vorticityInducedVibrationsSC(real *vBk, real* vB, real *y, real *ykp1, real forcey, real Mred, real Ured, real Cy, real dt, real alpha_);
+void vorticityInducedVibrationsSC(real *vBk, real *vB, real *y, real *ykp1, real forcey, real Mred, real Ured, real Cy, real dt, real alpha_);
 
 __global__
 void vorticityInducedVibrationsLC();
