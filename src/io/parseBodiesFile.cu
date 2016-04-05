@@ -31,57 +31,9 @@ void operator >> (const YAML::Node &node, body &Body)
 {
 	try
 	{
-		// read in center of rotation
-		for (int i=0; i<2; i++)
-			node["centerRotation"][i] >> Body.X0[i];
-	}
-	catch(...)
-	{
-	}
-	try
-	{	
-		// initial configuration
-		for(int i=0; i<2; i++)
-		{
-			node["initialOffset"][i] >> Body.Xc0[i];
-			Body.Xc[i] = Body.Xc0[i];
-		}
-	}
-	catch(...)
-	{
-	}
-	try
-	{
-		// initial angle of attack
-		node["angleOfAttack"] >> Body.Theta0;
-		Body.Theta0 *= M_PI/180.0;
-		Body.Theta = Body.Theta0;
-	}
-	catch(...)
-	{
-	}
-	try
-	{
-		// moving flags
-		for (int i=0; i<2; i++)
-			node["moving"][i] >> Body.moving[i];
-	}
-	catch(...)
-	{
-	}
-	try
-	{
 		// velocity
 		for (int i=0; i<2; i++)
 			node["velocity"][i] >> Body.velocity[i];
-	}
-	catch(...)
-	{
-	}
-	try
-	{
-		// omega
-		node["omega"] >> Body.omega;
 	}
 	catch(...)
 	{
@@ -106,18 +58,6 @@ void operator >> (const YAML::Node &node, body &Body)
 	catch(...)
 	{
 	}
-	try
-	{
-		// pitch oscillation
-		for (int i=0; i<3; i++)
-			node["pitchOscillation"][i] >> Body.pitchOscillation[i];
-		Body.pitchOscillation[0] *= M_PI/180.0;
-		Body.pitchOscillation[1] *= 2*M_PI;
-	}
-	catch(...)
-	{
-	}
-
 	// get the type of body and read in appropriate details
 	string type;
 	node["type"] >> type;
@@ -126,7 +66,6 @@ void operator >> (const YAML::Node &node, body &Body)
 		string fname;
 		node["pointsFile"] >> fname;
 		fname = "bodyFiles/" + fname;
-		std::cout << fname << std::endl;
 		// initialise points
 		std::ifstream file(fname.c_str());
 		file >> Body.numPoints;
@@ -140,7 +79,7 @@ void operator >> (const YAML::Node &node, body &Body)
 	}
 	else if (type == "lineSegment")
 	{
-		real startX, startY, endX, endY;
+		double startX, startY, endX, endY;
 		int numPoints;
 		node["segmentOptions"][0] >> startX;
 		node["segmentOptions"][1] >> endX;
@@ -152,7 +91,7 @@ void operator >> (const YAML::Node &node, body &Body)
 	}
 	else if (type == "circle")
 	{
-		real cx, cy, R;
+		double cx, cy, R;
 		int numPoints;
 		node["circleOptions"][0] >> cx;
 		node["circleOptions"][1] >> cy;
@@ -187,7 +126,6 @@ void parseBodiesFile(std::string &bodiesFile, parameterDB &DB)
 	parser.GetNextDocument(doc);
 	body Body;
 	std::vector<body> *B = DB["flow"]["bodies"].get<std::vector<body> *>();
-	
 	for (int i=0; i<doc.size(); i++)
 	{
 		Body.reset();

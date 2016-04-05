@@ -9,8 +9,9 @@
 
 #include <string>
 #include <sstream>
-#include "types.h"
+#include "bcTypes.h"
 #include "parameterDB.h"
+#include "boundaryTypes.h"
 
 
 /**
@@ -21,7 +22,7 @@ class boundaryCondition
 {
 public:
 	bcType type; ///< type of boundary condition
-	real  value; ///< numerical value associated with the boundary condition
+	double  value; ///< numerical value associated with the boundary condition
 	
 	/**
 	 * \brief Constructor. Sets Dirichlet boundary condition with value.
@@ -35,16 +36,5 @@ public:
 	 * \param _type the type of boundary condition
 	 * \param _value the value at the boundary
 	 */
-	boundaryCondition(bcType _type, real _value) : type(_type), value(_value) {}; 
-
-  /*const char *print()
-  {
-    std::stringstream ss; 
-    ss << toString(this->type);
-    ss << " : ";
-    ss << this->value;
-    std::string st = ss.str();
-    //std::cout << st << std::endl;
-    return ss.str().c_str();
-  }*/
+	boundaryCondition(bcType _type, double _value) : type(_type), value(_value) {}; 
 };

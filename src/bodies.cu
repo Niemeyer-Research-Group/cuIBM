@@ -6,7 +6,9 @@
 
 
 #include "bodies.h"
-
+#include <cusp/blas.h>
+#include <iomanip>
+#include <fstream>
 
 /**
  * \brief Sets initial position and velocity of each body.
@@ -14,8 +16,7 @@
  * \param db database that contains all the simulation parameters
  * \param D information about the computational grid
  */
-template <typename memoryType>
-void bodies<memoryType>::initialise(parameterDB &db, domain &D)
+void bodies::initialise(parameterDB &db, domain &D)
 {
 	std::cout << "Initialising bodies... ";
 	std::vector<body> *B = db["flow"]["bodies"].get<std::vector<body> *>();
@@ -39,14 +40,7 @@ void bodies<memoryType>::initialise(parameterDB &db, domain &D)
 	
 	forceX.resize(numBodies);
 	forceY.resize(numBodies);
-	forceXold.resize(numBodies);
-	forceYold.resize(numBodies);
-	fXk.resize(numBodies);
-	fYk.resize(numBodies);
-	fXkp1.resize(numBodies);
-	fYkp1.resize(numBodies);
 	converged.resize(numBodies);
-	test.resize(numBodies);
 
 	// calculate offsets, number of points in each body and the total number of points
 	totalPoints = 0;
@@ -81,13 +75,14 @@ void bodies<memoryType>::initialise(parameterDB &db, domain &D)
 	vB.resize(totalPoints);
 	uBk.resize(totalPoints);
 	vBk.resize(totalPoints);
-	uBkp1.resize(totalPoints);
-	vBkp1.resize(totalPoints);
 	I.resize(totalPoints);
 	J.resize(totalPoints);
 	centerVelocityU = 0;
 	centerVelocityV = 0;
-
+	cusp::blas::fill(vB, 0);
+	cusp::blas::fill(uB, 0);
+	cusp::blas::fill(vBk, 0);
+	cusp::blas::fill(uBk, 0);
 	bodiesMove = false;
 	for(int k=0; k<numBodies; k++)
 	{
@@ -111,7 +106,6 @@ void bodies<memoryType>::initialise(parameterDB &db, domain &D)
 		calculateCellIndices(D);
 		calculateBoundingBoxes(db, D);
 	}
-	std::cout << "DONE!" << std::endl;
 }
 
 /**
@@ -124,8 +118,8 @@ void bodies<memoryType>::initialise(parameterDB &db, domain &D)
  *
  * \param D information about the computational grid
  */
-template <typename memoryType>
-void bodies<memoryType>::calculateCellIndices(domain &D)
+
+void bodies::calculateCellIndices(domain &D)
 {
 	int	i=0, j=0;
 
@@ -179,10 +173,9 @@ void bodies<memoryType>::calculateCellIndices(domain &D)
  * \param db database that contains all the simulation parameters
  * \param D information about the computational grid
  */
-template <typename memoryType>
-void bodies<memoryType>::calculateBoundingBoxes(parameterDB &db, domain &D)
+void bodies::calculateBoundingBoxes(parameterDB &db, domain &D)
 {
-	real scale = db["simulation"]["scaleCV"].get<real>(),
+	double scale = db["simulation"]["scaleCV"].get<double>(),
 	     dx, dy;
 	int  i, j;
 	for(int k=0; k<numBodies; k++)
@@ -220,6 +213,10 @@ void bodies<memoryType>::calculateBoundingBoxes(parameterDB &db, domain &D)
 		numCellsX[k] = i - startI[k];
 		numCellsY[k] = j - startJ[k];
 	}
+	std::cout<<startI[0]<<"\t";
+	std::cout<<startJ[0]<<"\t";
+	std::cout<<numCellsX[0]<<"\t";
+	std::cout<<numCellsY[0]<<"\n";
 }
 
 /**
@@ -237,10 +234,9 @@ void bodies<memoryType>::calculateBoundingBoxes(parameterDB &db, domain &D)
  * \param D information about the computational grid
  * \param Time the time
  */
-template <typename memoryType>
-void bodies<memoryType>::update(parameterDB &db, domain &D, real Time)
+void bodies::update(parameterDB &db, domain &D, double Time)
 {
-	typedef typename cusp::array1d<real, memoryType> Array;
+	typedef typename cusp::array1d<double, cusp::device_memory> Array;
 	typedef typename Array::iterator                 Iterator;
 	typedef cusp::array1d_view<Iterator>             View;
 
@@ -265,41 +261,20 @@ void bodies<memoryType>::update(parameterDB &db, domain &D, real Time)
 			vBView   = View(vB.begin()+offsets[l], vB.begin()+offsets[l+1]);
 			xView    = View(x.begin()+offsets[l], x.begin()+offsets[l+1]);
 			yView    = View(y.begin()+offsets[l], y.begin()+offsets[l+1]);
-			/*
-			if (D["simulation"]["fsiType"].get<fsiType>() == 0)//fsi on
-			{ //use k values
-				uBView   = View(uBk.begin()+offsets[l], uBk.begin()+offsets[l+1]);
-				vBView   = View(vBk.begin()+offsets[l], vBk.begin()+offsets[l+1]);
-				xView    = View(xk.begin()+offsets[l], xk.begin()+offsets[l+1]);
-				yView    = View(yk.begin()+offsets[l], yk.begin()+offsets[l+1]);
-			}
-			else if(
-			*/
 		}
 		else
 		{
 			XView    = View(X.begin()+offsets[l], X.end());
 			YView    = View(Y.begin()+offsets[l], Y.end());
 			onesView = View(ones.begin()+offsets[l], ones.end());
-			/*
-			if (D["simulation"]["fsiType"].get<fsiType>() == 0)//fsi on
-			{ //use k values
-				xView    = View(xk.begin()+offsets[l], xk.end());
-				yView    = View(yk.begin()+offsets[l], yk.end());
-				uBView   = View(uBk.begin()+offsets[l], uBk.end());
-				vBView   = View(vBk.begin()+offsets[l], vBk.end());
-			}
-			else if (D["simulation"]["fsiType"].get<fsiType>() == 1)//fsi off
-			{
-			*/
-				xView    = View(x.begin()+offsets[l], x.end());
-				yView    = View(y.begin()+offsets[l], y.end());
-				uBView   = View(uB.begin()+offsets[l], uB.end());
-				vBView   = View(vB.begin()+offsets[l], vB.end());
-			//}
+			xView    = View(x.begin()+offsets[l], x.end());
+			yView    = View(y.begin()+offsets[l], y.end());
+			uBView   = View(uB.begin()+offsets[l], uB.end());
+			vBView   = View(vB.begin()+offsets[l], vB.end());
+
 		}
 
-		// update postitions	
+		// update postitions
 		// x-coordinates
 		cusp::blas::axpbypcz( onesView, XView, onesView, xView, (*B)[l].Xc[0],  cos((*B)[l].Theta), -(*B)[l].X0[0]*cos((*B)[l].Theta) );
 		cusp::blas::axpbypcz( xView,    YView, onesView, xView,           1.0, -sin((*B)[l].Theta),  (*B)[l].X0[1]*sin((*B)[l].Theta) );
@@ -318,19 +293,6 @@ void bodies<memoryType>::update(parameterDB &db, domain &D, real Time)
 		calculateCellIndices(D);
 }
 
-/**
- * \brief Writes body coordinates into a file (using data on the host).
- *
- * \param caseFolder directory of the simulation
- * \param timeStep time-step of the simulation
- */
-template <>
-void bodies<host_memory>::writeToFile(std::string &caseFolder, int timeStep)
-{
-	 real *bx = thrust::raw_pointer_cast(&(x[0])),
-	      *by = thrust::raw_pointer_cast(&(y[0]));
-	 writeToFile(bx, by, caseFolder, timeStep);
-}
 
 /**
  * \brief Writes body coordinates into a file (using data from the device).
@@ -338,12 +300,12 @@ void bodies<host_memory>::writeToFile(std::string &caseFolder, int timeStep)
  * \param caseFolder directory of the simulation
  * \param timeStep time-step of the simulation
  */
-template <>
-void bodies<device_memory>::writeToFile(std::string &caseFolder, int timeStep)
+void bodies::writeToFile(std::string &caseFolder, int timeStep)
 {
-	vecH xHost = x,
-	     yHost = y;
-	real *bx = thrust::raw_pointer_cast(&(xHost[0])),
+	cusp::array1d<double, cusp::host_memory>
+		xHost = x,
+		yHost = y;
+	double *bx = thrust::raw_pointer_cast(&(xHost[0])),
 	     *by = thrust::raw_pointer_cast(&(yHost[0]));
 	writeToFile(bx, by, caseFolder, timeStep);
 }
@@ -356,13 +318,12 @@ void bodies<device_memory>::writeToFile(std::string &caseFolder, int timeStep)
  * \param caseFolder directory of the simulation
  * \param timeStep time-step of the simulation
  */
-template <typename memoryType>
-void bodies<memoryType>::writeToFile(real *bx, real *by, std::string &caseFolder, int timeStep)
+void bodies::writeToFile(double *bx, double *by, std::string &caseFolder, int timeStep)
 {
 	std::string       path;
 	std::stringstream out;
 	out << caseFolder << '/' << std::setfill('0') << std::setw(7) << timeStep << "/bodies";
-	std::ofstream file(out.str().c_str());
+	std::ofstream file(out.str().c_str());;
 	file << '#' << std::setw(19) << "x-coordinate" << std::setw(20) << "y-coordinate" << std::endl;
 	for (int l=0; l < totalPoints; l++)
 	{
@@ -370,7 +331,3 @@ void bodies<memoryType>::writeToFile(real *bx, real *by, std::string &caseFolder
 	}
 	file.close();
 }
-
-// specialization of the class bodies
-template class bodies<host_memory>;
-template class bodies<device_memory>;

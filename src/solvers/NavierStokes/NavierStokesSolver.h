@@ -4,17 +4,17 @@
  * \brief Declaration of the class \c NavierStokesSolver.
  */
 
-
 #pragma once
 
-#include <types.h>
 #include <domain.h>
 #include <bodies.h>
-#include <integrationScheme.h>
 #include <io/io.h>
 #include <parameterDB.h>
 #include <preconditioner.h>
-
+#include <cusp/precond/aggregation/smoothed_aggregation.h>
+#include <cusp/precond/diagonal.h>
+#include <ctime>
+#include <cusp/print.h>
 
 /**
  * \class NavierStokesSolver
@@ -24,158 +24,167 @@
  * in a derived class with the same name.
  *
  */
-template <typename memoryType>
 class NavierStokesSolver
 {
 protected:
 	parameterDB *paramDB;		///< database that contains all the simulation parameters
 	domain      *domInfo;		///< computational grid information
-	integrationScheme intgSchm;	///< instance of the class \c integrationScheme
 
-	real QCoeff;
-	
-	cusp::coo_matrix<int, real, memoryType>
-	    M,		///< diagonal mass matrix
-	    Minv,	///< inverse of the mass matrix
-	    L,		///< discrete Laplacian matrix
-	    A,		///< combination of mass and Laplacian matrices
-	    Q,		///< gradient matrix (and regularization matrix if immersed body)
-	    QT,		///< transposed gradient matrix (and interpolation matrix if immersed body)
-	    BN,		///< N-th order Taylor series expansion of the inverse of \c A
-	    C;		///< matrix of the Poisson system
+	cusp::array1d<double, cusp::device_memory>
+		u,			///< velocity vector (u_l and u_l+1, depending on where)
+		uhat,		///< intermediate velocity vector
+		uold,		///< old velocity vector (u_l-1)
+		pressure,			///< pressure vector (p_l+1)
+		pressure_old,		///< old pressure vector (p_l)
+		Nold,		///< convection term for N(uold)
+		N,			///< convection term for N(u)
+		L,			///< Laplacian of u
+		Lnew,		///< Laplacian of u_l+1
+		bc1, 		///< when you take L(uhat) you get boundary terms that need to go on the right side of the equation, those are here
+		rhs1,		///< -G*p -1.5N(u) + 0.5 N(uold) + 0.5 L(u)
+		rhs2,		///< rhs for the intermediate pressure
+		force,		///< force at a a node
+		bc[4];		///< array that contains the boundary conditions of the rectangular
+		
+	cusp::array1d<int, cusp::host_memory>
+		tags,		///< indices of velocity nodes near the IB on the host
+		tags2,		///< indices of 2nd closest velocity node on the host
+		tagsIn,		///< indices of velocity nodes inside the IB
+		tagsP,		///< indices of pressure nodes inside the IB
+		tagsPOut;	///< indices of pressure nodes outside the IB
 
-	cusp::array1d<real, memoryType>
-	    q,			///< velocity flux vector
-		qStar,		///< intermediate velocity flux vector
-		qOld,		///< velocity flux vector at the previous time-step
-		qk,		///< velocity flux vector at current sub-step
-		qkOld,		///< velocity flux vector at the previous sub-step
-		lambda,		///< pressure vector (and body forces if immersed body)
-		lambdak,	///< pressure vector and body forces at substep
-		rn,		///< explicit terms of the momentum equation
-		bc1,		///< inhomogeneous boundary conditions from the discrete Laplacian operator
-		bc2,		///< inhomogeneous boundary conditions from the discrete continuity equation
-		rhs1,		///< right hand-side of the system for the intermediate velocity flux vector
-		rhs2,		///< right hand-side of the Poisson system
-		H,
-		temp1,		///< temporary 1D Cusp array
-		temp2,		///< temporary 1D Cusp array
-		bc[4];		///< array that contains the boundary conditions of the rectangular domain
+	cusp::array1d<int, cusp::device_memory>
+		tagsD,		///< indices of velocity nodes near the IB on the device
+		tags2D,		///< indices of 2nd closest velocity node on the device
+		tagsInD,	///< indices of velocity nodes inside the IB
+		tagsPD, 	///< indices of pressure nodes inside the IB
+		tagsPOutD;	///< indices of pressure nodes outside the IB
+
+	cusp::array1d<double, cusp::host_memory>
+		a,			///< distance between IB and tagged node on the host
+		b,			///< distance between tags and tags2 on the host
+		distance_from_u_to_body,			///< distance between u velocity node and body
+		distance_from_v_to_body,			///< distance between v velocity node and body
+		uv;			///< velocity at the IB on the host
+
+	cusp::array1d<double, cusp::device_memory>
+		aD,			///< distance between IB and tagged node on the device
+		bD,			///< distance between tags and tags2 on the device
+		distance_from_u_to_bodyD,
+		distance_from_v_to_bodyD,
+		uvD;		///< velocity at the IB on the device
+
+	size_t
+		timeStep,			///< time iteration number
+		iterationCount1,	///< number of iteration to solve the intermediate velocities
+		iterationCount2;	///< number of iteration to solve the Poisson equation
+
+	double
+		forceX,		///< force acting on the body in the x direction
+		forceY;		///< force acting on the body in the y direction
+
+	cusp::coo_matrix<int, double, cusp::device_memory>
+		LHS1,		///< Matrix for the unknown uhat
+		LHS2;		///< Matrix for the unknown phi
 	     
-	preconditioner< cusp::coo_matrix<int, real, memoryType> >
-		*PC1,		///< preconditioner for the intermediate flux solver
-		*PC2;		///< preconditioner for the Poisson solver
+	//preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >
+	//*PC1,		///< preconditioner for the intermediate flux solver
+	//*PC2;		///< preconditioner for the Poisson solver
 
-	size_t  timeStep,			///< iteration number
-			subStep,			///< number of sub-iterations
-			iterationCount1,	///< number of iteration to solve the intermediate fluxes
-			iterationCount2;	///< number of iteration to solve the Poisson equation
-	
+	bodies 	B;		///< bodies in the flow
+
 	Logger logger;	///< instance of the class \c Logger to track time of different tasks
 	
 	std::ofstream iterationsFile;	///< file that contains the number of iterations
-	
-	// initialize parameters common to all Navier-Stokes solvers
-	void initialiseCommon();
-	
-	// initialize all arrays required to solve the Navier-Stokes equations
-	void initialiseArrays(int numQ, int numLambda);
-	
-	// initialize velocity flux vectors
-	virtual void initialiseFluxes();
-	
-	// initialize velocity flux vectors
-	virtual void initialiseFluxes(real *q);
-	
-	// initialize boundary velocity arrays with values stored in the database
-	void initialiseBoundaryArrays();
-	
-	// assemble matrices of the intermediate flux solver and the Poisson solver
-	void assembleMatrices();
-	
-	// generate the mass matrix and its inverse
-	void generateM();
-	
-	// generate the discrete Laplacian matrix
-	virtual void generateL();
-	
-	// generate the matrix resulting from the implicit flux terms
-	virtual void generateA(real alpha);
-	
-	// generate approximate inverse of the matrix resulting from implicit velocity terms
-	void generateBN();	
-	
-	// generate the discrete divergence matrix
-	virtual void generateQT();
-	
-	// does nothing
-	void updateQ(real gamma);
-	
-	// generate the matrix of the Poisson solver
-	virtual void generateC();
-	
-	// generate explicit terms of the momemtum equation
-	void generateRN();
-	
-	// generate explicit flux terms
-	void calculateExplicitQTerms();
-	
-	// calculates the 
-	virtual void calculateExplicitLambdaTerms();
-	
-	// generate inhomogeneous boundary conditions from the discrete Laplacian operator
-	virtual void generateBC1();
-	
-	// generate inhomogeneous boundary conditions from the discrete continuity equation
-	virtual void generateBC2();
-	
+	std::ofstream forceFile;
+			
 	// assemble the right hand-side of the system for the intermediate flux
-	virtual void assembleRHS1();
+	void generateRHS1();
 	
+	// update the boundaries for the convective boundary condition
+	void updateRobinBoundary();
+
+	// calculate -1.5 u grad u
+	void generateN();
+
+	// calculate discretized laplacian
+	void generateL();
+	
+	// calculate the force based off the fadlun method
+	void calculateForceFadlun();
+
+	// calculate the force based off the lia and peskin control volume method
+	void calculateForce();
+
+	// fill the left hand side matrix (based off u_hat -dt*0.5*L(u_hat) )
+	void generateLHS1();
+
+	//fill the lhs matrix for uhat with no body
+	void generateLHS1NoBody();
+
+	// extra terms that come from -dt*0.5*L(u_hat) at the boundaries
+	void generateBC1();
+	
+	// calculate the fake pressure
+	void generateRHS2();
+	
+	//
+	void generateLHS2();
+
+	//velocity projection
+	void velocityProjection();
+
+	//pressure projection step
+	void pressureProjection();
+
 	// assemble the right hand-side of the Poisson system.
 	void assembleRHS2();
 	
 	// solve for the intermediate flux velocity
-	virtual void solveIntermediateVelocity();
+	void solveIntermediateVelocity();
 	
 	// solve the Poisson system for the pressure (and the body forces if immersed body)
-	virtual void solvePoisson();
+	void solvePoisson();
 	
 	// project the flux onto the divergence-free field
-	virtual void projectionStep();
-	
-	// doing nothing
-	void updateBoundaryConditions();
-	
-	// doing nothing
-	virtual void updateSolverState();
-	
+	void projectionStep();
+
+	//solves for the new pressure
+	void updatePressure();
+
 public:
 	// constructor -- copy the database and information about the computational grid
 	NavierStokesSolver(parameterDB *pDB=NULL, domain *dInfo=NULL);
 
+	void arrayprint(cusp::array1d<double, cusp::device_memory> value, std::string name, std::string type);
+
+	// tags points on the immersed boundary
+	void tagPoints();
+
+	// tags points on the immersed boundary
+	void tagPoints(double *bx, double *by, double *uB, double *vB);
+
 	// initialize parameters, arrays and matrices required for the simulation
-	virtual void initialise();
+	void initialise();
 	
 	// calculate the variables at the next time step
-	virtual void stepTime();
+	void stepTime();
 	
 	// write numerical solution and number of iterations performed in each solver.
-	virtual void writeCommon();
+	void writeCommon();
 	
 	// write data into files
-	virtual void writeData();
+	void writeData();
 	
 	// evaluate the condition required to stop the simulation
 	bool finished();
 	
-	// print timing information and clse the different files
-	virtual void shutDown();
-	
+	// print timing information and close the different files
+	void shutDown();
 	/**
 	 * \brief Returns the name of the current solver.
 	 */
-	virtual std::string name()
+	std::string name()
 	{
 		return "Navier-Stokes";
 	}

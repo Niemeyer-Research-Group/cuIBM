@@ -6,9 +6,9 @@
 
 
 #include "parameterDB.h"
-#include "body.h"
 #include "boundaryCondition.h"
-
+#include "body.h"
+#include "preconditioner.h"
 
 /**
  * \brief Converts a number to a string.
@@ -75,14 +75,21 @@ template float property::get<float>();
 template int property::get<int>();
 template bool property::get<bool>();
 template preconditionerType property::get<preconditionerType>();
-template timeScheme property::get<timeScheme>();
-template ibmScheme property::get<ibmScheme>();
-template fsiType property::get<fsiType>();
-template useIC property::get<useIC>();
-template wallSlip property::get<wallSlip>();
-template interpolationType property::get<interpolationType>();
 template std::vector<body> *property::get<std::vector<body>*>();
 template boundaryCondition **property::get<boundaryCondition **>();
+
+/*
+body property::get<std::vector<body> *>()
+{
+	body r = *reinterpret_cast<body*>(&value[0]);
+	return r;
+}
+
+boundaryCondition property::get<boundaryCondition **>()
+{
+	boundaryCondition r = *reinterpret_cast<boundaryCondition*>(&value[0]);
+	return r;
+}*/
 
 /**
  * \brief Returns a string describing the value of property as appropriate.
@@ -133,12 +140,6 @@ template void property::set(int v);
 template void property::set(float v);
 template void property::set(double v);
 template void property::set(bool v);
-template void property::set(timeScheme v);
-template void property::set(ibmScheme v);
-template void property::set(fsiType v);
-template void property::set(useIC v);
-template void property::set(wallSlip v);
-template void property::set(interpolationType v);
 template void property::set(preconditionerType v);
 template void property::set(boundaryCondition **v);
 template void property::set(std::vector<body> *v);

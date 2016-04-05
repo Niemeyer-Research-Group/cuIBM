@@ -1,23 +1,33 @@
 /***************************************************************************//**
  * \file calculateForce.cu
- * \author Anush Krishnan (anus@bu.edu)
- * \brief Implementation of the kernels to calculate the forces acting on a body
- *        using a control-volume approach.
- *        The method is described in Lai & Peskin (2000).
+ * \author Chris Minar
  */
 
+
 #include "calculateForce.h"
-
-
-#define BSZ 16
 
 
 /**
  * \namespace kernels
  * \brief Contains all the custom-written CUDA kernels.
  */
+
 namespace kernels
 {
+
+__global__
+void calcForceFadlun(double *force, double *L, double *Lnew, double *Nold, double *N, double *u, double *uold, int *tags, double dt, int nx, int ny)
+{
+	if (threadIdx.x + (blockDim.x * blockIdx.x) >= (ny-1)*nx + (nx-1)*ny)
+			return;
+	int i 	= threadIdx.x + (blockDim.x * blockIdx.x);
+
+	force[i] = (tags[i]!=-1)  *  (
+								   u[i]/dt - 0.5*Lnew[i] - 				//u^l+1
+								   uold[i]/dt + 1.5*N[i] - 0.5*L[i] - 	//u^l
+								   0.5*Nold[i]	 						//u^l-1
+								 );
+}
 
 /**
  * \brief Calculates drag using a control-volume approach (left-right).
@@ -38,30 +48,35 @@ namespace kernels
  * \param ncy number of cells in the y-direction in the control volume
  */
 __global__
-void dragLeftRight(real *FxX, real *q, real *lambda, real nu, real *dx, real *dy,
+void dragLeftRight(double *FxX, double *u, double *p, double nu, double *dx, double *dy,
                    int nx, int ny, int I, int J, int ncx, int ncy)
 {
 	int  idx = threadIdx.x + blockIdx.x*blockDim.x;
 	if(idx >= ncy)
 		return;
 	int  Ip = (J+idx)*nx + I,
-	     Iu = (J+idx)*(nx-1) + (I-1);
+	     Iu = (J+idx)*(nx-1) + I;
+
 	FxX[idx] = -(
 	              // multiply the pressure with the surface area to get p dy
-	              (lambda[Ip+ncx]-lambda[Ip-1])*dy[J+idx]
+	              //(p[e]-p[w])*dy
+				  (
+				   p[Ip+ncx] - p[Ip]
+				  )*dy[J+idx]
 	              +
-	              // divide q^2 by dy, so that just u^2 dy is obtained
+	              // ur^2 - ul^2 * dy
 	              (
-	                  0.25*(q[Iu+ncx+1] + q[Iu+ncx])*(q[Iu+ncx+1] + q[Iu+ncx])
-	                - 0.25*(q[Iu] + q[Iu-1])*(q[Iu] + q[Iu-1])
-	              )/dy[J+idx]
+	                  (u[Iu+ncx]+u[Iu+ncx-1])*(u[Iu+ncx]+u[Iu+ncx-1])/4
+	                - (u[Iu-1]+u[Iu])*(u[Iu-1]+u[Iu])/4
+	              )*dy[J+idx]
 	              -
-	              // no multiplication or division since du/dx dy = dq/dx
+	              // du/dx * dy
+	              // approximate using dudx of the inside cell of the cv instead of the lr average
 	              nu*
 	              (
-	                  (q[Iu+ncx+1] - q[Iu+ncx])/dx[I+ncx]
-	                - (q[Iu] - q[Iu-1])/dx[I-1]
-	              )
+	                  (u[Iu+ncx] - u[Iu+ncx-1])/dx[I+ncx]
+	                - (u[Iu] - u[Iu-1])/dx[I]
+	              )*dy[J+idx]
 	            );
 }
 
@@ -83,7 +98,7 @@ void dragLeftRight(real *FxX, real *q, real *lambda, real nu, real *dx, real *dy
  * \param ncy number of cells in the y-direction in the control volume
  */
 __global__
-void dragBottomTop(real *FxY, real *q, real nu, real *dx, real *dy,
+void dragBottomTop(double *FxY, double *u, double nu, double *dx, double *dy,
                    int nx, int ny, int I, int J, int ncx, int ncy)
 {
 	int  idx = threadIdx.x + blockIdx.x*blockDim.x;
@@ -94,24 +109,24 @@ void dragBottomTop(real *FxY, real *q, real nu, real *dx, real *dy,
 	FxY[idx] = -(
 	              // multiply by dS
 	              (
-	                0.25 * ( q[Iu+ncy*(nx-1)]/dy[J+ncy] + q[Iu+(ncy-1)*(nx-1)]/dy[J+ncy-1] )
-	                     * ( q[Iv+ncy*nx]/dx[I+idx] + q[Iv+ncy*nx-1]/dx[I+idx-1] )
+	                0.25 * ( u[Iu+ncy*(nx-1)] + u[Iu+(ncy-1)*(nx-1)] )
+	                     * ( u[Iv+ncy*nx] + u[Iv+ncy*nx-1] )
 	                -
-	                0.25 * ( q[Iu]/dy[J] + q[Iu-(nx-1)]/dy[J-1] ) 
-	                     * ( q[Iv]/dx[I+idx] + q[Iv-1]/dx[I+idx-1] )
+	                0.25 * ( u[Iu] + u[Iu-(nx-1)] )
+	                     * ( u[Iv] + u[Iv-1] )
 	              )
 	              -
 	              // multiply by dS (cannot use the leftRight trick in this case)
 	              nu*
 	              (
 	                (
-	                  (q[Iu+ncy*(nx-1)]/dy[J+ncy] - q[Iu+(ncy-1)*(nx-1)]/dy[J+ncy-1])/2.0/(dy[J+ncy]+dy[J+ncy-1]) +
-	                  (q[Iv+ncy*nx]/dx[I+idx] - q[Iv+ncy*nx-1]/dx[I+idx-1])/2.0/(dx[I+idx]+dx[I+idx-1])
-	                ) 
+	                  (u[Iu+ncy*(nx-1)] - u[Iu+(ncy-1)*(nx-1)])/2.0/(dy[J+ncy]+dy[J+ncy-1]) +
+	                  (u[Iv+ncy*nx] - u[Iv+ncy*nx-1])          /2.0/(dx[I+idx]+dx[I+idx-1])
+	                )
 	                -
 	                (
-	                  (q[Iu]/dy[J] - q[Iu-(nx-1)]/dy[J-1])/2.0/(dy[J]+dy[J-1]) +
-	                  (q[Iv]/dx[I+idx] - q[Iv-1]/dx[I+idx-1])/2.0/(dx[I+idx]+dx[I+idx-1])
+	                  (u[Iu] - u[Iu-(nx-1)])/2.0/(dy[J]+dy[J-1]) +
+	                  (u[Iv] - u[Iv-1])     /2.0/(dx[I+idx]+dx[I+idx-1])
 	                )
 	              )
 	            )*0.5*(dx[I+idx]+dx[I+idx-1]);
@@ -137,20 +152,20 @@ void dragBottomTop(real *FxY, real *q, real nu, real *dx, real *dy,
  * \param nyc number of cells in the y-direction in the control volume
  */
 __global__
-void dragUnsteady(real *FxU, real *q, real *qOld, real *dx, real *dy, real dt,
+void dragUnsteady(double *FxU, double *u, double *uold, int *tagsIn, double *dx, double *dy, double dt,
                    int nx, int ny, int I, int J, int ncx, int ncy)
 {
 	int  idx = threadIdx.x + blockIdx.x*blockDim.x;
-	     
+
 	if(idx >= (ncx+1)*ncy)
 		return;
-	
+
 	int i = idx%(ncx+1),
 	    j = idx/(ncx+1);
-	    
+
 	int Iu = (J+j)*(nx-1) + (I-1+i);
-	
-	FxU[idx] = - (q[Iu] - qOld[Iu])/dt * 0.5*(dx[I+i]+dx[I-1+i]);
+
+	FxU[idx] = - (tagsIn[Iu] == -1) * ((u[Iu]*dy[J+j] - uold[Iu]*dy[J+j])/dt * 0.5*(dx[I+i]+dx[I-1+i]));
 }
 
 /**
@@ -171,7 +186,7 @@ void dragUnsteady(real *FxU, real *q, real *qOld, real *dx, real *dy, real dt,
  * \param nyc number of cells in the y-direction in the control volume
  */
 __global__
-void liftLeftRight(real *FyX, real *q, real nu, real *dx, real *dy,
+void liftLeftRight(double *FyX, double *u, double nu, double *dx, double *dy,
                    int nx, int ny, int I, int J, int ncx, int ncy)
 {
 	int  idx = threadIdx.x + blockIdx.x*blockDim.x;
@@ -182,24 +197,24 @@ void liftLeftRight(real *FyX, real *q, real nu, real *dx, real *dy,
 	FyX[idx] = -(
 	              // multiply by dS
 	              (
-	                0.25 * ( q[Iu+ncx]/dy[J+idx] + q[Iu+ncx-(nx-1)]/dy[J-1+idx] )
-	                     * ( q[Iv+ncx]/dx[I+ncx] + q[Iv+ncx-1]/dx[I+ncx-1] )
+	                0.25 * ( u[Iu+ncx] + u[Iu+ncx-(nx-1)] )
+	                     * ( u[Iv+ncx] + u[Iv+ncx-1] )
 	                -
-	                0.25 * ( q[Iu]/dy[J+idx] + q[Iu-(nx-1)]/dy[J-1+idx] )
-	                     * ( q[Iv]/dx[I] + q[Iv-1]/dx[I-1] )
+	                0.25 * ( u[Iu] + u[Iu-(nx-1)] )
+	                     * ( u[Iv] + u[Iv-1] )
 	              )
 	              -
 	              // multiply by dS (cannot use the leftRight trick in this case)
 	              nu*
 	              (
 	                (
-	                  (q[Iu+ncx]/dy[J+idx] - q[Iu+ncx-(nx-1)]/dy[J-1+idx])/2.0/(dy[J+idx]+dy[J-1+idx]) +
-	                  (q[Iv+ncx]/dx[I+ncx] - q[Iv+ncx-1]/dx[I+ncx-1])/2.0/(dx[I+ncx]+dx[I+ncx-1])
-	                ) 
+	                  (u[Iu+ncx] - u[Iu+ncx-(nx-1)])/2.0/(dy[J+idx]+dy[J-1+idx]) +
+	                  (u[Iv+ncx] - u[Iv+ncx-1])/2.0/(dx[I+ncx]+dx[I+ncx-1])
+	                )
 	                -
 	                (
-	                  (q[Iu]/dy[J+idx] - q[Iu-(nx-1)]/dy[J-1+idx])/2.0/(dy[J+idx]+dy[J-1+idx]) +
-	                  (q[Iv]/dx[I] - q[Iv-1]/dx[I-1])/2.0/(dx[I]+dx[I-1])
+	                  (u[Iu] - u[Iu-(nx-1)])/2.0/(dy[J+idx]+dy[J-1+idx]) +
+	                  (u[Iv] - u[Iv-1])/2.0/(dx[I]+dx[I-1])
 	                )
 	              )
 	            )*0.5*(dy[J+idx]+dy[J-1+idx]);
@@ -224,7 +239,7 @@ void liftLeftRight(real *FyX, real *q, real nu, real *dx, real *dy,
  * \param nyc number of cells in the y-direction in the control volume
  */
 __global__
-void liftBottomTop(real *FyY, real *q, real *lambda, real nu, real *dx, real *dy,
+void liftBottomTop(double *FyY, double *u, double *p, double nu, double *dx, double *dy,
                    int nx, int ny, int I, int J, int ncx, int ncy)
 {
 	int  idx = threadIdx.x + blockIdx.x*blockDim.x;
@@ -234,23 +249,23 @@ void liftBottomTop(real *FyY, real *q, real *lambda, real nu, real *dx, real *dy
 	     Iv = (nx-1)*ny + (J-1)*nx + I+idx;
 	FyY[idx] = -(
 	              // multiply the pressure with the surface area to get p dx
-	              (lambda[Ip+ncy*nx]-lambda[Ip-nx])*dx[I+idx]
+	              (p[Ip+ncy*nx]-p[Ip-nx])*dx[I+idx]
 	              +
 	              // divide q^2 by dx, so that just v^2 dx is obtained
 	              (
-	                  0.25*(q[Iv+(ncy+1)*nx] + q[Iv+ncy*nx])*(q[Iv+(ncy+1)*nx] + q[Iv+ncy*nx])
-	                - 0.25*(q[Iv] + q[Iv-nx])*(q[Iv] + q[Iv-nx])
-	              )/dx[I+idx]
+	                  0.25*(u[Iv+(ncy+1)*nx] + u[Iv+ncy*nx])*(u[Iv+(ncy+1)*nx] + u[Iv+ncy*nx])
+	                - 0.25*(u[Iv] + u[Iv-nx])*(u[Iv] + u[Iv-nx])
+	              )*dx[I+idx]
 	              -
 	              // no multiplication or division since dv/dy dx = dq/dy
 	              nu*
 	              (
-	                  (q[Iv+(ncy+1)*nx] - q[Iv+ncy*nx])/dy[J+ncy]
-	                - (q[Iv] - q[Iv-nx])/dy[J-1]
+	                  (u[Iv+(ncy+1)*nx] - u[Iv+ncy*nx])*dx[I+idx]/dy[J+ncy]
+	                - (u[Iv] - u[Iv-nx])*dx[I]/dy[J-1]
 	              )
 	            );
 }
-            
+
 /**
  * \brief Calculate lift using a control-volume approach (unsteady).
  *
@@ -270,80 +285,24 @@ void liftBottomTop(real *FyY, real *q, real *lambda, real nu, real *dx, real *dy
  * \param nyc number of cells in the y-direction in the control volume
  */
 __global__
-void liftUnsteady(real *FyU, real *q, real *qOld, real *dx, real *dy, real dt,
+void liftUnsteady(double *FyU, double *u, double *uold, double *dx, double *dy, double dt,
                   int nx, int ny, int I, int J, int ncx, int ncy)
 {
 	int  idx = threadIdx.x + blockIdx.x*blockDim.x;
-	     
+
 	if( idx >= ncx*(ncy+1) )
 		return;
-	
+
 	int i = idx%ncx,
 	    j = idx/ncx;
-	    
+
 	int Iv = (J-1+j)*nx + (I+i) + (nx-1)*ny;
 
-	FyU[idx] = - (q[Iv] - qOld[Iv])/dt * 0.5*(dy[J+j]+dy[J-1+j]);
+	FyU[idx] = - (u[Iv]*dx[I+i] - uold[Iv]*dx[I+i])/dt * 0.5*(dy[J+j]+dy[J-1+j]);
 }
 
 /**
 * \brief To be documented
 */
-__global__
-void forceX(real *f, real *q, real *rn, int *tags,
-            int nx, int ny, real *dx, real *dy,
-            real dt, real alpha, real nu)
-{
-	int bx	= blockIdx.x,
-		by	= blockIdx.y,
-		i	= threadIdx.x,
-		j	= threadIdx.y;
-	
-	// work out global index of first point in block
-	int I = (BSZ-2)*bx + i,
-	    J = (BSZ-2)*by + j;
-	
-	if (I >= nx-1 || J >= ny) {
-		return;
-	}
-
-	int  Gidx_x = J*(nx-1) + I;
-
-	real dTerm;
-	
-	__shared__ real u[BSZ][BSZ];
-						
-	__shared__ real Dx[BSZ][BSZ], Dy[BSZ][BSZ];
-	
-	Dy[j][i] = dy[J];
-	Dx[j][i] = dx[I];
-	
-	/// transfer from global to shared memory
-	u[j][i] = q[Gidx_x]/Dy[j][i];
-	__syncthreads();
-	
-	/// check bounds for convective term in the x-direction
-	int global_check = ( I==0 || I==(nx-2) || J==0 || J==(ny-1) ),		///< check if we compute globally
-	    block_check  = ( i==0 || i==(BSZ-1) || j==0 || j==(BSZ-1) );	///< check if element within block computes
-	
-	/// X-component
-	if( !(global_check || block_check) )
-	{
-		dTerm = alpha*nu*2.0*( \
-						 ( Dx[j][i]*u[j][i+1] - (Dx[j][i]+Dx[j][i+1])*u[j][i] + Dx[j][i+1]*u[j][i-1] ) / ( Dx[j][i]*Dx[j][i+1]*(Dx[j][i]+Dx[j][i+1]) ) \
-					   
-					   + 4.0*( (Dy[j][i]+Dy[j-1][i])*u[j+1][i] - (Dy[j-1][i] + 2.0*Dy[j][i] + Dy[j+1][i])*u[j][i] + (Dy[j][i]+Dy[j+1][i])*u[j-1][i] ) \
-							/( (Dy[j][i]+Dy[j-1][i]) * (Dy[j-1][i] + 2.0*Dy[j][i] + Dy[j+1][i]) * (Dy[j][i]+Dy[j+1][i]) ) \
-					     );
-		
-		f[Gidx_x] = ( u[j][i]/dt - dTerm - rn[Gidx_x]/(0.5*(Dx[j][i]+Dx[j][i+1])) ) * (!(tags[Gidx_x]==-1));
-	}
 }
 
-/**
- * \brief Doing nothing.
- */
-__global__
-void forceY(){}
-
-} // end of namespace kernels

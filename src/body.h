@@ -6,7 +6,7 @@
 
 
 #pragma once
-
+#include <cusp/array1d.h>
 
 /**
  * \class body
@@ -26,25 +26,26 @@ class body
   public:
     int  numPoints; ///< number of boundary points
 	
-	vecH X,         ///< reference x-coordinate of boundary points
-	     Y;         ///< reference y-coordinate of boundary points
+    cusp::array1d<double, cusp::host_memory>
+    	X,         ///< reference x-coordinate of boundary points
+		Y;         ///< reference y-coordinate of boundary points
          
-	real X0[2];     ///< reference center of rotation
+	double X0[2];     ///< reference center of rotation
 	     
-	real Xc0[2],    ///< initial position of center of rotation
+	double Xc0[2],    ///< initial position of center of rotation
 	     Theta0;    ///< initial angle of attack
     
-    real Xc[2],     ///< actual center of rotation (x- and y-coordinates)
+    double Xc[2],     ///< actual center of rotation (x- and y-coordinates)
 	     Theta,     ///< actual angle of attack (counterclockwise is positive)
 	     vel[2],    ///< translational velocity (x- and y- components)
 	     angVel;    ///< angular velocity (counterlockwise is positive)
 
 	bool moving[2]; ///< flag to indicate if the body is moving (translating or rotating)
 
-	real velocity[2], ///< uniform translational velocity (x- and y-components)
+	double velocity[2], ///< uniform translational velocity (x- and y-components)
 	     omega;       ///< uniform rotational velocity
 
-	real xOscillation[3],     ///< amplitude, angular frequency and phase difference of oscillation in the x-direction
+	double xOscillation[3],     ///< amplitude, angular frequency and phase difference of oscillation in the x-direction
          yOscillation[3],     ///< amplitude, angular frequency and phase difference of oscillation in the y-direction
          pitchOscillation[3]; ///< amplitude, angular frequency and phase difference of pitch oscillation
 	// Note that the angular amplitude & phase difference are stored in radians, and angular frequncy is radians/time
@@ -56,7 +57,7 @@ class body
 	 *
 	 * \param Time the time
 	 */
-	void update(real Time)
+	void update(double Time)
 	{
 		// if the body is translating
 		if(moving[0])

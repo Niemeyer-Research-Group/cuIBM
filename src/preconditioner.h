@@ -13,13 +13,23 @@
 #include <cusp/precond/aggregation/smoothed_aggregation.h>
 #include <cusp/precond/ainv.h>
 #include <cusp/format.h>
-#include "types.h"
-
 
 /**
- * \class preconditioner
- * \brief Stores the preconditioner for a given system.
- */
+/ * \enum  preconditionerType
+/ * \brief Specifies the type of preconditioner.
+*/
+enum preconditionerType
+{
+	NONE,                 ///< no preconditioner
+	DIAGONAL,             ///< diagonal preconditioner
+	SMOOTHED_AGGREGATION, ///< smoothed aggregation preconditioner
+	AINV                  ///< approximate inverse preconditioner
+};
+
+/**
+/ * \class preconditioner
+/ * \brief Stores the preconditioner for a given system.
+*/
 template <typename Matrix>
 class preconditioner
 {
@@ -53,20 +63,20 @@ public:
 };
 
 /**
- * \brief Constructor.
- */
+/ * \brief Constructor.
+*/
 template <class Matrix>
 preconditioner<Matrix>::preconditioner()
 {
 }
 
 /**
- * \brief Constructor overloading. Computes the preconditioner 
- *        given a matrix and a type of preconditioner.
- *
- * \param A matrix of the system (instance of the class \c Matrix)
- * \param _type the type of preconditioner
- */
+/ * \brief Constructor overloading. Computes the preconditioner
+/ *        given a matrix and a type of preconditioner.
+/ *
+/ * \param A matrix of the system (instance of the class \c Matrix)
+/ * \param _type the type of preconditioner
+*///
 template <class Matrix>
 preconditioner<Matrix>::preconditioner(const Matrix &A, preconditionerType _type)
 {
@@ -96,9 +106,9 @@ preconditioner<Matrix>::preconditioner(const Matrix &A, preconditionerType _type
 	}
 }
 
-/**
- * \brief Destructor. Deletes the preocnditioner.
- */
+//**
+// * \brief Destructor. Deletes the preocnditioner.
+//
 template <typename Matrix>
 preconditioner<Matrix>::~preconditioner()
 {
@@ -106,10 +116,10 @@ preconditioner<Matrix>::~preconditioner()
 }
 
 /**
- * \brief Updates the preconditioner of the system.
- *
- * \param A matrix of the system (instance of the class \c Matrix)
- */
+/ * \brief Updates the preconditioner of the system.
+/ *
+/ * \param A matrix of the system (instance of the class \c Matrix)
+*///
 template <class Matrix>
 void preconditioner<Matrix>::update(const Matrix &A)
 {
@@ -136,9 +146,9 @@ void preconditioner<Matrix>::update(const Matrix &A)
 }
 
 /**
- * \brief Overloads the operator (). This is required due to the way preconditioners are 
-          implemented in Cusp - as linear operators on a vector.
- */
+/ * \brief Overloads the operator (). This is required due to the way preconditioners are
+/          implemented in Cusp - as linear operators on a vector.
+*///
 template <typename Matrix>
 template <typename VectorType1, typename VectorType2>
 void preconditioner<Matrix>::operator()(const VectorType1 &x, VectorType2 &y) const
@@ -175,3 +185,4 @@ void preconditioner<Matrix>::operator()(const VectorType1 &x, VectorType2 &y) co
 		exit(0);
 	}
 }
+

@@ -7,8 +7,8 @@
 
 #include <sys/stat.h>
 #include "io.h"
-#include <types.h>
 #include <boundaryCondition.h>
+#include "preconditioner.h"
 
 using std::string;
 using std::ios;
@@ -19,7 +19,7 @@ using std::ios;
  *
  * \param str a string
  *
- * \return a number (\c real or \c integer)
+ * \return a number (\c double or \c integer)
  */
 template <typename T>
 T toNumber(string str)
@@ -108,29 +108,29 @@ void readInputs(int argc, char **argv, parameterDB &DB, domain &D)
 {
 	// get a default database
 	initialiseDefaultDB(DB);
-	
+
 	// first pass of command line arguments
 	commandLineParse1(argc, argv, DB);
-	
+
 	// case folder
-	string folder = DB["inputs"]["caseFolder"].get<string>();
-	
+	string folder = DB["inputs"]["caseFolder"].get<std::string>();//"/scratch/src/cuIBM-FSI/cases/lidDrivenCavity/Re100";//
+
 	// read the simulation file
 	string fname = folder + "/simParams.yaml";
 	parseSimulationFile(fname, DB);
-	
+
 	// read the flow file
 	fname = folder + "/flow.yaml";
 	parseFlowFile(fname, DB);
 
 	// read the domain file
 	fname = folder + "/domain.yaml";
-	parseDomainFile(fname, D);
-	
+	parseDomainFile(fname, D);;
+
 	// read the body file
 	fname = folder + "/bodies.yaml";
 	parseBodiesFile(fname, DB);
-	
+
 	// second pass of command line -- overwrite values in DB
 	commandLineParse2(argc, argv, DB);
 }
@@ -150,14 +150,14 @@ void initialiseDefaultDB(parameterDB &DB)
 
 	// default input files
 	string inputs = "inputs";
-	DB[inputs]["caseFolder"].set<string>("cases/cylinder/Re40");
+	DB[inputs]["caseFolder"].set<string>("/scratch/cases/cuIBM-FSI/cases/cylinder/Re40");
 	DB[inputs]["deviceNumber"].set<int>(0);
 
 	// flow parameters
 	string flow = "flow";
-	DB[flow]["nu"].set<real>(0.01);
-	DB[flow]["uInitial"].set<real>(1.0);
-	DB[flow]["vInitial"].set<real>(0.0);
+	DB[flow]["nu"].set<double>(0.01);
+	DB[flow]["uInitial"].set<double>(1.0);
+	DB[flow]["vInitial"].set<double>(0.0);
 	DB[flow]["numBodies"].set<int>(0);
 	std::vector<body> *bodyVec = new std::vector<body>;
 	DB[flow]["bodies"].set<std::vector<body> *>(bodyVec);
@@ -170,31 +170,24 @@ void initialiseDefaultDB(parameterDB &DB)
 
 	// simulation parameters
 	string sim = "simulation";
-	DB[sim]["dt"].set<real>(0.02);
+	DB[sim]["dt"].set<double>(0.02);
 	DB[sim]["nt"].set<int>(100);
 	DB[sim]["nsave"].set<int>(100);
 	DB[sim]["restart"].set<bool>(false);
 	DB[sim]["startStep"].set<bool>(0);
-	DB[sim]["convTimeScheme"].set<timeScheme>(EULER_EXPLICIT);
-	DB[sim]["diffTimeScheme"].set<timeScheme>(EULER_IMPLICIT);
-	DB[sim]["ibmScheme"].set<ibmScheme>(TAIRA_COLONIUS);
-	DB[sim]["interpolationType"].set<interpolationType>(LINEAR);
-	DB[sim]["fsiType"].set<fsiType>(off);
-	DB[sim]["useIC"].set<useIC>(unused);
-	DB[sim]["wallSlip"].set<wallSlip>(noSlip);
 
 	// velocity solver
 	string solver = "velocitySolve";
 	DB[solver]["solver"].set<string>("CG");
 	DB[solver]["preconditioner"].set<preconditionerType>(DIAGONAL);
-	DB[solver]["tolerance"].set<real>(1e-5);
+	DB[solver]["tolerance"].set<double>(1e-5);
 	DB[solver]["maxIterations"].set<int>(10000);
 
 	// Poisson solver
 	solver = "PoissonSolve";
 	DB[solver]["solver"].set<string>("CG");
 	DB[solver]["preconditioner"].set<preconditionerType>(DIAGONAL);
-	DB[solver]["tolerance"].set<real>(1e-5);
+	DB[solver]["tolerance"].set<double>(1e-5);
 	DB[solver]["maxIterations"].set<int>(20000);
 }
 
@@ -241,31 +234,31 @@ void commandLineParse2(int argc, char **argv, parameterDB &DB)
 		if ( strcmp(argv[i],"-nu")==0 )
 		{
 			i++;
-			DB["flow"]["nu"].set<real>(toNumber<real>(string(argv[i])));
+			DB["flow"]["nu"].set<double>(toNumber<double>(string(argv[i])));
 		}
 		//// angle of attack
 		//if ( strcmp(argv[i],"-alpha")==0 )
 		//{
 		//	i++;
-		//	DB["flow"]["nu"].set<real>(toNumber<real>(string(argv[i])));
+		//	DB["flow"]["nu"].set<double>(toNumber<double>(string(argv[i])));
 		//}
 		// perturbation in the x-velocity
 		if ( strcmp(argv[i],"-uPerturb")==0 )
 		{
 			i++;
-			DB["flow"]["uPerturb"].set<real>(toNumber<real>(string(argv[i])));
+			DB["flow"]["uPerturb"].set<double>(toNumber<double>(string(argv[i])));
 		}
 		// perturbation in the y-velocity
 		if ( strcmp(argv[i],"-vPerturb")==0 )
 		{
 			i++;
-			DB["flow"]["vPerturb"].set<real>(toNumber<real>(string(argv[i])));
+			DB["flow"]["vPerturb"].set<double>(toNumber<double>(string(argv[i])));
 		}
 		// scale the CV with respect to the body
 		if ( strcmp(argv[i],"-scaleCV")==0 )
 		{
 			i++;
-			DB["simulation"]["scaleCV"].set<real>(toNumber<real>(string(argv[i])));
+			DB["simulation"]["scaleCV"].set<double>(toNumber<double>(string(argv[i])));
 		}
 		// frequency of saving the data
 		if ( strcmp(argv[i],"-nsave")==0 )
@@ -283,60 +276,19 @@ void commandLineParse2(int argc, char **argv, parameterDB &DB)
 		if ( strcmp(argv[i],"-dt")==0 )
 		{
 			i++;
-			DB["simulation"]["dt"].set<real>(toNumber<real>(string(argv[i])));
+			DB["simulation"]["dt"].set<double>(toNumber<double>(string(argv[i])));
 		}
 		// tolerance for the velocity solve
 		if ( strcmp(argv[i],"-velocityTol")==0 )
 		{
 			i++;
-			DB["velocitySolve"]["tolerance"].set<real>(toNumber<real>(string(argv[i])));
+			DB["velocitySolve"]["tolerance"].set<double>(toNumber<double>(string(argv[i])));
 		}
 		// tolerance for the Poisson solve
 		if ( strcmp(argv[i],"-poissonTol")==0 )
 		{
 			i++;
-			DB["PoissonSolve"]["tolerance"].set<real>(toNumber<real>(string(argv[i])));
-		}
-		// IBM Scheme
-		if ( strcmp(argv[i],"-ibmScheme")==0 )
-		{
-			i++;
-			if ( strcmp(argv[i],"NavierStokes")==0 )
-				DB["simulation"]["ibmScheme"].set<ibmScheme>(NAVIER_STOKES);
-			else
-			if ( strcmp(argv[i],"TairaColonius")==0 )
-				DB["simulation"]["ibmScheme"].set<ibmScheme>(TAIRA_COLONIUS);
-			else
-			if ( strcmp(argv[i],"DirectForcing")==0 )
-				DB["simulation"]["ibmScheme"].set<ibmScheme>(DIRECT_FORCING);
-			else
-			if ( strcmp(argv[i],"FadlunEtAl")==0 )
-				DB["simulation"]["ibmScheme"].set<ibmScheme>(FADLUN_ET_AL);
-			else
-			if ( strcmp(argv[i],"Diffusion")==0 )
-				DB["simulation"]["ibmScheme"].set<ibmScheme>(DIFFUSION);
-			else
-			if ( strcmp(argv[i],"DFModified")==0 )
-				DB["simulation"]["ibmScheme"].set<ibmScheme>(DF_MODIFIED);
-			else
-			if ( strcmp(argv[i],"FEAModified")==0 )
-				DB["simulation"]["ibmScheme"].set<ibmScheme>(FEA_MODIFIED);
-			else 
-			if ( strcmp(argv[i],"DFImproved")==0 )
-				DB["simulation"]["ibmScheme"].set<ibmScheme>(DF_IMPROVED);
-		}
-		// interpolation type for Eulerian direct forcing methods
-		if ( strcmp(argv[i],"-interpolationType")==0 )
-		{
-			i++;
-			if ( strcmp(argv[i],"constant")==0 )
-				DB["simulation"]["interpolationType"].set<interpolationType>(CONSTANT);
-			else
-			if ( strcmp(argv[i],"linear")==0 )
-				DB["simulation"]["interpolationType"].set<interpolationType>(LINEAR);
-			else
-			if ( strcmp(argv[i],"quadratic")==0 )
-				DB["simulation"]["interpolationType"].set<interpolationType>(QUADRATIC);
+			DB["PoissonSolve"]["tolerance"].set<double>(toNumber<double>(string(argv[i])));
 		}
 	}
 }
@@ -352,6 +304,7 @@ void commandLineParse2(int argc, char **argv, parameterDB &DB)
  *
  * \return a string
  */
+/*
 string stringFromPreconditionerType(preconditionerType s)
 {
   if (s == NONE)
@@ -364,60 +317,7 @@ string stringFromPreconditionerType(preconditionerType s)
     return "Approximate Inverse";
   else
     return "Unrecognised preconditioner";
-}
-
-/**
- * \brief Converts a \c timeScheme to a \c std::string.
- *
- * \param s a time-integration scheme
- *
- * \return a string
- */
-string stringFromTimeScheme(timeScheme s)
-{
-	if (s == EULER_EXPLICIT)
-		return "Explicit Euler Method";
-	else if (s == EULER_IMPLICIT)
-		return "Implicit Euler Method";
-	else if (s == ADAMS_BASHFORTH_2)
-		return "2nd Order Adams-Bashforth";
-	else if (s == CRANK_NICOLSON)
-		return "Crank-Nicolson";
-	else
-		return "Unknown";
-}
-
-//converts fsitype to a string
-string stringFromFSIType(fsiType s)
-{
-	if (s == on)
-		return "On";
-	else if (s == off)
-		return "Off";
-	else
-		return "Unknown FSI Type";
-}
-
-//convers useIC to string
-string stringFromuseIC(useIC s)
-{
-	if( s==used )
-		return "used";
-	else if ( s== unused )
-		return "unused";
-	else
-		return "Unknown use initial conditions type";
-}
-
-string stringFromwallSlip(wallSlip s)
-{
-	if( s == slip )
-		return "slip";
-	else if (s == noSlip )
-		return "noSlip";
-	else
-		return "unknown slip type";
-}
+}*/
 
 /**
  * \brief Prints the parameters of the simulation.
@@ -427,23 +327,17 @@ string stringFromwallSlip(wallSlip s)
  */
 void printSimulationInfo(parameterDB &DB, domain &D)
 {
-	real dt = DB["simulation"]["dt"].get<real>(),
-	     scaleCV = DB["simulation"]["scaleCV"].get<real>();
+	double dt = DB["simulation"]["dt"].get<double>(),
+	     scaleCV = DB["simulation"]["scaleCV"].get<double>();
 	int  nt = DB["simulation"]["nt"].get<int>(),
 	     nsave = DB["simulation"]["nsave"].get<int>(),
 	     startStep = DB["simulation"]["startStep"].get<int>();
-	interpolationType interpType = DB["simulation"]["interpolationType"].get<interpolationType>();
-	ibmScheme ibmSchm = DB["simulation"]["ibmScheme"].get<ibmScheme>();
-	fsiType fsiTyp = DB["simulation"]["fsiType"].get<fsiType>();
-	useIC usic = DB["simulation"]["useIC"].get<useIC>();
-	wallSlip wlslp = DB["simulation"]["wallSlip"].get<wallSlip>();
-
 
     std::cout << '\n';
 	
 	std::cout << "\nFlow parameters" << '\n';
 	std::cout << "---------------" << '\n';
-	std::cout << "nu = " << DB["flow"]["nu"].get<real>() << '\n';
+	std::cout << "nu = " << DB["flow"]["nu"].get<double>() << '\n';
 
 	std::cout << "\nDomain" << '\n';
 	std::cout << "------" << '\n';
@@ -456,39 +350,22 @@ void printSimulationInfo(parameterDB &DB, domain &D)
 	std::cout << "startStep = " << startStep << '\n';
 	std::cout << "nt = "    << nt << '\n';
 	std::cout << "nsave = " << nsave << '\n';
-	std::cout << "Convection time scheme = " << stringFromTimeScheme(DB["simulation"]["convTimeScheme"].get<timeScheme>()) << '\n';
-	std::cout << "Diffusion time scheme  = " << stringFromTimeScheme(DB["simulation"]["diffTimeScheme"].get<timeScheme>()) << '\n';
-	std::cout << "Fluid-Structure Interaction = " <<stringFromFSIType(DB["simulation"]["fsiType"].get<fsiType>()) <<'\n';
-	std::cout << "Using custom initial conditions? " <<stringFromuseIC(DB["simulation"]["useIC"].get<useIC>()) <<'\n';
-	std::cout << "Slip wall status = " <<stringFromwallSlip(DB["simulation"]["wallSlip"].get<wallSlip>()) <<'\n';
-	//std::cout << "Fluid Structure interaction?" << <<'\n';
-	if(ibmSchm==FADLUN_ET_AL || ibmSchm==DIRECT_FORCING || ibmSchm==DIFFUSION || ibmSchm==DF_IMPROVED || ibmSchm==DF_MODIFIED || ibmSchm==FEA_MODIFIED)
-	{
-		std::cout << "Interpolation type: ";
-		switch(interpType)
-		{
-			case CONSTANT : std::cout << "Constant\n"; break;
-			case LINEAR   : std::cout << "Linear\n"; break;
-			case QUADRATIC: std::cout << "Quadratic\n"; break;
-			default : std::cout << "Unknown\n"; break;
-		}
-	}
 	
 	std::cout << "\nVelocity Solve" << '\n';
 	std::cout << "--------------" << '\n';
-	std::cout << "Solver = " << DB["velocitySolve"]["solver"].get<string>() << '\n';
-	std::cout << "Preconditioner = " << stringFromPreconditionerType(DB["velocitySolve"]["preconditioner"].get<preconditionerType>()) << '\n';
-	std::cout << "Tolerance = " << DB["velocitySolve"]["tolerance"].get<real>() << '\n';
+	std::cout << "Solver = " << DB["velocitySolve"]["solver"].get<std::string>() << '\n';
+	//std::cout << "Preconditioner = " << stringFromPreconditionerType(DB["velocitySolve"]["preconditioner"].get<preconditionerType>()) << '\n';
+	std::cout << "Tolerance = " << DB["velocitySolve"]["tolerance"].get<double>() << '\n';
 	
 	std::cout << "\nPoisson Solve" << '\n';
 	std::cout << "-------------" << '\n';
-	std::cout << "Solver = " << DB["PoissonSolve"]["solver"].get<string>() << '\n';
-	std::cout << "Preconditioner = " << stringFromPreconditionerType(DB["PoissonSolve"]["preconditioner"].get<preconditionerType>()) << '\n';
-	std::cout << "Tolerance = " << DB["PoissonSolve"]["tolerance"].get<real>() << '\n';
+	std::cout << "Solver = " << DB["PoissonSolve"]["solver"].get<std::string>() << '\n';
+	//std::cout << "Preconditioner = " << stringFromPreconditionerType(DB["PoissonSolve"]["preconditioner"].get<preconditionerType>()) << '\n';
+	std::cout << "Tolerance = " << DB["PoissonSolve"]["tolerance"].get<double>() << '\n';
 	
 	std::cout << "\nOutput parameters" << '\n';
 	std::cout << "-----------------" << '\n';
-	std::cout << "Output folder = " << DB["inputs"]["caseFolder"].get<string>() << '\n';
+	std::cout << "Output folder = " << DB["inputs"]["caseFolder"].get<std::string>() << '\n';
 	std::cout << "nsave = " << DB["simulation"]["nsave"].get<int>() << '\n';
 	
 	cudaDeviceProp deviceProp;
@@ -522,17 +399,17 @@ void printTimingInfo(Logger &logger)
  */
 void writeInfoFile(parameterDB &DB, domain &D)
 {
-	std::string   folder = DB["inputs"]["caseFolder"].get<string>();
+	std::string   folder = DB["inputs"]["caseFolder"].get<std::string>();
 	std::ofstream infofile((folder+"/run.info").c_str());
 	infofile << std::setw(20) << "--nx"  << "\t" << D.nx << '\n';
 	infofile << std::setw(20) << "--ny"  << "\t" << D.ny << '\n';
 	infofile << std::setw(20) << "--startStep" << "\t" << DB["simulation"]["startStep"].get<int>() << '\n';
 	infofile << std::setw(20) << "--nt"     << "\t" << DB["simulation"]["nt"].get<int>() << '\n';
 	infofile << std::setw(20) << "--nsave"  << "\t" << DB["simulation"]["nsave"].get<int>() << '\n';
-	infofile << std::setw(20) << "--dt"     << "\t" << DB["simulation"]["dt"].get<real>() << '\n';
+	infofile << std::setw(20) << "--dt"     << "\t" << DB["simulation"]["dt"].get<double>() << '\n';
 	infofile << std::setw(20) << "--vortlim"<< "\t" << 15 << '\n';
 	infofile << std::setw(20) << "--folder" << "\t" << folder << '\n';
-	infofile << std::setw(20) << "--nu"     << "\t" << DB["flow"]["nu"].get<real>() << '\n';
+	infofile << std::setw(20) << "--nu"     << "\t" << DB["flow"]["nu"].get<double>() << '\n';
 	infofile.close();
 }
 
@@ -548,14 +425,14 @@ void writeGrid(std::string &caseFolder, domain &D)
 	out << caseFolder << "/grid";
 	std::ofstream file(out.str().c_str(), ios::binary);
 	file.write((char*)(&D.nx), sizeof(int));
-	file.write((char*)(&D.x[0]), (D.nx+1)*sizeof(real));
+	file.write((char*)(&D.x[0]), (D.nx+1)*sizeof(double));
 	file.write((char*)(&D.ny), sizeof(int));
-	file.write((char*)(&D.y[0]), (D.ny+1)*sizeof(real));
+	file.write((char*)(&D.y[0]), (D.ny+1)*sizeof(double));
 	file.close();
 }
 
 /**
- * \brief Writes numerical data at a given time-step (on the host).
+ * \brief Writes numerical data at a given time-step (on the device).
  *
  * It creates a directory whose name is the time-step number
  * and writes the flux, the pressure (and eventually the body forces)
@@ -568,16 +445,13 @@ void writeGrid(std::string &caseFolder, domain &D)
  * \param D information about the computational grid
  */
 template <>
-void writeData<vecH>(std::string &caseFolder, int n, vecH &q, vecH &lambda, vecH &qo, domain &D, parameterDB &DB)//, bodies &B)
+void writeData< cusp::array1d<double, cusp::host_memory> >(std::string &caseFolder, int n, cusp::array1d<double, cusp::host_memory> &u, cusp::array1d<double, cusp::host_memory> &p, domain &D)//, bodies &B)
 {
 	std::string path;
-	std::stringstream out,outq,outl,outqo;
+	std::stringstream out;
 	int N;
 
 	out << caseFolder << '/' << std::setfill('0') << std::setw(7) << n;
-	outq << caseFolder << '/' << std::setfill('0') << std::setw(7) << n;
-	outl << caseFolder << '/' << std::setfill('0') << std::setw(7) << n;
-	outqo << caseFolder << '/' <<std::setfill('0') << std::setw(7) << n;
 	path = out.str();
 
 	mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -585,46 +459,18 @@ void writeData<vecH>(std::string &caseFolder, int n, vecH &q, vecH &lambda, vecH
 	out.str("");
 	out << path << "/q";
 	std::ofstream file(out.str().c_str(), ios::binary);
-	N = q.size();
+	N = u.size();
 	file.write((char*)(&N), sizeof(int));
-	file.write((char*)(&q[0]), N*sizeof(real));
+	file.write((char*)(&u[0]), N*sizeof(double));
 	file.close();
 
 	out.str("");
 	out << path << "/lambda";
 	file.open(out.str().c_str(), ios::binary);
-	N = lambda.size();
+	N = p.size();
 	file.write((char*)(&N), sizeof(int));
-	file.write((char*)(&lambda[0]), N*sizeof(real));
+	file.write((char*)(&p[0]), N*sizeof(double));
 	file.close();
-
-	//to make initial conditions files
-	//*
-	if(n == DB["simulation"]["nt"].get<int>()){
-		outq.str("");
-		outq << path << "/ICq";
-		outl.str("");
-		outl << path << "/ICl";
-		outqo.str("");
-		outqo << path << "/ICqo";
-		
-		std::ofstream fileq(outq.str().c_str());
-		std::ofstream filel(outl.str().c_str());
-		std::ofstream fileqo(outqo.str().c_str());
-		for(int i=0; i < q.size(); i++){
-			fileq << q[i] <<"\n";
-		}
-		for(int i=0; i <lambda.size(); i++){
-			filel << lambda[i] << "\n";
-		}
-		for(int i=0; i < q.size(); i++){
-			fileqo << qo[i] << "\n";
-		}
-		fileq.close();
-		filel.close();
-		fileqo.close();
-	}
-	//*/
 
 	std::cout << "Data saved to folder " << path << std::endl;
 }
@@ -643,13 +489,12 @@ void writeData<vecH>(std::string &caseFolder, int n, vecH &q, vecH &lambda, vecH
  * \param D information about the computational grid
  */
 template <>
-void writeData<vecD>(std::string &caseFolder, int n, vecD &q, vecD &lambda, vecD &qo, domain &D, parameterDB &DB)//, bodies &B)
+void writeData< cusp::array1d<double, cusp::device_memory> >(std::string &caseFolder, int n, cusp::array1d<double, cusp::device_memory> &u, cusp::array1d<double, cusp::device_memory> &p, domain &D)//, bodies &B)
 {
-	vecH qH = q,
-	     lambdaH = lambda,
-	     qoH = qo;
-	     
-	writeData(caseFolder, n, qH, lambdaH, qoH, D, DB);
+	cusp::array1d<double, cusp::host_memory> 	uH = u,
+												pH = p;
+
+	writeData(caseFolder, n, uH, pH, D);
 }
 
 /**
@@ -657,11 +502,11 @@ void writeData<vecD>(std::string &caseFolder, int n, vecD &q, vecD &lambda, vecD
  *
  * \param label the label of the device
  */
-void printDeviceMemoryUsage(char *label)
+void printDeviceMemoryUsage()
 {
 	size_t _free, _total;
 	cudaMemGetInfo(&_free, &_total);
-	std::cout << '\n' << label << ": Memory Usage " << std::setprecision(3) << (_total-_free)/(1024.0*1024*1024) \
+	std::cout << '\n' << "Initialisation complete\nFlux capacitors charged" << ": Memory Usage " << std::setprecision(3) << (_total-_free)/(1024.0*1024*1024) \
 	          << " / " << std::setprecision(3) << _total/(1024.0*1024*1024) << " GB" << std::setprecision(6) << '\n' << std::endl;
 }
 

@@ -39,8 +39,7 @@ public:
 	{
 		memset(value, 0, 256);
 	}
-	
-	// get the value of the property as a given type
+
 	template <typename T> T get();
 	
 	// set the value of the property given a type

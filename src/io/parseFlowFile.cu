@@ -79,8 +79,8 @@ bcType bcTypeFromString(string &s)
 void parseFlow(const YAML::Node &node, parameterDB &DB)
 {
 	string dbKey = "flow";
-	real nu = 0.01, initialU = 1.0, initialV = 0.0;
-	real uPerturb = 0.0, vPerturb = 0.0;
+	double nu = 0.01, initialU = 1.0, initialV = 0.0;
+	double uPerturb = 0.0, vPerturb = 0.0;
 	node["nu"] >> nu;
 	node["initialVelocity"][0] >> initialU;
 	node["initialVelocity"][1] >> initialV;
@@ -93,11 +93,11 @@ void parseFlow(const YAML::Node &node, parameterDB &DB)
 	{
 	}
 
-	DB[dbKey]["nu"].set<real>(nu);
-	DB[dbKey]["uInitial"].set<real>(initialU);
-	DB[dbKey]["vInitial"].set<real>(initialV);
-	DB[dbKey]["uPerturb"].set<real>(uPerturb);
-	DB[dbKey]["vPerturb"].set<real>(vPerturb);
+	DB[dbKey]["nu"].set<double>(nu);
+	DB[dbKey]["uInitial"].set<double>(initialU);
+	DB[dbKey]["vInitial"].set<double>(initialV);
+	DB[dbKey]["uPerturb"].set<double>(uPerturb);
+	DB[dbKey]["vPerturb"].set<double>(vPerturb);
 
 	boundaryCondition **bc = 0;
 	bc = DB[dbKey]["boundaryConditions"].get<boundaryCondition **>();
@@ -109,7 +109,7 @@ void parseFlow(const YAML::Node &node, parameterDB &DB)
 	}
 	const YAML::Node &BCs = node["boundaryConditions"];
 	string location, uType, vType;
-	real   uVal, vVal;
+	double   uVal, vVal;
 	for (unsigned int i=0; i<BCs.size(); i++)
 	{
 		BCs[i]["location"] >> location;

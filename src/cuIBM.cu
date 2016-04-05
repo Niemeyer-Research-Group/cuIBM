@@ -13,12 +13,9 @@
  * \brief Main source-file of \c cuIBM.
  */
 
-
-#include "types.h"
-#include "helpers.h"
 #include "domain.h"
 #include "io/io.h"
-#include "solvers/NavierStokes/createSolver.h"
+#include "solvers/NavierStokes/NavierStokesSolver.h"
 
 int main(int argc, char **argv)
 {
@@ -28,25 +25,25 @@ int main(int argc, char **argv)
 	// initialize the parameters of the simulation
 	parameterDB paramDB;
 
-	// read input files
+	// read input .yaml files
 	io::readInputs(argc, argv, paramDB, dom_info);
-	
+
+	//print simulation info
 	io::printSimulationInfo(paramDB, dom_info);
 
-	// create and initialize the appropriate flow solver
-	NavierStokesSolver<device_memory> *solver = createSolver<device_memory>(paramDB, dom_info);
+	// create and initialize the flow solver, I think this can be simplified/streamlined now that there is only one solver
+	NavierStokesSolver *solver = 0;
+	solver = new NavierStokesSolver(&paramDB, &dom_info);
 	solver->initialise();
-	
+
 	//prints to output and files
-	io::printDeviceMemoryUsage("Initialisation complete");
-	
+	io::printDeviceMemoryUsage();
 	io::writeInfoFile(paramDB, dom_info);
-	
+
 	// time-step loop
 	while (!solver->finished())
 	{
 		solver->stepTime();
-		//in the individual solvers, e.g. tiaracolonius
 		solver->writeData();
 	}
 

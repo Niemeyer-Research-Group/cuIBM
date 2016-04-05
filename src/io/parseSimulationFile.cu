@@ -10,6 +10,7 @@
 #include <yaml-cpp/yaml.h>
 #include "io.h"
 #include <parameterDB.h>
+#include <preconditioner.h>
 
 
 /**
@@ -20,29 +21,6 @@ namespace io
 {
 
 using std::string;
-
-/**
- * \brief Converts a string to a time-integration scheme type.
- *
- * \param s the string that describes the time-integration scheme
- *
- * \return a time-integration scheme type
- */
-timeScheme timeSchemeFromString(string &s)
-{
-  if (s == "EULER_EXPLICIT")
-    return EULER_EXPLICIT;
-  else if (s == "EULER_IMPLICIT")
-    return EULER_IMPLICIT;
-  else if (s == "ADAMS_BASHFORTH_2")
-    return ADAMS_BASHFORTH_2;
-  else if (s == "RUNGE_KUTTA_3")
-    return RUNGE_KUTTA_3;
-  else if (s == "CRANK_NICOLSON")
-    return CRANK_NICOLSON;
-  else
-    return EULER_EXPLICIT;
-}
 
 /**
  * \brief Converts a string to a prconditioner type.
@@ -66,87 +44,6 @@ preconditionerType preconditionerTypeFromString(string &s)
 }
 
 /**
- * \brief Converts a string to an IBM scheme.
- *
- * \param s the string that describes the IBM scheme
- *
- * \return an IBM-scheme type
- */
-ibmScheme ibmSchemeFromString(string &s)
-{
-  if (s == "NAVIER_STOKES")
-    return NAVIER_STOKES;
-  else if (s == "SAIKI_BIRINGEN")
-    return SAIKI_BIRINGEN;
-  else if (s == "DIRECT_FORCING")
-    return DIRECT_FORCING;
-  else if (s == "TAIRA_COLONIUS")
-    return TAIRA_COLONIUS;
-  else if (s == "FADLUN_ET_AL")
-    return FADLUN_ET_AL;
-  else if (s == "DIFFUSION")
-    return DIFFUSION;
-  else if (s == "DF_MODIFIED")
-    return DF_MODIFIED;
-  else if (s == "FEA_MODIFIED")
-    return FEA_MODIFIED;
-  else if (s == "DF_IMPROVED")
-    return DF_IMPROVED;
-  else
-    return NAVIER_STOKES;
-}
-
-/**
- * \brief Converts a string to a interpolation type.
- *
- * \param s the string that describes the type of interpolation
- *
- * \return an interpolation type
- */
-interpolationType interpolationTypeFromString(string &s)
-{
-	if (s == "CONSTANT")
-		return CONSTANT;
-	else if (s == "LINEAR")
-		return LINEAR;
-	else if (s == "QUADRATIC")
-		return QUADRATIC;
-	else
-		return LINEAR;
-}
-
-//converts string to fsi type
-fsiType fsiTypeFromString(string &s)
-{
-	if (s == "off")
-		return off;
-	else if (s == "on")
-		return on;
-	else
-		return off;
-}
-
-useIC ICFromString(string &s)
-{
-	if (s == "used")
-		return used;
-	else if (s == "unused")
-		return unused;
-	else
-		return unused;
-}
-
-wallSlip wallSlipFromString(string &s)
-{
-	if (s == "slip")
-		return slip;
-	else if (s == "noSlip")
-		return noSlip;
-	else
-		return noSlip;
-}
-
-/**
  * \brief Fills the database with the simulation parameters.
  *
  * \param node the parsed file
@@ -154,18 +51,12 @@ wallSlip wallSlipFromString(string &s)
  */
 void parseSimulation(const YAML::Node &node, parameterDB &DB)
 {
-	real   dt = 0.02,
+	double   dt = 0.02,
 	       scaleCV = 2.0;
 	int    nt = 100,
 	       nsave = 100,
 	       startStep = 0;
-	string ibmSch = "NAVIER_STOKES",
-	       convSch = "EULER_EXPLICIT",
-	       diffSch = "EULER_IMPLICIT",
-	       fsiTyp = "off",
-	       ICTyp = "unused",
-	       slipTyp = "noSlip",
-	       interpType = "LINEAR";
+	string convSch = "ADAMS_BASHFORTH_2";
 	bool   restart = false;
 
 
@@ -173,10 +64,6 @@ void parseSimulation(const YAML::Node &node, parameterDB &DB)
 	node["dt"] >> dt;
 	node["nsave"] >> nsave;
 	node["nt"] >> nt;
-	node["ibmScheme"] >> ibmSch;
-	node["fsiType"] >> fsiTyp;
-	node["useIC"] >> ICTyp;
-	node["wallSlip"] >> slipTyp;
 	try
 	{
 		node["restart"] >> restart;
@@ -193,22 +80,7 @@ void parseSimulation(const YAML::Node &node, parameterDB &DB)
 	}
 	try
 	{
-		node["timeScheme"][0] >> convSch;
-		node["timeScheme"][1] >> diffSch;
-	}
-	catch(...)
-	{		
-	}
-	try
-	{
 		node["scaleCV"] >> scaleCV;
-	}
-	catch(...)
-	{
-	}
-	try
-	{
-		node["interpolationType"] >> interpType;
 	}
 	catch(...)
 	{
@@ -216,21 +88,14 @@ void parseSimulation(const YAML::Node &node, parameterDB &DB)
 
 	// write to DB
 	string dbKey = "simulation";
-	DB[dbKey]["dt"].set<real>(dt);
-	DB[dbKey]["scaleCV"].set<real>(scaleCV);
+	DB[dbKey]["dt"].set<double>(dt);
+	DB[dbKey]["scaleCV"].set<double>(scaleCV);
 	DB[dbKey]["nsave"].set<int>(nsave);
 	DB[dbKey]["nt"].set<int>(nt);
 	DB[dbKey]["restart"].set<bool>(restart);
-	DB[dbKey]["ibmScheme"].set<ibmScheme>(ibmSchemeFromString(ibmSch));
-	DB[dbKey]["fsiType"].set<fsiType>(fsiTypeFromString(fsiTyp));
-	DB[dbKey]["useIC"].set<useIC>(ICFromString(ICTyp));
-	DB[dbKey]["wallSlip"].set<wallSlip>(wallSlipFromString(slipTyp));
-	DB[dbKey]["convTimeScheme"].set<timeScheme>(timeSchemeFromString(convSch));
-	DB[dbKey]["diffTimeScheme"].set<timeScheme>(timeSchemeFromString(diffSch));
-	DB[dbKey]["interpolationType"].set<interpolationType>(interpolationTypeFromString(interpType));
 
 	string system = "velocity", linearSolver = "CG", preconditioner = "DIAGONAL";
-	real tol = 1e-5;
+	double tol = 1e-5;
 	int maxIter = 10000;
 
 	const YAML::Node &solvers = node["linearSolvers"];
@@ -265,7 +130,7 @@ void parseSimulation(const YAML::Node &node, parameterDB &DB)
 		string dbKey = system + "Solve";
 		DB[dbKey]["solver"].set<string>(linearSolver);
 		DB[dbKey]["preconditioner"].set<preconditionerType>(preconditionerTypeFromString(preconditioner));
-		DB[dbKey]["tolerance"].set<real>(tol);
+		DB[dbKey]["tolerance"].set<double>(tol);
 		DB[dbKey]["maxIterations"].set<int>(maxIter);
 	}
 }
