@@ -5,6 +5,7 @@
 *.png
 *.pdf
 ._*
+*~
 massFlux
 
 # folders
