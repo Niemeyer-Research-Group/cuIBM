@@ -3,7 +3,7 @@ cuIBM - A GPU-based Immersed Boundary Method code
 
 This is a fork of the [Barba group](https://github.com/barbagroup)'s
 [cuIBM](https://github.com/barbagroup/cuIBM).
-This version of cuIBM has been tested on CentOS with CUDA 7.0.28 and cusp 0.4.0.
+This version of cuIBM has been tested on CentOS 6.7 with CUDA 6.0 and cusp 0.4.0.
 
 ### New Features:
 Since forking from the original project the following has been added:

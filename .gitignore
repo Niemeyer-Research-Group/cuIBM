@@ -14,11 +14,11 @@ html/*
 latex/*
 0*
 *.plt
-cases/convergence/cavityRe100/*/T*
 doc/*
 
-# files
-bin/cuIBM
+# files and folders
+build
+bin
 forces
 iterations
 run.info
@@ -26,3 +26,49 @@ grid
 scripts/python/*.bdy
 *.txt
 !validation-data/*.txt
+
+## CUDA ignore filetypes
+*.i
+*.ii
+*.gpu
+*.ptx
+*.cubin
+*.fatbin
+
+## Generic C++ ignore filetypes
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+## Python ignore filetypes
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
