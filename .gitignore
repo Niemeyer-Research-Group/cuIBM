@@ -25,6 +25,7 @@ run.info
 grid
 scripts/python/*.bdy
 *.txt
+.metadata/
 !validation-data/*.txt
 
 ## CUDA ignore filetypes
