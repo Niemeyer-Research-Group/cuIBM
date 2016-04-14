@@ -1,3 +1,10 @@
+/***************************************************************************//**
+ * \file L.cu
+ * \author Christopher Minar (minarc@oregonstate.edu)
+ * \brief kernels to calculate the diffusion terms
+ */
+
+
 #include "L.h"
 
 namespace kernels

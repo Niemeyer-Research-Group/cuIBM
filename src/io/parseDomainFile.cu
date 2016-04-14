@@ -1,5 +1,6 @@
 /***************************************************************************//**
  * \file parseDomainFile.cu
+ * \author Anush Krishnan (anush@bu.edu), Christopher Minar (mianrc@oregonstate.edu
  * \brief Parse the input file domain.yaml to obtain information about the
  *        computational grid.
  */

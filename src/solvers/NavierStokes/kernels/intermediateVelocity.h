@@ -18,7 +18,7 @@ __global__
 void updateBoundaryX(double *u, double *xp, double *dx, double dt, double Uinf, int nx, int ny);
 
 __global__
-void updateBoundaryY(double *u, double *xp, double *dy, double dt, double Vinf, int nx, int ny);
+void updateBoundaryY(double *u, double *xp, double *dx, double dt, double Vinf, int nx, int ny);
 
 __global__
 void generateRHS(double *rhs, double *L, double *Nold, double *N, double *u, double *bc1, double dt, int nx, int ny);

@@ -1,8 +1,7 @@
 /***************************************************************************//**
  * \file projectVelocity.inl
- * \author Chris Minar
- * \brief Implementation of the methods to calulate step 3: solve for u_l+1
- * \		
+ * \author Christopher Minar (minarc@oregonstate.edu)
+ * \brief functions to invoke the kernels that update the velocity
  */
 
 #include <solvers/NavierStokes/kernels/projectVelocity.h>

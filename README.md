@@ -3,19 +3,13 @@ cuIBM - A GPU-based Immersed Boundary Method code
 
 This is a fork of the [Barba group](https://github.com/barbagroup)'s
 [cuIBM](https://github.com/barbagroup/cuIBM).
-This version of cuIBM has been tested on CentOS 6.7 with CUDA 6.0 and cusp 0.4.0.
+This version of cuIBM has been tested on CentOS 6.7 with CUDA 7.5 and cusp 0.5.1.
 
 ### New Features:
-Since forking from the original project the following has been added:
-#### Fluid Structure Interaction
-Immersed boundary supports free movement in the x direction.
-This only works for one body.
+Fluid Structure interaction.
 
 Installation instructions
 -------------------------
-
-#### New Test Cases
-test1 and test2 can now be made
 
 ### Dependencies
 
@@ -59,7 +53,7 @@ Check the version of NVCC installed:
 
     > nvcc --version
 
-cuIBM is being developed with NVCC version 7 and gcc 4.4.7.
+cuIBM is being developed with NVCC version 7.5 and gcc 4.4.7.
 
 **IMPORTANT**: `nvcc-4.1` is compatible only with G++ version 4.5 (`g++-4.5`)
 or below. `nvcc-4.2` and above are compatible with `g++-4.6` and below.
@@ -72,39 +66,30 @@ programming language and runs code on compatible NVIDIA GPUs.
 
 CUSP is currently hosted on
 [GitHub](https://github.com/cusplibrary/cusplibrary). cuIBM has been tested
-and works with version 0.4.0, available for download
-[here](https://github.com/cusplibrary/cusplibrary/archive/0.4.0.zip).
+and works with version 0.5.1, available for download
+[here](https://github.com/cusplibrary/cusplibrary/archive/0.5.1.zip).
 
 The instructions here assume that the CUSP library is to be installed in the
 folder `$HOME/lib`, but any other folder with write permissions can be used.
 Create a local copy of the CUSP library using the following commands:
 
-    > mkdir -p $HOME/lib
-    > cd $HOME/lib
-    > wget https://github.com/cusplibrary/cusplibrary/archive/0.4.0.zip
-    > unzip 0.4.0.zip
+    > mkdir -p $/scratch/src/lib
+    > cd /scratch/src/lib
+    > wget https://github.com/cusplibrary/cusplibrary/archive/0.5.1.zip
+    > unzip 0.5.1.zip
 
-The folder `$HOME/lib/cusplibrary-0.4.0` is now created.
-
-If you wish to use to latest version of CUSP, it can be cloned from the GitHub
-repository.
-
-    > cd $HOME/lib
-    > git clone https://github.com/cusplibrary/cusplibrary.git
-
-which creates the folder `$HOME/lib/cusplibrary`.
+The folder `$HOME/lib/cusplibrary-0.5.1` is now created.
 
 ### Compiling cuIBM
 
 This version of cuIBM can be found at its [GitHub repository](https://github.com/chrisminar/cuIBM).
 
 Run the following commands to create a local copy of the repository in the
-folder `$HOME/src` (or any other folder with appropriate read/write/execute
+folder `/scratch/src` (or any other folder with appropriate read/write/execute
 permissions):
 
-    > mkdir -p $HOME/src
-    > cd $HOME/src
-    > git clone https://github.com/chrisminar/cuIBM.git
+    > cd /scratch/src
+    > git clone https://github.com/Niemeyer-Research-Group/cuIBM.git
 
 To compile, set the environment variable `CUSP_DIR` to point to the directory
 with the CUSP library. For a `bash` shell, add the following line to the file
@@ -112,7 +97,7 @@ with the CUSP library. For a `bash` shell, add the following line to the file
 
     export CUSP_DIR=/path/to/cusp/folder
 
-which for the present case would be `$HOME/lib/cusplibrary-0.4.0`.
+which for the present case would be `$HOME/lib/cusplibrary-0.5.1`.
 
 We also recommend setting the environment variable `CUIBM_DIR` to point to the
 location of the cuIBM folder. While the code can be compiled and run without
@@ -120,7 +105,7 @@ setting this variable, some of the validation scripts provided make use of it.
 
     export CUIBM_DIR=/path/to/cuIBM/folder
 
-which is `$HOME/src/cuIBM`, as per the above instructions.
+which is `/scratch/src/cuIBM`, as per the above instructions.
 
 Reload the file:
 
@@ -128,22 +113,18 @@ Reload the file:
 
 Switch to the cuIBM directory:
 
-    > cd $HOME/src/cuIBM
-
-or if you've set the environment variable,
-
-    > cd $CUIBM_DIR
+    > cd /scratch/src/cuIBM/src
 
 Compile all the files:
 
     > make
 
-Run the test:
+Run a test:
 
-    > bin/cuIBM
+    > make lidDrivenCavityRe100
 
-**IMPORTANT**: If your NVIDIA card supports only compute capability 1.3, then
-edit Line 13 of the file `Makefile.inc` in the cuIBM root directory before
+**IMPORTANT**: If your NVIDIA card supports only compute capability 1.3, buy a new computer.  
+Otherwise, edit Line 13 of the file `Makefile.inc` in the cuIBM root directory before
 compiling: replace `compute_20` with `compute_13`.
 
 Numerical schemes
@@ -170,35 +151,33 @@ Examples
 
 The following are available in the default installation:
 
-* `lidDrivenCavityRe100`: Flow in a lid-driven cavity with Reynolds number
+lidDrivenCavityRe + ###
+Example: lidDrivenCavityRe100
+* `100`: Flow in a lid-driven cavity with Reynolds number
 100.
-* `lidDrivenCavityRe1000`: Flow in a lid-driven cavity with Reynolds number
+* `1000`: Flow in a lid-driven cavity with Reynolds number
 1000.
-* `cylinderRe40`: Flow over a circular cylinder at Reynolds number 40. The
+* `10000`: Flow in a lid-driven cavity with Reynolds number
+10000.
+cylinderRe + ###
+Example : cylinderRe40
+* `40`: Flow over a circular cylinder at Reynolds number 40. The
 flow eventually reaches a steady state.
-* `cylinderRe75`: Flow over a circular cylinder at Reynolds number 75. The
+* `75`: Flow over a circular cylinder at Reynolds number 75. The
 initial flow field has an asymmetric perturbation that triggers instability in
 the flow and vortex shedding is observed in the wake.
-* `cylinderRe100`: Flow over a circular cylinder at Reynolds number 100. The
+* `100`: Flow over a circular cylinder at Reynolds number 100. The
 initial flow field has an asymmetric perturbation that triggers instability in
 the flow and vortex shedding is observed in the wake.
-* `cylinderRe150`: Flow over a circular cylinder at Reynolds number 150. The
+* `150`: Flow over a circular cylinder at Reynolds number 150. The
 initial flow field has an asymmetric perturbation that triggers instability in
 the flow and vortex shedding is observed in the wake.
-* `cylinderRe550`: Initial flow over an impulsively started cylinder at
+* `550`: Initial flow over an impulsively started cylinder at
 Reynolds number 550.
-* `cylinderRe3000`: Initial flow over an impulsively started cylinder at
+* `3000`: Initial flow over an impulsively started cylinder at
 Reynolds number 3000.
-* `flappingRe75`: Flow around a flapping airfoil.
-* `oscillatingCylinders`: Flow across two oscillating cylinders.
 
 ### Run the tests
-
-To run any of the examples:
-
-    > make <examplename>
-
-The biggest case (`cylinderRe3000`) requires a graphics card with 2GB of memory.
 
 Post-processing
 ---------------
@@ -219,11 +198,7 @@ the command line option) and run the script:
 Known issues
 ------------
 
-* CPU routines do not work.
-* Cannot specify which Krylov solver to use for solving the linear systems.
-* TairaColoniusSolver and DirectForcingSolver fail if no body is present.
-* DirectForcingSolver has not been tested for cases with multiple or moving
-bodies.
+* 
 
 Contact
 -------

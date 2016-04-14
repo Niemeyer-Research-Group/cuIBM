@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * \file N.cu
- * \author Chris Minar
- * \calculates N on the GPU
+ * \author Christopher Minar (minarc@oregonstate.edu)
+ * \brief kernels to generate the advection term
  */
 
 
@@ -80,7 +80,6 @@ void Nbcx(double *N, double *u, double *dx, double *dy, double *ym, double *yp, 
 				 + u[i-1] * (dx[I]/(dx[I]*(dx[I]+dx[I+1])) - 1/dx[I])//west
 				 + u[i]   * (-dx[I]/(dx[I+1]*(dx[I]+dx[I+1])) - (dx[I]/(dx[I]*(dx[I]+dx[I+1])) - 1/dx[I]))//center
 				);
-
 	//North
 	if(J == ny-1)
 		temp += (((yp[(nx-1)+I+1]-yp[(nx-1)+I])*dx[I]/(dx[I]+dx[I+1]) + yp[(nx-1)+I]) / 2 + ((u[iv-nx+1]-u[iv-nx])*dx[I]/(dx[I]+dx[I+1]) + u[iv-nx]) / 2) //v
@@ -99,12 +98,12 @@ void Nbcx(double *N, double *u, double *dx, double *dy, double *ym, double *yp, 
 				);
 	//N-S center
 	else
-		temp += (((u[iv+1]-u[iv])*dx[I]/(dx[I]+dx[I+1]) + u[iv]) / 2 + ((u[iv-nx+1]-u[iv-nx])*dx[I]/(dx[I]+dx[I+1]) + u[i-nx]) / 2) //v
+		temp += (((u[iv+1]-u[iv])*dx[I]/(dx[I]+dx[I+1]) + u[iv]) / 2 + ((u[iv-nx+1]-u[iv-nx])*dx[I]/(dx[I]+dx[I+1]) + u[iv-nx]) / 2) //v
 			   *(
 				   u[i+nx-1] * dy[J]/(dy[J]*(dy[J+1]+dy[J]))//North
 				 + u[i-nx+1] * (dy[J-1]/(dy[J]*(dy[J]+dy[J-1])) -1/dy[J])//South
 				 + u[i]      * (-dy[J]/(dy[J]*(dy[J+1]+dy[J])) - (dy[J-1]/(dy[J]*(dy[J]+dy[J-1])) -1/dy[J]))//more center
-				);
+				);//flag why is this = instead of +=
 
 	N[i] = temp;
 }

@@ -1,0 +1,16 @@
+- type: simulation
+  dt: 0.005
+  scaleCV: 5.0
+  nt: 10000
+  nsave: 100
+  linearSolvers:
+    - system: velocity
+      solver: CG
+      preconditioner: DIAGONAL
+      tolerance: 1e-5
+      maxIterations: 10000
+    - system: Poisson
+      solver: CG
+      preconditioner: SMOOTHED_AGGREGATION
+      tolerance: 1e-5
+      maxIterations: 20000

@@ -1,3 +1,8 @@
+/***************************************************************************//**
+ * \file calculateForce.inl
+ * \author Christopher Minar (minarc@oregonstate.edu)
+ * \brief functions to invoke kernels that will calculate the force on the immersed body
+ */
 
 #include <solvers/NavierStokes/kernels/calculateForce.h>
 

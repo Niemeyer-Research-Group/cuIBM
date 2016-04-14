@@ -1,8 +1,7 @@
 /***************************************************************************//**
- * \file generateRHS.inl
- * \author Chris Minar
- * \brief kernels to generate the right hand side of step 1: solve for uhat
- * \		-G*p -1.5N(u) + 0.5 N(uold) + 0.5 L(u)
+ * \file intermediateVelocity.cu
+ * \author Christopher Minar (minarc@oregonstate.edu)
+ * \brief kernels to generate the right hand side for the initial velocity solve
  */
 
 
@@ -29,7 +28,7 @@ void updateBoundaryX(double *u, double *xp, double *dx, double dt, double Uinf, 
 }
 
 __global__
-void updateBoundaryY(double *u, double *xp, double *dy, double dt, double Vinf, int nx, int ny)
+void updateBoundaryY(double *u, double *xp, double *dx, double dt, double Vinf, int nx, int ny)
 {
 	if (threadIdx.x + (blockDim.x * blockIdx.x) >= ny - 1)
 		return;
@@ -37,8 +36,8 @@ void updateBoundaryY(double *u, double *xp, double *dy, double dt, double Vinf, 
 		I = nx,
 		i = J*nx + I,
 		numU = (nx-1)*ny;
-	double beta = Vinf * dt / dy[J];
-	xp[J+ny] = xp[J+ny] + beta*(xp[J+ny] - u[i + numU -1]);
+	double beta = Vinf * dt / dx[I-1];
+	xp[J+ny] = xp[J+ny]*(1-beta) + beta*u[i + numU-1];
 }
 
 __global__
@@ -57,7 +56,7 @@ void updateRHS1forIBX(int *tags, int *tagsIn, double *rhs, double *a, double *b,
 			return;
 	int 	i 	= threadIdx.x + (blockDim.x * blockIdx.x);
 
-	//		  if not outtag  & if not in tag    rhs				if out tag		outside interpolation
+	//		  if not outtag  & if not in tag    rhs				if out tag		outside interpolation //flag inside interpolation?
 	rhs[i]	= (tags[i]==-1) * (tagsIn[i]<=0) * (rhs[i])   +   (tags[i]!=-1) * b[i]/(a[i]+b[i]) * uv[i];
 }
 

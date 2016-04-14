@@ -1,9 +1,9 @@
 /***************************************************************************//**
  * \file intermediatePressure.inl
- * \author Chris Minar
- * \brief Implementation of the methods to generate the right hand side of step 2: solve for phi
- * \		-div(uhat)/dt
+ * \author Christopher Minar (minarc@oregonstate.edu)
+ * \brief functions to invoke the kernals that setup the prerequisites to solve the poission equation
  */
+
 
 #include <solvers/NavierStokes/kernels/intermediatePressure.h>
 #include <solvers/NavierStokes/kernels/LHS2.h>

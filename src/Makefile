@@ -4,13 +4,15 @@
 
 
 # compiler: nvcc is NVIDIA's CUDA compiler
-CC = /usr/local/apps/cuda/cuda-7.0.28/bin/nvcc $(OSXOPTS)
+#CC = /usr/local/apps/cuda/cuda-7.0.28/bin/nvcc $(OSXOPTS)
+CC = /usr/local/apps/cuda/cuda-7.5.18/bin/nvcc $(OSXOPTS)
 
 # compiler options
-# -arch=compute_20: compile to use double precision on GPU use _12 -03 for your shitty computer
 # -O3: optimization flag
-CCFLAGS = -arch=compute_20 -O0#-O3# -Xcompiler -Q
-#CCFLAGS = -arch=compute_12 -O3
+#-g nvcc debug  makes execution take 20x longer
+#-lineinfo nvcc debug
+#-Xcompiler -Q passes something to gcc c++ compiler
+CCFLAGS = -arch=compute_20 -O3# -lineinfo
 
 # variables
 RM = rm
@@ -21,9 +23,10 @@ MAKE = make
 # variable MAKEFILE_LIST lists all Makefiles in the working directory
 # `lastword` picks the last element of the list
 PROJ_ROOT = /scratch/src/cuIBM-FSI
+#PROJ_ROOT = $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
 #cusp directory
-CUSP_ROOT = /scratch/src/lib/cusplibrary-0.4.0 #hardcode path
+CUSP_ROOT = /scratch/src/lib/cusplibrary-0.5.1 #hardcode path
 
 # source code directory
 SRC_DIR = $(PROJ_ROOT)/src

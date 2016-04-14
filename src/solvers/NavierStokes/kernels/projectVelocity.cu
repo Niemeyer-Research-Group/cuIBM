@@ -1,3 +1,10 @@
+/***************************************************************************//**
+ * \file projectVelocity.cu
+ * \author Christopher Minar (minarc@oregonstate.edu)
+ * \brief kernels to update the velocity field
+ */
+
+
 #include "projectVelocity.h"
 
 namespace kernels 

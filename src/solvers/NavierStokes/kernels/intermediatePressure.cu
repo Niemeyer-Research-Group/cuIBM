@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * \file intermediatePressure.cu
- * \author Chris Minar
- * \brief kernels to generate the right hand side of step 2: solve intermediate pressure
+ * \author Christopher Minar (minarc@oregonstate.edu)
+ * \brief kernels to generate the right hand side of the poission equation
  */
 
 #include "intermediatePressure.h"

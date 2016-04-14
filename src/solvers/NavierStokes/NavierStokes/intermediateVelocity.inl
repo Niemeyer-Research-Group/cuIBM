@@ -1,10 +1,8 @@
-/*****************************************************************************
+/***************************************************************************//**
  * \file intermediateVelocity.inl
- * \author Chris Minar
- * \brief Implementation of the methods to generate the right hand side of step 1: solve for uhat
- * \		-G*p -1.5N(u) + 0.5 N(uold) + 0.5 L(u)
+ * \author Christopher Minar (minarc@oregonstate.edu)
+ * \brief functions to invoke the kernels that setup the intermediate velocity solve
  */
-
 
 #include <solvers/NavierStokes/kernels/intermediateVelocity.h>
 #include <solvers/NavierStokes/kernels/LHS1.h>
@@ -71,10 +69,10 @@ void NavierStokesSolver::updateRobinBoundary()
 	logger.startTimer("update Boundary");
 	double	*u_r    = thrust::raw_pointer_cast( &(u[0]) ),
 			*xp_r	= thrust::raw_pointer_cast( &(bc[XPLUS][0]) ),
-			*dxD_r	= thrust::raw_pointer_cast( &(domInfo->dxD[0]) ),
-			*dyD_r	= thrust::raw_pointer_cast( &(domInfo->dyD[0]) );
-	double 	Uinf = 1, //need a better way to enforce these
-			Vinf = 0;
+			*dxD_r	= thrust::raw_pointer_cast( &(domInfo->dxD[0]) );
+			//*dyD_r	= thrust::raw_pointer_cast( &(domInfo->dyD[0]) );
+	double 	Uinf = 1, //need a better way to enforce these, ie read from yaml file
+			Vinf = 1;
 	int 	nx = domInfo ->nx,
 			ny = domInfo ->ny;
 	double	dt = (*paramDB)["simulation"]["dt"].get<double>();
@@ -87,7 +85,7 @@ void NavierStokesSolver::updateRobinBoundary()
 	if(B.numBodies>0)
 	{
 		kernels::updateBoundaryX<<<dimGridBCX,dimBlockBC>>>(u_r, xp_r, dxD_r, dt, Uinf, nx, ny);
-		kernels::updateBoundaryY<<<dimGridBCY,dimBlockBC>>>(u_r, xp_r, dyD_r, dt, Vinf, nx, ny);
+		kernels::updateBoundaryY<<<dimGridBCY,dimBlockBC>>>(u_r, xp_r, dxD_r, dt, Vinf, nx, ny);
 	}
 	logger.stopTimer("update Boundary");
 }
@@ -204,8 +202,8 @@ void NavierStokesSolver::generateLHS1()
 	}
 	else
 	{
-		//kernels::LHS_mid_X_nobody<<<gridU,blockU>>>(row_r, col_r, val_r, dx_r, dy_r, dt, nu, nx, ny);
-		//kernels::LHS_mid_Y_nobody<<<gridV,blockV>>>(row_r, col_r, val_r, dx_r, dy_r, dt, nu, nx, ny);
+		kernels::LHS_mid_X_nobody<<<gridU,blockU>>>(row_r, col_r, val_r, dx_r, dy_r, dt, nu, nx, ny);
+		kernels::LHS_mid_Y_nobody<<<gridV,blockV>>>(row_r, col_r, val_r, dx_r, dy_r, dt, nu, nx, ny);
 	}
 	kernels::LHS_BC_X<<<gridU,blockU>>>(row_r, col_r, val_r, dx_r, dy_r, dt, nu, nx, ny);
 	kernels::LHS_BC_Y<<<gridV,blockV>>>(row_r, col_r, val_r, dx_r, dy_r, dt, nu, nx, ny);

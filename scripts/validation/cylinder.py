@@ -5,7 +5,7 @@ import os
 import os.path
 import sys
 
-cuibmFolder = os.path.expandvars("${CUIBM_DIR}")
+cuibmFolder = os.path.expandvars("/scratch/src/cuIBM-FSI")
 
 # Parse command line options
 parser = argparse.ArgumentParser(description="Runs the validation case for impulsively started flow over a circular cylinder for a specified Reynolds number", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -15,6 +15,9 @@ Re = args.Re
 
 if Re=='40':
 	validationData = '/cylinderRe40-KL95.txt'
+	yMax           = '6'
+elif Re=='200' or Re =='100' or Re=='150' or Re == '75':
+	validationData = ''
 	yMax           = '6' 
 elif Re=='550':
 	validationData = '/cylinderRe550-KL95.txt'
@@ -43,17 +46,21 @@ print "Plotting the drag coefficient for flow over an impulsively started circul
 print "-"*120
 
 gnuplotFile    = caseFolder + '/cylinderRe' + Re + '.plt'
-outFile        = caseFolder + '/cylRe' + Re + 'Drag.pdf'
+outFile        = caseFolder + '/cylRe' + Re + 'Drag.png'
 
 f = open(gnuplotFile, 'w')
-f.write("reset;\nset terminal pdf enhanced color font 'Palatino, 11' size 20cm, 15cm;\n\n");
+f.write("reset;\nset terminal png enhanced font 'Palatino, 11';\n\n");
 f.write("set title 'Flow over an impulsively started cylinder at Reynolds number %s'\n" % Re)
 f.write("set xlabel 'Non-dimensional time'\n")
 f.write("set ylabel 'Drag Coefficient'\n")
 f.write("set output '%s'\n" % outFile)
-f.write("plot [0:3] [0:%s] \\\n" % yMax)
-f.write("'%s' u (0.5*$1):2 w p pt 13 ps 1 lc rgb '#4B5ED7' title 'Koumoutsakos and Leonard, 1995', \\\n" % validationData)
-f.write("'%s/forces' u 1:(2*$2) w l lw 5 lc rgb '#228A4C' title 'cuIBM (Taira and Colonius, 2005)'\n" % caseFolder)
+f.write("plot [0:5] [-2:%s] \\\n" % yMax)
+if validationData != cuibmFolder+'/validation-data':
+	f.write("'%s/forces' u 1:(2*$2) w l lw 2 lc rgb '#3232ff' title 'Present Work', \\\n" % caseFolder)
+	f.write("'%s' u (0.5*$1):2 w p pt 6 ps 2 lc rgb '#ff3232' title 'Koumoutsakos and Leonard, 1995'\n" % validationData)
+else:
+	f.write("'%s/forces' u 1:(2*$2) w l lw 2 lc rgb '#3232ff' title 'Present Work' \\\n" % caseFolder)
+	
 f.close()
 
 print "\nCreated gnuplot script "+gnuplotFile

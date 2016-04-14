@@ -1,16 +1,11 @@
 /***************************************************************************//**
  * \file calculateForce.cu
- * \author Chris Minar
+ * \author Christopher Minar (minarc@oregonstate.edu)
+ * \based of original cuIBM
  */
 
 
 #include "calculateForce.h"
-
-
-/**
- * \namespace kernels
- * \brief Contains all the custom-written CUDA kernels.
- */
 
 namespace kernels
 {

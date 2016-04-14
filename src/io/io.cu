@@ -338,6 +338,7 @@ void printSimulationInfo(parameterDB &DB, domain &D)
 	std::cout << "\nFlow parameters" << '\n';
 	std::cout << "---------------" << '\n';
 	std::cout << "nu = " << DB["flow"]["nu"].get<double>() << '\n';
+	std::cout << "Re(1/nu) = " << 1/DB["flow"]["nu"].get<double>() << '\n';
 
 	std::cout << "\nDomain" << '\n';
 	std::cout << "------" << '\n';

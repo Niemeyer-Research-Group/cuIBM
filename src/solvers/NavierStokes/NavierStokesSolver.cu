@@ -1,18 +1,20 @@
 /***************************************************************************//**
  * \file NavierStokesSolver.cu
- * \author Anush Krishnan (anush@bu.edu)
+ * \author Anush Krishnan (anush@bu.edu), Christopher Minar (minarc@oreonstate.edu)
  * \brief Implementation of the methods of the class \c NavierStokesSolver.
  */
 
 #include "NavierStokesSolver.h"
+#include "kernels/initialise.h"
 #include <sys/stat.h>
 #include <io/io.h>
+#include <cusp/precond/aggregation/smoothed_aggregation.h>//flag
 #include <cusp/krylov/cg.h>//flag
 #include <cusp/krylov/bicgstab.h>
 #include <cusp/krylov/gmres.h>//flag
 #include <cusp/krylov/bicg.h>//flag
 #include <cusp/print.h>//flag
-#include <cusp/blas.h>//flag
+#include <cusp/blas/blas.h>//flag
 
 #include <iostream>
 #include <fstream>
@@ -117,30 +119,31 @@ void NavierStokesSolver::initialise()
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	//Initialise velocity arrays
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	cusp::array1d<double, cusp::host_memory> uHost((nx-1)*ny+nx*(ny-1));
-	double *uHost_r = thrust::raw_pointer_cast(&(uHost[0]));
 
-	double uInitial = (*paramDB)["flow"]["uInitial"].get<double>(),
-	     vInitial = (*paramDB)["flow"]["vInitial"].get<double>();
-	int idx = 0;
-	for(int j=0; j<ny; j++)
-	{
-		for(int i=0; i<nx-1; i++)
-		{
-			idx = (nx-1)*j+i;
-			uHost_r[idx] = uInitial;
-		}
-	}
-	for(int j=0; j<ny-1; j++)
-	{
-		for(int i=0; i<nx; i++)
-		{
-			idx = nx*j+i+(nx-1)*ny;
-			uHost_r[idx] = vInitial;
-		}
-	}
-	u = uHost;
+	double	uInitial = (*paramDB)["flow"]["uInitial"].get<double>(),
+			vInitial = (*paramDB)["flow"]["vInitial"].get<double>(),
+			uPerturb = (*paramDB)["flow"]["uPerturb"].get<double>(),
+			vPerturb = (*paramDB)["flow"]["vPerturb"].get<double>(),
+			xmin = domInfo->x[0],
+			xmax = domInfo->x[nx-1],
+			ymin = domInfo->y[0],
+			ymax = domInfo->y[ny-1];
+	const int blocksize = 256;
+	dim3 dimGridU( int( ((nx-1)*ny-0.5)/blocksize ) +1, 1);
+	dim3 dimBlock(blocksize, 1);
+	dim3 dimGridV( int( (nx*(ny-1)-0.5)/blocksize ) +1, 1);
+
+	double *u_r		= thrust::raw_pointer_cast( &(u[0]) ),
+		   *xu_r	= thrust::raw_pointer_cast( &(domInfo->xuD[0]) ),
+		   *xv_r	= thrust::raw_pointer_cast( &(domInfo->xvD[0]) ),
+		   *yu_r	= thrust::raw_pointer_cast( &(domInfo->yuD[0]) ),
+		   *yv_r	= thrust::raw_pointer_cast( &(domInfo->yvD[0]) );
+
+	kernels::initialiseU<<<dimGridU,dimBlock>>>(u_r, xu_r, yu_r, uInitial, uPerturb, M_PI, xmax, xmin, ymax, ymin, nx, ny);
+	kernels::initialiseV<<<dimGridV,dimBlock>>>(u_r, xv_r, yv_r, vInitial, vPerturb, M_PI, xmax, xmin, ymax, ymin, nx, ny);
+
 	uhat=u;
+
 	std::cout<<"Initialised Velocities!" <<std::endl;
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -201,11 +204,15 @@ void NavierStokesSolver::initialise()
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	generateLHS1();
 	generateLHS2();
+	//cusp::print(LHS1);
 	//cusp::print(LHS2);
 
-	//PC1 = new preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >(LHS1, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>());
-	//PC2 = new preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >(LHS2, (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
-	//print(LHS1);
+	if ((*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>() != NONE)
+		PC1 = new preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >(LHS1, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>());
+	if ((*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>() != NONE)
+	{
+		PC2 = new preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >(LHS2, (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
+	}
 	std::cout << "Assembled LHS matrices!" << std::endl;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -230,19 +237,29 @@ void NavierStokesSolver::stepTime()
 	//arrayprint(rhs1,"rhs1","x");
 	solveIntermediateVelocity();
 	//arrayprint(uhat,"uhat","x");
+	//arrayprint(uhat,"vhat","y");
 
 	//2: Solve for pressure correction
 	generateRHS2();
 	//arrayprint(rhs2,"rhs2","p");
 	solvePoisson();
+	//arrayprint(pressure,"pressure","p");
 
 	//3: Project velocity
 	velocityProjection();
+	//arrayprint(u,"u","x");
+	//arrayprint(u,"v","y");
 
 	//4: update time
 	timeStep++;
+	if (timeStep%(*paramDB)["simulation"]["nsave"].get<int>() == 0)
+	{
+		//arrayprint(u,"u","x");
+		//arrayprint(uhat,"uhat","x");
+		//arrayprint(u,"v","y");
+		//arrayprint(pressure,"pressure","p");
+	}
 	//std::cout<<"Timestep: "<<timeStep<<"\n";
-	//std::cin.ignore();
 }
 
 /**
@@ -281,9 +298,12 @@ void NavierStokesSolver::solveIntermediateVelocity()
 	logger.startTimer("solveIntermediateVel");
 	int  maxIters = (*paramDB)["velocitySolve"]["maxIterations"].get<int>();
 	double relTol = (*paramDB)["velocitySolve"]["tolerance"].get<double>();
-	cusp::default_monitor<double> sys1Mon(rhs1, maxIters, relTol);
-	//cusp::krylov::bicgstab(LHS1, uhat, rhs1, sys1Mon, *PC1);
-	cusp::krylov::bicgstab(LHS1, uhat, rhs1, sys1Mon);
+	//cusp::default_monitor<double> sys1Mon(rhs1, maxIters, relTol); //cusp 0.4.0 version
+	cusp::monitor<double> sys1Mon(rhs1,maxIters,relTol);
+	if ((*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>() != NONE)
+		cusp::krylov::bicgstab(LHS1, uhat, rhs1, sys1Mon, *PC1);
+	else
+		cusp::krylov::bicgstab(LHS1, uhat, rhs1, sys1Mon);
 
 	iterationCount1 = sys1Mon.iteration_count();
 
@@ -310,14 +330,18 @@ void NavierStokesSolver::solvePoisson()
 	int  maxIters = (*paramDB)["PoissonSolve"]["maxIterations"].get<int>();
 	double relTol   = (*paramDB)["PoissonSolve"]["tolerance"].get<double>();
 
-	cusp::default_monitor<double> sys2Mon(rhs2, maxIters, relTol);
-	cusp::krylov::bicgstab(LHS2, pressure, rhs2, sys2Mon);
+	//cusp::default_monitor<double> sys2Mon(rhs2, maxIters, relTol); //cusp 0.4.0 version
+	cusp::monitor<double> sys2Mon(rhs2, maxIters, relTol);
+	if ((*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>() != NONE)
+		cusp::krylov::bicgstab(LHS2, pressure, rhs2, sys2Mon, *PC2);
+	else
+		cusp::krylov::bicgstab(LHS2, pressure, rhs2, sys2Mon);
 
 	iterationCount2 = sys2Mon.iteration_count();
 	if (!sys2Mon.converged())
 	{
 		std::cout << "ERROR: Solve for pressure failed at time step " << timeStep << std::endl;
-		std::cout << "Iterations   : " << iterationCount2 << std::endl;          
+		std::cout << "Iterations   : " << iterationCount2 << std::endl;
 		std::cout << "Residual norm: " << sys2Mon.residual_norm() << std::endl;
 		std::cout << "Tolerance    : " << sys2Mon.tolerance() << std::endl;
 		std::exit(-1);
@@ -453,3 +477,11 @@ void NavierStokesSolver::shutDown()
 #include "NavierStokes/tagpoints.inl"
 #include "NavierStokes/calculateForce.inl"
 
+//todo upgrade to amgx
+//todo add inside interpolation
+//todo fix oscillations for impulsively started cylinder
+//todo move tagpoints to GPU
+//todo add viv
+//todo validate viv
+//todo add documentation for all new functions
+//todo solve world hunger

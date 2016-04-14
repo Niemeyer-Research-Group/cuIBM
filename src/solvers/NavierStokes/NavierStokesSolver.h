@@ -1,9 +1,3 @@
-/***************************************************************************//**
- * \file NavierStokesSolver.h
- * \author Anush Krishnan (anush@bu.edu)
- * \brief Declaration of the class \c NavierStokesSolver.
- */
-
 #pragma once
 
 #include <domain.h>
@@ -87,9 +81,9 @@ protected:
 		LHS1,		///< Matrix for the unknown uhat
 		LHS2;		///< Matrix for the unknown phi
 	     
-	//preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >
-	//*PC1,		///< preconditioner for the intermediate flux solver
-	//*PC2;		///< preconditioner for the Poisson solver
+	preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >
+	*PC1,		///< preconditioner for the intermediate flux solver
+	*PC2;		///< preconditioner for the Poisson solver
 
 	bodies 	B;		///< bodies in the flow
 

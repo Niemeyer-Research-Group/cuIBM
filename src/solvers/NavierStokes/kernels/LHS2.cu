@@ -1,3 +1,9 @@
+/***************************************************************************//**
+ * \file LHS2.cu
+ * \author Christopher Minar (minarc@oregonstate.edu)
+ * \brief kernels to generate the left hand side for the poission solve
+ */
+
 #include "LHS2.h"
 
 namespace kernels
@@ -234,7 +240,7 @@ void LHS2_mid(int *row, int *col, double *val, double *distance_from_u_to_body, 
 	col[numE] = ip;
 	val[numE] = temp;
 
-	//do some jank shit so the solver works, although this modifies the matricies it doesn't really change the results
+	//do some jank so the solver works, although this modifies the matricies it doesn't really change the results
 	if(row[numE]==col[numE] && col[numE]==(ny/2)*nx+nx/2)
 	{
 		val[numE] += val[numE];
@@ -322,9 +328,11 @@ void LHS2_BC(int *row, int *col, double *val, double *dx, double *dy, int nx, in
 	col[numE] = ip;
 	val[numE] = temp;
 
-	//do some jank shit so the solver works, although this modifies the matricies it doesn't really change the results
-	//if (ip == 0)
-	//	val[numE] += val[numE];
+	//do some jank so the solver works, although this modifies the matricies it doesn't really change the results
+	if (ip == 0)
+		val[numE] += val[numE];
+		//val[numE] = 0;
+		//val[numE] *= val[numE];
 }
 
 __global__
@@ -374,7 +382,7 @@ void LHS2_mid_nobody(int *row, int *col, double *val, double *dx, double *dy, in
 	col[numE] = ip;
 	val[numE] = temp;
 
-	//do some jank shit so the solver works, although this modifies the matricies it doesn't really change the results
+	//do some jank so the solver works, although this modifies the matricies it doesn't really change the results
 	if(row[numE]==col[numE] && col[numE]==(ny/2)*nx+nx/2)
 	{
 		val[numE] += val[numE];

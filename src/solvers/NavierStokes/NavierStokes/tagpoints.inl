@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * \file tagPoints.inl
- * \author Anush Krishnan (anush@bu.edu)
+ * \author Anush Krishnan (anush@bu.edu), Christopher Minar (minarc@oregonstate.edu)
  * \brief Implementation of the methods of the class \c DirectForcingSolver to tag
  *        points near the immersed boundary using a ray-tracing algorithm.
  */

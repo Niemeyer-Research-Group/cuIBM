@@ -31,6 +31,7 @@ def read_inputs():
 						help='pressure cutoff on the plot')
 	parser.add_argument('-numlevels', dest='numlevels', type=int, default=21,
 						help='number of pressure contour line levels (choose an odd number)')
+	parser.add_argument('-plimlow', type=float, dest = 'plimlow', help = "lower pressure limit", default = -1)
 	return parser.parse_args()
 
 
@@ -71,14 +72,14 @@ def main():
 		for j in xrange(j_start, j_end+1):
 			P[j-j_start, :] = p[j, i_start:i_end+1]
 
-		CS = plt.contour(X, Y, P, levels=np.linspace(-args.plim, args.plim, args.numlevels))
+		CS = plt.contourf(X, Y, P, levels=np.linspace(args.plimlow, args.plim, args.numlevels))
 		plt.title("Pressure")
 		plt.colorbar(CS)
 		plt.axis([xv[i_start], xv[i_end], yu[j_start], yu[j_end]])
 		plt.gca().set_aspect('equal', adjustable='box')
-		plt.savefig('{}/p{:0>7}.png'.format(folder,ite))
+		plt.savefig('{0} {1}.png'.format(folder,ite))
 		plt.clf()
-		print "Saved figure {}/p{:0>7}.png".format(folder,ite)
+		print "Saved figure {0} {1}.png".format(folder,ite)
 	
 	print 'DONE!'
 

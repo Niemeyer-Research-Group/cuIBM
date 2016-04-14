@@ -30,7 +30,7 @@ def read_inputs():
 	parser.add_argument("-xmax", type=float, dest="xmax", help="upper x-limit of the plotting region", default=4.0)
 	parser.add_argument("-ymin", type=float, dest="ymin", help="lower y-limit of the plotting region", default=-3.0)
 	parser.add_argument("-ymax", type=float, dest="ymax", help="upper y-limit of the plotting region", default=3.0)
-	parser.add_argument('-ulim', dest='u_lim', type=float, default=1.0,
+	parser.add_argument('-ulim', dest='u_lim', type=float, default=1.5,
 						help='x-velocity cutoff on the plot')
 	parser.add_argument('-vlim', dest='v_lim', type=float, default=1.0,
 						help='y-velocity cutoff on the plot')
@@ -59,7 +59,7 @@ def main():
 	folder = args.folder	# name of the folder
 
 	# read the parameters of the simulation
-	nt, start_step, nsave, _ = readSimulationParameters(folder)
+	nt, start_step, nsave, dt = readSimulationParameters(folder)
 
 	# calculate the mesh characteristics
 	nx, ny, dx, dy, xu, yu, xv, yv = readGridData(folder)
@@ -86,33 +86,32 @@ def main():
 		if u is None or v is None:
 			break
 
-		# plot u-velocity contour
-		fig = plt.figure()
-		ax = fig.add_subplot(111)
-		CS = ax.contour(Xu, Yu, u.reshape((ny, nx-1)),
+		# plot u-velocity contourf
+		CS = plt.contourf(Xu, Yu, u.reshape((ny, nx-1)),
 					levels=np.linspace(-args.u_lim, args.u_lim, 21))
-		fig.gca().set_aspect('equal', adjustable='box')
-		ax.set_xlim([x_start,x_end])
-		ax.set_ylim([y_start,y_end])
-		ax.tick_params(labelsize=16)
-		cbar = fig.colorbar(CS)
-		cbar.ax.tick_params(labelsize=16) 
-		fig.savefig('%s/u%07d.pdf' % (folder, ite))
-		fig.clf()
+		plt.title("U-Velocity @ time = {0}".format(ite*dt))
+		plt.xlabel('x')
+		plt.ylabel('y')
+		plt.colorbar(CS)
+		plt.gca().set_aspect('equal',adjustable='box')
+		#plt.set_xlim([x_start,x_end])
+		#plt.set_ylim([y_start,y_end])
+		plt.savefig('%s/u%07d.png' % (folder, ite/nsave))
+		plt.clf()
+		
 	
-		# plot v-velocity contour
-		fig = plt.figure()
-		ax = fig.add_subplot(111)
-		CS = ax.contour(Xv, Yv, v.reshape((ny-1, nx)), 
+		# plot v-velocity contourf
+		CS = plt.contourf(Xv, Yv, v.reshape((ny-1, nx)), 
 					levels=np.linspace(-args.v_lim, args.v_lim, 21))
-		fig.gca().set_aspect('equal', adjustable='box')
-		ax.set_xlim([x_start,x_end])
-		ax.set_ylim([y_start,y_end])
-		ax.tick_params(labelsize=16)
-		cbar = fig.colorbar(CS)
-		cbar.ax.tick_params(labelsize=16) 
-		fig.savefig('%s/v%07d.pdf' % (folder, ite))
-		fig.clf()
+		plt.title("V-Velocity @ time = {0}".format(ite*dt))
+		plt.xlabel('x')
+		plt.ylabel('y')
+		plt.colorbar(CS)
+		plt.gca().set_aspect('equal',adjustable='box')
+		#plt.set_xlim([x_start,x_end])
+		#plt.set_ylim([y_start,y_end])
+		plt.savefig('%s/v%07d.png' % (folder, ite/nsave))
+		plt.clf()
 
 if __name__ == '__main__':
 	main()

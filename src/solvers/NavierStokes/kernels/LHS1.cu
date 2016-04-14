@@ -1,3 +1,9 @@
+/***************************************************************************//**
+ * \file LHS1.cu
+ * \author Christopher Minar (minarc@oregonstate.edu)
+ * \brief kernels to generate the left hand side for the intermediate velocity solve
+ */
+
 #include "LHS1.h"
 
 namespace kernels

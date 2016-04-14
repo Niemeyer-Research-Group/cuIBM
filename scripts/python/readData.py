@@ -95,15 +95,23 @@ def readGridData(folder):
 	nx = struct.unpack('i', fp.read(4))[0]
 	x = np.array(struct.unpack('d'*(nx+1), fp.read(8*(nx+1))))
 	dx = x[1:] - x[:-1]
+	dx[nx-1] = dx[nx-2]
 	xu = x[1:-1]
-	xv = 0.5*(x[1:]+x[:-1])
-	
+	xv = np.zeros(nx)
+	xv[0] = x[0]
+	for i in range(nx-1):
+		xv[i+1] = xv[i] + 0.5*(dx[i] + dx[i+1])
+		
 	# y-direction
 	ny = struct.unpack('i', fp.read(4))[0]
 	y = np.array(struct.unpack('d'*(ny+1), fp.read(8*(ny+1))))
 	dy = y[1:] - y[:-1]
-	yu = 0.5*(y[1:]+y[:-1])
+	dy[ny-1] = dy[ny-2]
 	yv = y[1:-1]
+	yu = np.zeros(ny)
+	yu[0] =y[0]
+	for i in range (ny-1):
+		yu[i+1] = yu[i] + 0.5*(dy[i]+dy[i+1])
 
 	fp.close()
 
@@ -130,13 +138,13 @@ def readVelocityData(folder, time_step, nx, ny, dx, dy):
 	u = np.empty(n_u, dtype=float)
 	for j in xrange(ny):
 		for i in xrange(nx-1):
-			u[j*(nx-1)+i] = q[j*(nx-1)+i]/dy[j]
+			u[j*(nx-1)+i] = q[j*(nx-1)+i]
 
 	# store v-velocities
 	v = np.empty(nx*(ny-1), dtype=float)
 	for j in xrange(ny-1):
 		for i in xrange(nx):
-			v[j*nx+i] = q[n_u+j*nx+i]/dx[i]
+			v[j*nx+i] = q[n_u+j*nx+i]
 	
 	return u, v
 
