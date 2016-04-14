@@ -1,4 +1,6 @@
 #!/bin/sh
+#runs all cases
+#plots all cases
 CUIBM_DIR=/scratch/src/cuIBM-FSI
 #Run Lid Driven Cavity Validation
 for var1 in 100 1000 10000

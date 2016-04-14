@@ -1,4 +1,5 @@
 #!/bin/sh
+#deletes all file output made during any run for all cases
 CUIBM_DIR=/scratch/src/cuIBM-FSI
 
 CAVITY_DIR=$CUIBM_DIR/validation/lidDrivenCavity

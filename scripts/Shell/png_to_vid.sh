@@ -1,4 +1,5 @@
 #!/bin/sh
+#Converts u velocity png files made with scripts/plotVelocity.py into an mp4
 CUIBM_DIR=/scratch/src/cuIBM-FSI
 
 CAVITY_DIR=$CUIBM_DIR/validation/lidDrivenCavity

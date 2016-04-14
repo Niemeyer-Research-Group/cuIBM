@@ -1,4 +1,5 @@
 #!/bin/sh
+#deletes run files made for all cases, keeps folders, pngs and .yamls
 CUIBM_DIR=/scratch/src/cuIBM-FSI
 
 CAVITY_DIR=$CUIBM_DIR/validation/lidDrivenCavity
