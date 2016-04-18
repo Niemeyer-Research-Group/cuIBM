@@ -1,8 +1,8 @@
 - type: simulation
   dt: 0.001
   scaleCV: 5.0
-  nt: 200000
-  nsave: 1000
+  nt: 50000
+  nsave: 200
   linearSolvers:
     - system: velocity
       solver: CG

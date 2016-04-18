@@ -76,14 +76,6 @@ void NavierStokesSolver::initialise()
 	bc1.resize(numUV);
 	force.resize(numUV);
 
-	//tagpoints, size uv, host these operations should be done on the device eventually
-	tags.resize(numUV);
-	tags2.resize(numUV);
-	tagsIn.resize(numUV);
-	a.resize(numUV);
-	b.resize(numUV);
-	uv.resize(numUV);
-
 	//tagpoints, size uv, device
 	tagsD.resize(numUV);//used in lhs1
 	tags2D.resize(numUV);//used in lhs1
@@ -97,12 +89,6 @@ void NavierStokesSolver::initialise()
 	rhs2.resize(numP);
 	pressure_old.resize(numP);
 
-	//tagpoints, size np, host
-	tagsP.resize(numP);//flag
-	tagsPOut.resize(numP);//flag
-	distance_from_u_to_body.resize(numP);
-	distance_from_v_to_body.resize(numP);
-
 	//tagpoints, size np, device
 	tagsPD.resize(numP);//flag
 	tagsPOutD.resize(numP);//flag
@@ -113,7 +99,6 @@ void NavierStokesSolver::initialise()
 	cusp::blas::fill(uhat, 0);//flag
 	cusp::blas::fill(Nold, 0);//flag
 	cusp::blas::fill(N, 0);//flag
-	cusp::blas::fill(tags, -1);//flag
 	std::cout<<"Initialised Arrays!" <<std::endl;
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
@@ -197,7 +182,6 @@ void NavierStokesSolver::initialise()
 		tagPoints();
 		std::cout << "Tagged points!" << std::endl;
 	}
-	logger.stopTimer("initialise");
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	//LHS MATRICIES
@@ -207,12 +191,12 @@ void NavierStokesSolver::initialise()
 	//cusp::print(LHS1);
 	//cusp::print(LHS2);
 
-	if ((*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>() != NONE)
-		PC1 = new preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >(LHS1, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>());
-	if ((*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>() != NONE)
-	{
-		PC2 = new preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >(LHS2, (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
-	}
+	//if ((*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>() != NONE)
+	//	PC1 = new preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >(LHS1, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>());
+	//if ((*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>() != NONE)
+	//{
+	//	PC2 = new preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >(LHS2, (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
+	//}
 	std::cout << "Assembled LHS matrices!" << std::endl;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -221,6 +205,7 @@ void NavierStokesSolver::initialise()
 	std::stringstream out;
 	out << folder << "/forces";
 	forceFile.open(out.str().c_str());
+	logger.stopTimer("initialise");
 }
 
 //##############################################################################
@@ -300,9 +285,9 @@ void NavierStokesSolver::solveIntermediateVelocity()
 	double relTol = (*paramDB)["velocitySolve"]["tolerance"].get<double>();
 	//cusp::default_monitor<double> sys1Mon(rhs1, maxIters, relTol); //cusp 0.4.0 version
 	cusp::monitor<double> sys1Mon(rhs1,maxIters,relTol);
-	if ((*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>() != NONE)
-		cusp::krylov::bicgstab(LHS1, uhat, rhs1, sys1Mon, *PC1);
-	else
+	//if ((*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>() != NONE)
+	//	cusp::krylov::bicgstab(LHS1, uhat, rhs1, sys1Mon, *PC1);
+	//else
 		cusp::krylov::bicgstab(LHS1, uhat, rhs1, sys1Mon);
 
 	iterationCount1 = sys1Mon.iteration_count();
@@ -332,9 +317,9 @@ void NavierStokesSolver::solvePoisson()
 
 	//cusp::default_monitor<double> sys2Mon(rhs2, maxIters, relTol); //cusp 0.4.0 version
 	cusp::monitor<double> sys2Mon(rhs2, maxIters, relTol);
-	if ((*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>() != NONE)
-		cusp::krylov::bicgstab(LHS2, pressure, rhs2, sys2Mon, *PC2);
-	else
+	//if ((*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>() != NONE)
+	//	cusp::krylov::bicgstab(LHS2, pressure, rhs2, sys2Mon, *PC2);
+	//else
 		cusp::krylov::bicgstab(LHS2, pressure, rhs2, sys2Mon);
 
 	iterationCount2 = sys2Mon.iteration_count();
@@ -390,7 +375,7 @@ void NavierStokesSolver::arrayprint(cusp::array1d<double, cusp::device_memory> v
 	std::stringstream convert; convert << "/output/" << name << timeStep << ".csv";
 	std::string folder_name = convert.str();
 	out<<folder<<folder_name;
-	myfile.open(out.str().c_str());//"/scratch/src/cuIBM-FSI/cases/lidDrivenCavity/Re100/output.csv"
+	myfile.open(out.str().c_str());
 	myfile<<name<<"\n";
 	for (int J = 0; J < y_length; J++)
 	{
@@ -483,5 +468,7 @@ void NavierStokesSolver::shutDown()
 //todo move tagpoints to GPU
 //todo add viv
 //todo validate viv
+//todo remove multibody remants
+//todo
 //todo add documentation for all new functions
 //todo solve world hunger

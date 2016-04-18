@@ -5,7 +5,7 @@ import numpy as np
 
 import os
 import os.path
-cuibmFolder = os.path.expandvars("/scratch/src/cuIBM-FSI")
+cuibmFolder = os.path.expandvars("/scratch/src/cuIBM")
 
 import sys
 sys.path.insert(0, cuibmFolder+'/scripts/python')

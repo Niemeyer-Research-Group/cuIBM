@@ -1,6 +1,6 @@
 #!/bin/sh
 #deletes all file output made during any run for all cases
-CUIBM_DIR=/scratch/src/cuIBM-FSI
+CUIBM_DIR=/scratch/src/cuIBM
 
 CAVITY_DIR=$CUIBM_DIR/validation/lidDrivenCavity
 CYLINDER_DIR=$CUIBM_DIR/validation/cylinder

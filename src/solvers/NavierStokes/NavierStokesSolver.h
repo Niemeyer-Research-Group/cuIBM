@@ -39,13 +39,6 @@ protected:
 		rhs2,		///< rhs for the intermediate pressure
 		force,		///< force at a a node
 		bc[4];		///< array that contains the boundary conditions of the rectangular
-		
-	cusp::array1d<int, cusp::host_memory>
-		tags,		///< indices of velocity nodes near the IB on the host
-		tags2,		///< indices of 2nd closest velocity node on the host
-		tagsIn,		///< indices of velocity nodes inside the IB
-		tagsP,		///< indices of pressure nodes inside the IB
-		tagsPOut;	///< indices of pressure nodes outside the IB
 
 	cusp::array1d<int, cusp::device_memory>
 		tagsD,		///< indices of velocity nodes near the IB on the device
@@ -53,13 +46,6 @@ protected:
 		tagsInD,	///< indices of velocity nodes inside the IB
 		tagsPD, 	///< indices of pressure nodes inside the IB
 		tagsPOutD;	///< indices of pressure nodes outside the IB
-
-	cusp::array1d<double, cusp::host_memory>
-		a,			///< distance between IB and tagged node on the host
-		b,			///< distance between tags and tags2 on the host
-		distance_from_u_to_body,			///< distance between u velocity node and body
-		distance_from_v_to_body,			///< distance between v velocity node and body
-		uv;			///< velocity at the IB on the host
 
 	cusp::array1d<double, cusp::device_memory>
 		aD,			///< distance between IB and tagged node on the device
@@ -81,9 +67,9 @@ protected:
 		LHS1,		///< Matrix for the unknown uhat
 		LHS2;		///< Matrix for the unknown phi
 	     
-	preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >
-	*PC1,		///< preconditioner for the intermediate flux solver
-	*PC2;		///< preconditioner for the Poisson solver
+	//preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >
+	//*PC1,		///< preconditioner for the intermediate flux solver
+	//*PC2;		///< preconditioner for the Poisson solver
 
 	bodies 	B;		///< bodies in the flow
 
@@ -154,9 +140,6 @@ public:
 
 	// tags points on the immersed boundary
 	void tagPoints();
-
-	// tags points on the immersed boundary
-	void tagPoints(double *bx, double *by, double *uB, double *vB);
 
 	// initialize parameters, arrays and matrices required for the simulation
 	void initialise();

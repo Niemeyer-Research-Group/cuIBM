@@ -1,6 +1,6 @@
 #!/bin/sh
 #Converts u velocity png files made with scripts/plotVelocity.py into an mp4
-CUIBM_DIR=/scratch/src/cuIBM-FSI
+CUIBM_DIR=/scratch/src/cuIBM
 
 CAVITY_DIR=$CUIBM_DIR/validation/lidDrivenCavity
 CYLINDER_DIR=$CUIBM_DIR/validation/cylinder
@@ -12,7 +12,7 @@ do
 	cd ..
 done
 
-for filename in 75 #40 75 100 150 200 550
+for filename in 40 75 100 150 200 550 3000
 do
 	echo "Creating video for cylinder for Reynolds number " $filename
 	cd $CYLINDER_DIR/Re$filename

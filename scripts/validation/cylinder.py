@@ -5,7 +5,7 @@ import os
 import os.path
 import sys
 
-cuibmFolder = os.path.expandvars("/scratch/src/cuIBM-FSI")
+cuibmFolder = os.path.expandvars("/scratch/src/cuIBM")
 
 # Parse command line options
 parser = argparse.ArgumentParser(description="Runs the validation case for impulsively started flow over a circular cylinder for a specified Reynolds number", formatter_class=argparse.ArgumentDefaultsHelpFormatter)

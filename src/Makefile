@@ -22,7 +22,7 @@ MAKE = make
 # return the absolute path of the directory  where is located the Makefile
 # variable MAKEFILE_LIST lists all Makefiles in the working directory
 # `lastword` picks the last element of the list
-PROJ_ROOT = /scratch/src/cuIBM-FSI
+PROJ_ROOT = /scratch/src/cuIBM
 #PROJ_ROOT = $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
 #cusp directory
@@ -68,7 +68,7 @@ $(TARGET): $(OBJS) $(EXT_LIBS)
 
 $(EXT_LIBS):
 	@echo "\nCreating static library $@ ..."
-	cd /scratch/src/cuIBM-FSI/external; $(MAKE) $(MFLAGS) all
+	cd /scratch/src/cuIBM/external; $(MAKE) $(MFLAGS) all
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%$(SRC_EXT)
 	@mkdir -p $(@D)
@@ -109,34 +109,34 @@ cleanall: clean cleanexternal cleandoc
 # commands to run cuIBM simulations
 
 cylinderRe40:
-	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM-FSI/validation/cylinder/Re40
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/cylinder/Re40
 	
 cylinderRe75:
-	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM-FSI/validation/cylinder/Re75	
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/cylinder/Re75	
 	
 cylinderRe100:
-	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM-FSI/validation/cylinder/Re100	
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/cylinder/Re100	
 	
 cylinderRe150:
-	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM-FSI/validation/cylinder/Re150	
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/cylinder/Re150	
 	
 cylinderRe200:
-	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM-FSI/validation/cylinder/Re200	
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/cylinder/Re200	
 
 cylinderRe550:
-	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM-FSI/validation/cylinder/Re550
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/cylinder/Re550
 	
 cylinderRe3000:
-	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM-FSI/validation/cylinder/Re3000
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/cylinder/Re3000
 
 lidDrivenCavityRe100:
-	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM-FSI/validation/lidDrivenCavity/Re100
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/lidDrivenCavity/Re100
 	
 lidDrivenCavityRe1000:
-	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM-FSI/validation/lidDrivenCavity/Re1000
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/lidDrivenCavity/Re1000
 	
 lidDrivenCavityRe5000:
-	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM-FSI/validation/lidDrivenCavity/Re5000
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/lidDrivenCavity/Re5000
 	
 lidDrivenCavityRe10000:
-	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM-FSI/validation/lidDrivenCavity/Re10000
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/lidDrivenCavity/Re10000

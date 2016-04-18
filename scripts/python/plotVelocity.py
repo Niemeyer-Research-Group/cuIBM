@@ -59,6 +59,7 @@ def main():
 	folder = args.folder	# name of the folder
 
 	# read the parameters of the simulation
+	print folder
 	nt, start_step, nsave, dt = readSimulationParameters(folder)
 
 	# calculate the mesh characteristics

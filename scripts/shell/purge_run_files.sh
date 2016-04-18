@@ -1,6 +1,6 @@
 #!/bin/sh
 #deletes run files made for all cases, keeps folders, pngs and .yamls
-CUIBM_DIR=/scratch/src/cuIBM-FSI
+CUIBM_DIR=/scratch/src/cuIBM
 
 CAVITY_DIR=$CUIBM_DIR/validation/lidDrivenCavity
 CYLINDER_DIR=$CUIBM_DIR/validation/cylinder
