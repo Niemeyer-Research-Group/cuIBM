@@ -41,7 +41,9 @@ public:
 
 	cusp::array1d<double, cusp::device_memory>
 		forceX,		///< force acting on a body in the x-direction
-		forceY;		///< force acting on a body in the y-direction
+		forceY,		///< force acting on a body in the y-direction
+		forceXk,
+		forceYk;
 
 	cusp::array1d<double, cusp::device_memory>
 		X,     ///< reference x-coordinates of the boundary points
@@ -69,8 +71,14 @@ public:
 	cusp::array1d<double, cusp::device_memory>
 		test;
 
-	double centerVelocityU,
-	     centerVelocityV; // need to initialise these fools
+	double	centerVelocityU,
+			centerVelocityV, // need to initialise these fools
+			centerVelocityV0,
+			centerVelocityU0,
+			midY,
+			midY0,
+			midX0,
+			midX;
 
 	// set initial position and velocity of each body
 	void initialise(parameterDB &db, domain &D);

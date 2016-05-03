@@ -11,7 +11,7 @@ void NavierStokesSolver::calculateForceFadlun()
 	double	*uold_r	= thrust::raw_pointer_cast( &(uold[0]) ),
 			*Lnew_r	= thrust::raw_pointer_cast( &(Lnew[0]) ),
 			*L_r	= thrust::raw_pointer_cast( &(L[0]) ),
-			*u_r	= thrust::raw_pointer_cast( &(u[0]) ),
+			*u_r	= thrust::raw_pointer_cast( &(uhat[0]) ),
 			*force_r= thrust::raw_pointer_cast( &(force[0]) ),
 			*N_r	= thrust::raw_pointer_cast( &(N[0]) ),
 			*Nold_r	= thrust::raw_pointer_cast( &(Nold[0]) ),
@@ -22,8 +22,8 @@ void NavierStokesSolver::calculateForceFadlun()
 			*xm_r	= thrust::raw_pointer_cast( &(bc[XMINUS][0]) ),
 			*xp_r	= thrust::raw_pointer_cast( &(bc[XPLUS][0]) );
 
-	int		*tags_r	= thrust::raw_pointer_cast( &(tagsD[0]) ),
-			*tags2_r= thrust::raw_pointer_cast( &(tags2D[0]) );
+	int		*tags_r	= thrust::raw_pointer_cast( &(tags[0]) ),
+			*tags2_r= thrust::raw_pointer_cast( &(tags2[0]) );
 
 	int nx = domInfo ->nx,
 		ny = domInfo ->ny;
@@ -71,7 +71,7 @@ void NavierStokesSolver::calculateForce()
 			*dxD		= thrust::raw_pointer_cast(&(domInfo->dxD[0])),
 			*dyD		= thrust::raw_pointer_cast(&(domInfo->dyD[0]));
 
-	int		*tagsIn_r	= thrust::raw_pointer_cast( &(tagsInD[0]) );
+	int		*tagsIn_r	= thrust::raw_pointer_cast( &(tagsIn[0]) );
 
 	// Calculating drag
 	cusp::array1d<double, cusp::device_memory>
@@ -102,9 +102,9 @@ void NavierStokesSolver::calculateForce()
 	//std::cout<<"FxY: "<< thrust::reduce(FxY.begin(), FxY.end())<<"\n";
 	//std::cout<<"FxU: "<< thrust::reduce(FxU.begin(), FxU.end())<<"\n";
 	///std::cout<<B.forceX[0]<<"\n";
-	std::cout<<"Fx: "<< thrust::reduce(FxX.begin(), FxX.end())<<" ";
-	std::cout<< thrust::reduce(FxY.begin(), FxY.end())<<" ";
-	std::cout<< thrust::reduce(FxU.begin(), FxU.end())<<"\n";
+	//std::cout<<"Fx: "<< thrust::reduce(FxX.begin(), FxX.end())<<" ";
+	//std::cout<< thrust::reduce(FxY.begin(), FxY.end())<<" ";
+	//std::cout<< thrust::reduce(FxU.begin(), FxU.end())<<"\n";
 
 	// Calculating lift
 	cusp::array1d<double, cusp::device_memory>
@@ -127,4 +127,75 @@ void NavierStokesSolver::calculateForce()
 	                                                nx, ny, B.startI[0], B.startJ[0], B.numCellsX[0], B.numCellsY[0]);
 
 	B.forceY[0] = thrust::reduce(FyX.begin(), FyX.end()) + thrust::reduce(FyY.begin(), FyY.end()) + thrust::reduce(FyU.begin(), FyU.end());
+	if (timeStep == 138 || timeStep == 139 || timeStep == 146 || timeStep == 147 ||  timeStep == 159 || timeStep == 160)
+		print_forces(FyX, FyY, FyU);
+	std::cout<<timeStep<<"\t";
+	std::cout<<"Fy: "<< B.forceY[0]<<"\t";
+	std::cout<<"FyX: "<< thrust::reduce(FyX.begin(), FyX.end())<<"\t";
+	std::cout<<"FyY: "<< thrust::reduce(FyY.begin(), FyY.end())<<"\t";
+	std::cout<<"FyU: "<< thrust::reduce(FyU.begin(), FyU.end())<<"\n";
+}
+
+void NavierStokesSolver::print_forces(cusp::array1d<double, cusp::device_memory> FyX, cusp::array1d<double, cusp::device_memory> FyY, cusp::array1d<double, cusp::device_memory> FyU)
+{
+	logger.startTimer("output");
+
+	std::ofstream myfile;
+	std::string folder = (*paramDB)["inputs"]["caseFolder"].get<std::string>();
+	std::stringstream out;
+	std::stringstream convert; convert << "/output/FyX"<<timeStep << ".csv";
+	std::string folder_name = convert.str();
+	out<<folder<<folder_name;
+	myfile.open(out.str().c_str());
+	myfile<<"FyX\n";
+	std::cout<<FyX[0]<<"\n";
+	for (int i = 0; i < B.numCellsY[0]+1; i++)
+	{
+		myfile<<FyX[i]<<"\n";
+	}
+	myfile.close();
+	std::cout<<"printed FyX\n";
+	
+	std::ofstream myfile2;
+	std::stringstream out2;
+	std::stringstream convert2; convert2 << "/output/FyY"<<timeStep << ".csv";
+	std::string folder_name2 = convert2.str();
+	out2<<folder<<folder_name2;
+	myfile2.open(out2.str().c_str());
+	myfile2<<"FyY\n";
+	for (int i = 0; i < B.numCellsX[0]; i++)
+	{
+		myfile2<<FyY[i]<<"\n";
+	}
+	myfile2.close();
+	std::cout<<"printed FyY\n";
+	
+	std::ofstream myfile3;
+	std::stringstream out3;
+	std::stringstream convert3; convert3 << "/output/FyU"<<timeStep << ".csv";
+	std::string folder_name3 = convert3.str();
+	out3<<folder<<folder_name3;
+	myfile3.open(out3.str().c_str());
+	myfile3<<"FyU\n";
+	int i,j,idx;
+	for (int J=0; J<domInfo->ny; J++)
+	{
+		for (int I=0; I<domInfo->nx; I++)
+		{
+			i = I-B.startI[0];
+			j = J-B.startJ[0];
+			idx = B.numCellsX[0]*j + i;
+			if (i >= 0 && j >= 0 && i < B.numCellsX[0]-1 && j < B.numCellsY[0]-1)
+			{
+				myfile3<<FyU[idx]<<"\t";	
+			}
+			else
+				myfile3<<"0"<<"\t";
+			
+		}
+		myfile3<<"\n";
+	}
+	myfile3.close();
+	std::cout<<"printed FyU\n";
+	logger.stopTimer("output");
 }

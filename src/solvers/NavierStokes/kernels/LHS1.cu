@@ -9,7 +9,7 @@
 namespace kernels
 {
 __global__
-void LHS_mid_X(int *row, int *col, double *val, int *tags, int *tags2, int *tagsIn, double *a, double *b, double *dx, double *dy, double dt, double nu, int nx, int ny)
+void LHS_mid_X(int *row, int *col, double *val, int *tags, int *tags2, int *tagsIn, double *distance_from_intersection_to_node, double *distance_between_nodes_at_IB, double *dx, double *dy, double dt, double nu, int nx, int ny)
 {
 	if (threadIdx.x + blockDim.x * blockIdx.x >= (nx-1)*ny)
 		return;
@@ -144,7 +144,7 @@ void LHS_mid_X(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 
 
 		row[numE] = i;
-		val[numE] = -a[i]/(a[i]+b[i]);
+		val[numE] = -distance_from_intersection_to_node[i]/(distance_from_intersection_to_node[i]+distance_between_nodes_at_IB[i]);
 		numE++;
 
 		//CENTER
@@ -175,7 +175,7 @@ void LHS_mid_X(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 			numE ++;
 
 			col[numE] = i-1;
-			val[numE] = -(dx[I]-a[i+1]) / (dx[I] - a[i+1] + b[i+1]);
+			val[numE] = -(dx[I]-distance_from_intersection_to_node[i+1]) / (dx[I] - distance_from_intersection_to_node[i+1] + distance_between_nodes_at_IB[i+1]);
 		}
 		else if (tags[i-1] != -1) //go left to body
 		{
@@ -195,7 +195,7 @@ void LHS_mid_X(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 			numE ++;
 
 			col[numE] = i + 1;
-			val[numE] = -(dx[I]-a[i-1]) / (dx[I] - a[i-1] + b[i-1]);
+			val[numE] = -(dx[I]-distance_from_intersection_to_node[i-1]) / (dx[I] - distance_from_intersection_to_node[i-1] + distance_between_nodes_at_IB[i-1]);
 		}
 		else if (tags[i+(nx-1)] != -1)//go north to body
 		{
@@ -215,7 +215,7 @@ void LHS_mid_X(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 			numE ++;
 
 			col[numE] = i - (nx-1);
-			val[numE] = -(dx[I]-a[i+(nx-1)]) / (dx[I] - a[i+(nx-1)] + b[i+(nx-1)]);
+			val[numE] = -(dx[I]-distance_from_intersection_to_node[i+(nx-1)]) / (dx[I] - distance_from_intersection_to_node[i+(nx-1)] + distance_between_nodes_at_IB[i+(nx-1)]);
 		}
 		else if (tags[i-(nx-1)] != -1)//go south to body
 		{
@@ -235,7 +235,7 @@ void LHS_mid_X(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 			numE ++;
 
 			col[numE] = i + (nx-1);
-			val[numE] = -(dx[I]-a[i-(nx-1)]) / (dx[I] - a[i-(nx-1)] + b[i-(nx-1)]);
+			val[numE] = -(dx[I]-distance_from_intersection_to_node[i-(nx-1)]) / (dx[I] - distance_from_intersection_to_node[i-(nx-1)] + distance_between_nodes_at_IB[i-(nx-1)]);
 		}
 		row[numE] = i;
 		numE++;
@@ -345,7 +345,7 @@ void LHS_BC_X(int *row, int *col, double *val, double *dx, double *dy, double dt
 }
 
 __global__
-void LHS_mid_Y(int *row, int *col, double *val, int *tags, int *tags2, int *tagsIn, double *a, double *b, double *dx, double *dy, double dt, double nu, int nx, int ny)
+void LHS_mid_Y(int *row, int *col, double *val, int *tags, int *tags2, int *tagsIn, double *distance_from_intersection_to_node, double *distance_between_nodes_at_IB, double *dx, double *dy, double dt, double nu, int nx, int ny)
 {
 	if (threadIdx.x + blockDim.x * blockIdx.x >= nx*(ny-1))
 		return;
@@ -475,7 +475,7 @@ void LHS_mid_Y(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 			col[numE] = i + nx;
 		}
 		row[numE] = i;
-		val[numE] = -a[i]/(b[i]+a[i]);
+		val[numE] = -distance_from_intersection_to_node[i]/(distance_between_nodes_at_IB[i]+distance_from_intersection_to_node[i]);
 		numE++;
 
 		row[numE] = i;
@@ -505,7 +505,7 @@ void LHS_mid_Y(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 			numE++;
 
 			col[numE] = i-1;
-			val[numE] = -(dx[I]-a[i+1]) / (dx[I] - a[i+1] + b[i+1]);
+			val[numE] = -(dx[I]-distance_from_intersection_to_node[i+1]) / (dx[I] - distance_from_intersection_to_node[i+1] + distance_between_nodes_at_IB[i+1]);
 		}
 		else if (tags[i-1] != -1) //go left to body
 		{
@@ -525,7 +525,7 @@ void LHS_mid_Y(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 			numE++;
 
 			col[numE] = i + 1;
-			val[numE] = -(dx[I]-a[i-1]) / (dx[I] - a[i-1] + b[i-1]);
+			val[numE] = -(dx[I]-distance_from_intersection_to_node[i-1]) / (dx[I] - distance_from_intersection_to_node[i-1] + distance_between_nodes_at_IB[i-1]);
 		}
 		else if (tags[i+nx] != -1)//go north to body
 		{
@@ -545,7 +545,7 @@ void LHS_mid_Y(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 			numE++;
 
 			col[numE] = i - nx;
-			val[numE] = -(dx[I]-a[i+nx]) / (dx[I] - a[i+nx] + b[i+nx]);
+			val[numE] = -(dx[I]-distance_from_intersection_to_node[i+nx]) / (dx[I] - distance_from_intersection_to_node[i+nx] + distance_between_nodes_at_IB[i+nx]);
 		}
 		else if (tags[i-nx] != -1)//go south to body
 		{
@@ -565,7 +565,7 @@ void LHS_mid_Y(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 			numE++;
 
 			col[numE] = i + nx;
-			val[numE] = -(dx[I]-a[i-nx]) / (dx[I] - a[i-nx] + b[i-nx]);
+			val[numE] = -(dx[I]-distance_from_intersection_to_node[i-nx]) / (dx[I] - distance_from_intersection_to_node[i-nx] + distance_between_nodes_at_IB[i-nx]);
 		}
 		row[numE] = i;
 		numE++;

@@ -40,6 +40,8 @@ void bodies::initialise(parameterDB &db, domain &D)
 	
 	forceX.resize(numBodies);
 	forceY.resize(numBodies);
+	forceXk.resize(numBodies);
+	forceYk.resize(numBodies);
 	converged.resize(numBodies);
 
 	// calculate offsets, number of points in each body and the total number of points
@@ -106,6 +108,20 @@ void bodies::initialise(parameterDB &db, domain &D)
 		calculateCellIndices(D);
 		calculateBoundingBoxes(db, D);
 	}
+
+	for (int i=0;i<totalPoints;i++)
+	{
+		midX += x[i];
+		midY += y[i];
+	}
+	midX /= totalPoints;
+	midY /= totalPoints;
+	midX=midX0;
+	midY=midY0;
+	centerVelocityV = 0;
+	centerVelocityU = 0;
+	centerVelocityU0= 0;
+	centerVelocityV0= 0;
 }
 
 /**

@@ -25,12 +25,12 @@ void NavierStokesSolver::generateRHS1()
 			*dx_r	= thrust::raw_pointer_cast( &(domInfo->dx[0]) ),
 			*dy_r	= thrust::raw_pointer_cast( &(domInfo->dy[0]) ),
 			*xp_r	= thrust::raw_pointer_cast( &(bc[XPLUS][0]) ),
-			*a_r	= thrust::raw_pointer_cast( &(aD[0]) ),
-			*b_r	= thrust::raw_pointer_cast( &(bD[0]) ),
-			*uv_r	= thrust::raw_pointer_cast( &(uvD[0]) );
+			*distance_from_intersection_to_node_r	= thrust::raw_pointer_cast( &(distance_from_intersection_to_node[0]) ),
+			*distance_between_nodes_at_IB_r	= thrust::raw_pointer_cast( &(distance_between_nodes_at_IB[0]) ),
+			*uv_r	= thrust::raw_pointer_cast( &(uv[0]) );
 	
-	int	*tags_r	= thrust::raw_pointer_cast( &(tagsD[0]) ),
-		*tagsIn_r=thrust::raw_pointer_cast( &(tagsInD[0]) );
+	int	*tags_r	= thrust::raw_pointer_cast( &(tags[0]) ),
+		*tagsIn_r=thrust::raw_pointer_cast( &(tagsIn[0]) );
 
 	double	nu = (*paramDB)["flow"]["nu"].get<double>();
 	double	dt = (*paramDB)["simulation"]["dt"].get<double>();
@@ -59,8 +59,8 @@ void NavierStokesSolver::generateRHS1()
 	kernels::generateRHS<<<dimGridUV,dimBlockUV>>>(rhs_r, L_r, Nold_r, N_r, u_r, bc1_r, dt, nx, ny);
 	if (B.numBodies > 0)
 	{
-		kernels::updateRHS1forIBX<<<dimGridU,dimBlockU>>>(tags_r, tagsIn_r, rhs_r, a_r, b_r, uv_r, nx, ny);
-		kernels::updateRHS1forIBY<<<dimGridV,dimBlockV>>>(tags_r, tagsIn_r, rhs_r, a_r, b_r, uv_r, nx, ny);
+		kernels::updateRHS1forIBX<<<dimGridU,dimBlockU>>>(tags_r, tagsIn_r, rhs_r, distance_from_intersection_to_node_r, distance_between_nodes_at_IB_r, uv_r, nx, ny);
+		kernels::updateRHS1forIBY<<<dimGridV,dimBlockV>>>(tags_r, tagsIn_r, rhs_r, distance_from_intersection_to_node_r, distance_between_nodes_at_IB_r, uv_r, nx, ny);
 	}
 }
 
@@ -176,14 +176,14 @@ void NavierStokesSolver::generateLHS1()
 	double 	*val_r	= thrust::raw_pointer_cast( &(LHS1.values[0])),
 			*dx_r	= thrust::raw_pointer_cast( &(domInfo->dxD[0])),
 			*dy_r	= thrust::raw_pointer_cast( &(domInfo->dyD[0])),
-			*a_r	= thrust::raw_pointer_cast( &(aD[0]) ),
-			*b_r	= thrust::raw_pointer_cast( &(bD[0]) );
+			*distance_from_intersection_to_node_r	= thrust::raw_pointer_cast( &(distance_from_intersection_to_node[0]) ),
+			*distance_between_nodes_at_IB_r	= thrust::raw_pointer_cast( &(distance_between_nodes_at_IB[0]) );
 
 	int 	*row_r	= thrust::raw_pointer_cast( &(LHS1.row_indices[0])),
 			*col_r	= thrust::raw_pointer_cast( &(LHS1.column_indices[0])),
-			*tags_r	= thrust::raw_pointer_cast( &(tagsD[0]) ),
-			*tags2_r= thrust::raw_pointer_cast( &(tags2D[0]) ),
-			*tagsIn_r= thrust::raw_pointer_cast( &(tagsInD[0]) );
+			*tags_r	= thrust::raw_pointer_cast( &(tags[0]) ),
+			*tags2_r= thrust::raw_pointer_cast( &(tags2[0]) ),
+			*tagsIn_r= thrust::raw_pointer_cast( &(tagsIn[0]) );
 
 	double	nu = (*paramDB)["flow"]["nu"].get<double>();
 	double	dt = (*paramDB)["simulation"]["dt"].get<double>();
@@ -197,8 +197,8 @@ void NavierStokesSolver::generateLHS1()
 	dim3 blockV(blocksize, 1);
 	if (B.numBodies > 0)
 	{
-		kernels::LHS_mid_X<<<gridU,blockU>>>(row_r, col_r, val_r, tags_r, tags2_r, tagsIn_r, a_r, b_r, dx_r, dy_r, dt, nu, nx, ny);
-		kernels::LHS_mid_Y<<<gridV,blockV>>>(row_r, col_r, val_r, tags_r, tags2_r, tagsIn_r, a_r, b_r, dx_r, dy_r, dt, nu, nx, ny);
+		kernels::LHS_mid_X<<<gridU,blockU>>>(row_r, col_r, val_r, tags_r, tags2_r, tagsIn_r, distance_from_intersection_to_node_r, distance_between_nodes_at_IB_r, dx_r, dy_r, dt, nu, nx, ny);
+		kernels::LHS_mid_Y<<<gridV,blockV>>>(row_r, col_r, val_r, tags_r, tags2_r, tagsIn_r, distance_from_intersection_to_node_r, distance_between_nodes_at_IB_r, dx_r, dy_r, dt, nu, nx, ny);
 	}
 	else
 	{

@@ -108,6 +108,9 @@ cleanall: clean cleanexternal cleandoc
 
 # commands to run cuIBM simulations
 
+vivUred3:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/viv/Ured3
+
 cylinderRe40:
 	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/cylinder/Re40
 	

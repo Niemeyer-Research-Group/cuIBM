@@ -41,18 +41,21 @@ protected:
 		bc[4];		///< array that contains the boundary conditions of the rectangular
 
 	cusp::array1d<int, cusp::device_memory>
-		tagsD,		///< indices of velocity nodes near the IB on the device
-		tags2D,		///< indices of 2nd closest velocity node on the device
-		tagsInD,	///< indices of velocity nodes inside the IB
-		tagsPD, 	///< indices of pressure nodes inside the IB
-		tagsPOutD;	///< indices of pressure nodes outside the IB
+		tags,		///< indices of velocity nodes near the IB on the device
+		tagsOld,
+		tagsPOld,
+		tags2,		///< indices of 2nd closest velocity node on the device
+		tagsIn,	///< indices of velocity nodes inside the IB
+		tagsP, 	///< indices of pressure nodes inside the IB
+		tagsPOut;	///< indices of pressure nodes outside the IB
 
 	cusp::array1d<double, cusp::device_memory>
-		aD,			///< distance between IB and tagged node on the device
-		bD,			///< distance between tags and tags2 on the device
-		distance_from_u_to_bodyD,
-		distance_from_v_to_bodyD,
-		uvD;		///< velocity at the IB on the device
+		distance_from_intersection_to_node,			///< distance between IB and tagged node on the device
+		distance_between_nodes_at_IB,			///< distance between tags and tags2 on the device
+		distance_from_u_to_body,
+		distance_from_v_to_body,
+		uv,		///< velocity at the IB on the device
+		test;
 
 	size_t
 		timeStep,			///< time iteration number
@@ -67,9 +70,9 @@ protected:
 		LHS1,		///< Matrix for the unknown uhat
 		LHS2;		///< Matrix for the unknown phi
 	     
-	//preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >
-	//*PC1,		///< preconditioner for the intermediate flux solver
-	//*PC2;		///< preconditioner for the Poisson solver
+	preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >
+	*PC1,		///< preconditioner for the intermediate flux solver
+	*PC2;		///< preconditioner for the Poisson solver
 
 	bodies 	B;		///< bodies in the flow
 
@@ -77,6 +80,7 @@ protected:
 	
 	std::ofstream iterationsFile;	///< file that contains the number of iterations
 	std::ofstream forceFile;
+	std::ofstream midPositionFile;
 			
 	// assemble the right hand-side of the system for the intermediate flux
 	void generateRHS1();
@@ -131,6 +135,8 @@ protected:
 
 	//solves for the new pressure
 	void updatePressure();
+
+	void print_forces(cusp::array1d<double, cusp::device_memory> FyX, cusp::array1d<double, cusp::device_memory> FyY, cusp::array1d<double, cusp::device_memory> FyU);
 
 public:
 	// constructor -- copy the database and information about the computational grid

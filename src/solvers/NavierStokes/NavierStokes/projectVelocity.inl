@@ -16,8 +16,8 @@ void NavierStokesSolver::velocityProjection()
 			*dxD_r	= thrust::raw_pointer_cast( &(domInfo-> dxD[0]) ),
 			*dyD_r	= thrust::raw_pointer_cast( &(domInfo-> dyD[0]) );
 	
-	int *tagsP_r = thrust::raw_pointer_cast( &(tagsPD[0]) ),
-		*tagsin_r = thrust::raw_pointer_cast( &(tagsInD[0]) );
+	int *tagsP_r = thrust::raw_pointer_cast( &(tagsP[0]) ),
+		*tagsin_r = thrust::raw_pointer_cast( &(tagsIn[0]) );
 
 	double	dt = (*paramDB)["simulation"]["dt"].get<double>();
 

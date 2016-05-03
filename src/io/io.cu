@@ -175,6 +175,8 @@ void initialiseDefaultDB(parameterDB &DB)
 	DB[sim]["nsave"].set<int>(100);
 	DB[sim]["restart"].set<bool>(false);
 	DB[sim]["startStep"].set<bool>(0);
+	DB[sim]["FSI"].set<int>(0);
+	DB[sim]["Ured"].set<double>(3);
 
 	// velocity solver
 	string solver = "velocitySolve";

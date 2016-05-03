@@ -12,13 +12,13 @@ namespace kernels
 {
 __global__
 void tag_u(int *tags, int *tagsIn, int *tags2, double *bx, double *by, double *uB, double *vB, double *yu, double *xu,
-			   double *a, double *b, double *distance_from_u_to_body, double *distance_from_v_to_body, double *uv,
+			   double *distance_from_intersection_to_node, double *distance_between_nodes_at_IB, double *distance_from_u_to_body, double *distance_from_v_to_body, double *uv,
 			   int i_start, int j_start, int i_end, int j_end, int nx, int ny, int totalPoints, double midX, double midY)
 {
 	// calculate indicies indices
 	int idx	= threadIdx.x + blockDim.x * blockIdx.x,
 		i	= idx % (i_end-i_start),
-		j	= idx / (j_end-j_start),
+		j	= idx / (i_end-i_start),
 		I	= i_start + i,
 		J	= j_start + j,
 		iu = J*(nx-1) + I,
@@ -194,33 +194,33 @@ void tag_u(int *tags, int *tagsIn, int *tags2, double *bx, double *by, double *u
 
 	if (outsideX && bdryFlagX>=0)
 	{
-		tagsIn[iu] = -1;
-		tags[iu]		= bdryFlagX;
+		tagsIn[iu]	= -1;
+		tags[iu]	= bdryFlagX;
 		tags2[iu]	= bdryFlag2X;
-		a[iu]		= Xa;
-		b[iu]		= Xb;
+		distance_from_intersection_to_node[iu]		= Xa;
+		distance_between_nodes_at_IB[iu]		= Xb;
 		uv[iu]		= uvX;
 	}
 	else if (outsideY && bdryFlagY>=0)
 	{
-		tagsIn[iu] = -1;
-		tags[iu]		= bdryFlagY;
+		tagsIn[iu]	= -1;
+		tags[iu]	= bdryFlagY;
 		tags2[iu]	= bdryFlag2Y;
-		a[iu]		= Ya;
-		b[iu]		= Yb;
+		distance_from_intersection_to_node[iu]		= Ya;
+		distance_between_nodes_at_IB[iu]		= Yb;
 		uv[iu]		= uvY;
 	}
 }
 
 __global__
 void tag_v(int *tags, int *tagsIn, int *tags2, double *bx, double *by, double *uB, double *vB, double *yv, double *xv,
-		   double *a, double *b, double *distance_from_u_to_body, double *distance_from_v_to_body, double *uv,
+		   double *distance_from_intersection_to_node, double *distance_between_nodes_at_IB, double *distance_from_u_to_body, double *distance_from_v_to_body, double *uv,
 		   int i_start, int j_start, int i_end, int j_end, int nx, int ny, int totalPoints, double midX, double midY)
 {
 	// calculate indicies indices
 	int idx	= threadIdx.x + blockDim.x * blockIdx.x,
 		i	= idx % (i_end-i_start),
-		j	= idx / (j_end-j_start),
+		j	= idx / (i_end-i_start),
 		I	= i_start + i,
 		J	= j_start + j,
 		iv	= J*nx + I + (nx-1)*ny,
@@ -387,8 +387,8 @@ void tag_v(int *tags, int *tagsIn, int *tags2, double *bx, double *by, double *u
 		tagsIn[iv] = -1;
 		tags[iv]    = bdryFlagY;
 		tags2[iv]   = bdryFlag2Y;
-		a[iv]  = Ya;
-		b[iv] = Yb;
+		distance_from_intersection_to_node[iv]  = Ya;
+		distance_between_nodes_at_IB[iv] = Yb;
 		uv[iv]      = uvY;
 	}
 	else if (outsideX && bdryFlagX>=0)
@@ -396,8 +396,8 @@ void tag_v(int *tags, int *tagsIn, int *tags2, double *bx, double *by, double *u
 		tagsIn[iv] = -1;
 		tags[iv]    = bdryFlagX;
 		tags2[iv]   = bdryFlag2X;
-		a[iv]  = Xa;
-		b[iv] = Xb;
+		distance_from_intersection_to_node[iv]  = Xa;
+		distance_between_nodes_at_IB[iv] = Xb;
 		uv[iv]      = uvX;
 	}
 }
@@ -409,7 +409,7 @@ void tag_p(int *tagsP, int *tagsPOut, double *bx, double *by, double *yu, double
 	// calculate indicies indices
 	int idx	= threadIdx.x + blockDim.x * blockIdx.x,
 		i	= idx % (i_end-i_start),
-		j	= idx / (j_end-j_start),
+		j	= idx / (i_end-i_start),
 		I	= i_start + i,
 		J	= j_start + j,
 		ip	= J*nx + I;

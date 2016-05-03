@@ -33,7 +33,7 @@ void NavierStokesSolver::initialise()
 	logger.startTimer("initialise");
 	int nx = domInfo->nx,
 	    ny = domInfo->ny;
-	
+
 	int numUV = (nx-1)*ny + nx*(ny-1);
 	int numP  = nx*ny;
 
@@ -43,7 +43,7 @@ void NavierStokesSolver::initialise()
 	// initial values of timeStep
 	timeStep = (*paramDB)["simulation"]["startStep"].get<int>();
 
-	// creates directory 
+	// creates directory
 	std::string folder = (*paramDB)["inputs"]["caseFolder"].get<std::string>();
 	io::makeDirectory(folder);;
 
@@ -54,6 +54,10 @@ void NavierStokesSolver::initialise()
 	std::stringstream outiter;
 	outiter << folder << "/iterations";
 	iterationsFile.open(outiter.str().c_str());
+
+	std::stringstream outPosition;
+	outPosition << folder <<"/midPosition";
+	midPositionFile.open(outPosition.str().c_str());
 
 	std::cout << "Initialised common stuff!" << std::endl;
 
@@ -77,28 +81,33 @@ void NavierStokesSolver::initialise()
 	force.resize(numUV);
 
 	//tagpoints, size uv, device
-	tagsD.resize(numUV);//used in lhs1
-	tags2D.resize(numUV);//used in lhs1
-	tagsInD.resize(numUV);//used in lhs1
-	aD.resize(numUV);
-	bD.resize(numUV);
-	uvD.resize(numUV);
+	tags.resize(numUV);//used in lhs1
+	tagsOld.resize(numUV);
+	tagsPOld.resize(numP);
+	tags2.resize(numUV);//used in lhs1
+	tagsIn.resize(numUV);//used in lhs1
+	distance_from_intersection_to_node.resize(numUV);
+	distance_between_nodes_at_IB.resize(numUV);
+	uv.resize(numUV);
 
 	//doubles, size np, device
 	pressure.resize(numP);
 	rhs2.resize(numP);
 	pressure_old.resize(numP);
+	test.resize(numP);//flag
 
 	//tagpoints, size np, device
-	tagsPD.resize(numP);//flag
-	tagsPOutD.resize(numP);//flag
-	distance_from_u_to_bodyD.resize(numP);
-	distance_from_v_to_bodyD.resize(numP);
+	tagsP.resize(numP);//flag
+	tagsPOut.resize(numP);//flag
+	distance_from_u_to_body.resize(numP);
+	distance_from_v_to_body.resize(numP);
 
 	cusp::blas::fill(rhs2, 0);//flag
 	cusp::blas::fill(uhat, 0);//flag
 	cusp::blas::fill(Nold, 0);//flag
 	cusp::blas::fill(N, 0);//flag
+	cusp::blas::fill(tagsOld,-1);
+	cusp::blas::fill(tagsPOld,-1);
 	std::cout<<"Initialised Arrays!" <<std::endl;
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
@@ -134,7 +143,7 @@ void NavierStokesSolver::initialise()
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//Initialise boundary condition arrays
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	boundaryCondition 
+	boundaryCondition
 		**bcInfo
 	     = (*paramDB)["flow"]["boundaryConditions"].get<boundaryCondition **>();
 
@@ -188,15 +197,15 @@ void NavierStokesSolver::initialise()
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	generateLHS1();
 	generateLHS2();
-	//cusp::print(LHS1);
-	//cusp::print(LHS2);
 
-	//if ((*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>() != NONE)
-	//	PC1 = new preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >(LHS1, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>());
-	//if ((*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>() != NONE)
-	//{
-	//	PC2 = new preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >(LHS2, (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
-	//}
+	if ((*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>() != NONE)
+	{
+		PC1 = new preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >(LHS1, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>());
+	}
+	if ((*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>() != NONE)
+	{
+		PC2 = new preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >(LHS2, (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
+	}
 	std::cout << "Assembled LHS matrices!" << std::endl;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -239,10 +248,6 @@ void NavierStokesSolver::stepTime()
 	timeStep++;
 	if (timeStep%(*paramDB)["simulation"]["nsave"].get<int>() == 0)
 	{
-		//arrayprint(u,"u","x");
-		//arrayprint(uhat,"uhat","x");
-		//arrayprint(u,"v","y");
-		//arrayprint(pressure,"pressure","p");
 	}
 	//std::cout<<"Timestep: "<<timeStep<<"\n";
 }
@@ -283,12 +288,15 @@ void NavierStokesSolver::solveIntermediateVelocity()
 	logger.startTimer("solveIntermediateVel");
 	int  maxIters = (*paramDB)["velocitySolve"]["maxIterations"].get<int>();
 	double relTol = (*paramDB)["velocitySolve"]["tolerance"].get<double>();
-	//cusp::default_monitor<double> sys1Mon(rhs1, maxIters, relTol); //cusp 0.4.0 version
 	cusp::monitor<double> sys1Mon(rhs1,maxIters,relTol);
-	//if ((*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>() != NONE)
-	//	cusp::krylov::bicgstab(LHS1, uhat, rhs1, sys1Mon, *PC1);
-	//else
+	if ((*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>() != NONE)
+	{
+		cusp::krylov::bicgstab(LHS1, uhat, rhs1, sys1Mon, *PC1);
+	}
+	else
+	{
 		cusp::krylov::bicgstab(LHS1, uhat, rhs1, sys1Mon);
+	}
 
 	iterationCount1 = sys1Mon.iteration_count();
 
@@ -311,16 +319,19 @@ void NavierStokesSolver::solveIntermediateVelocity()
 void NavierStokesSolver::solvePoisson()
 {
 	logger.startTimer("solvePoisson");
-	
+
 	int  maxIters = (*paramDB)["PoissonSolve"]["maxIterations"].get<int>();
 	double relTol   = (*paramDB)["PoissonSolve"]["tolerance"].get<double>();
 
-	//cusp::default_monitor<double> sys2Mon(rhs2, maxIters, relTol); //cusp 0.4.0 version
 	cusp::monitor<double> sys2Mon(rhs2, maxIters, relTol);
-	//if ((*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>() != NONE)
-	//	cusp::krylov::bicgstab(LHS2, pressure, rhs2, sys2Mon, *PC2);
-	//else
+	if ((*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>() != NONE)
+	{
+		cusp::krylov::bicgstab(LHS2, pressure, rhs2, sys2Mon, *PC2);
+	}
+	else
+	{
 		cusp::krylov::bicgstab(LHS2, pressure, rhs2, sys2Mon);
+	}
 
 	iterationCount2 = sys2Mon.iteration_count();
 	if (!sys2Mon.converged())
@@ -331,7 +342,7 @@ void NavierStokesSolver::solvePoisson()
 		std::cout << "Tolerance    : " << sys2Mon.tolerance() << std::endl;
 		std::exit(-1);
 	}
-	
+
 	logger.stopTimer("solvePoisson");
 }
 
@@ -372,7 +383,7 @@ void NavierStokesSolver::arrayprint(cusp::array1d<double, cusp::device_memory> v
 	std::ofstream myfile;
 	std::string folder = (*paramDB)["inputs"]["caseFolder"].get<std::string>();
 	std::stringstream out;
-	std::stringstream convert; convert << "/output/" << name << timeStep << ".csv";
+	std::stringstream convert; convert << "/output/" << timeStep << name << ".csv";
 	std::string folder_name = convert.str();
 	out<<folder<<folder_name;
 	myfile.open(out.str().c_str());
@@ -383,13 +394,14 @@ void NavierStokesSolver::arrayprint(cusp::array1d<double, cusp::device_memory> v
 		{
 			i = row_length*J + I + pad;
 			myfile<<round(10000*value[i])/10000;
+			//myfile<<value[i];
 			myfile<<'\t';
 		}
 		myfile<<"\n";
 	}
 	myfile<<name<<"\n\n";
 	myfile.close();
-	std::cout<<"printing "<<name <<"\n";
+	std::cout<<"printed "<<name <<"\n";
 	logger.stopTimer("output");
 }
 
@@ -412,6 +424,8 @@ void NavierStokesSolver::writeCommon()
 
 	// write the number of iterations for each solve
 	iterationsFile << timeStep << '\t' << iterationCount1 << '\t' << iterationCount2 << std::endl;
+	if (B.numBodies>0)
+		midPositionFile << timeStep << '\t' << B.midX << '\t' << B.midY <<std::endl;
 }
 
 /**
@@ -435,7 +449,7 @@ void NavierStokesSolver::writeData()
 			nump++;
 	}
 	B.forceX[0] = thrust::reduce(force.begin(), force.end() - num)/nump;
-	//arrayprint(force,"force","x",true,true);*/
+	 */
 	if (B.numBodies != 0)
 		calculateForce();
 	logger.stopTimer("calculateForce");
@@ -452,6 +466,7 @@ void NavierStokesSolver::shutDown()
 {
 	io::printTimingInfo(logger);
 	iterationsFile.close();
+	midPositionFile.close();
 	forceFile.close();
 }
 
@@ -461,14 +476,3 @@ void NavierStokesSolver::shutDown()
 #include "NavierStokes/projectVelocity.inl"
 #include "NavierStokes/tagpoints.inl"
 #include "NavierStokes/calculateForce.inl"
-
-//todo upgrade to amgx
-//todo add inside interpolation
-//todo fix oscillations for impulsively started cylinder
-//todo move tagpoints to GPU
-//todo add viv
-//todo validate viv
-//todo remove multibody remants
-//todo
-//todo add documentation for all new functions
-//todo solve world hunger

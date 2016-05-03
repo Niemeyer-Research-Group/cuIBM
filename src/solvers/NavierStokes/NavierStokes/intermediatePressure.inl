@@ -23,12 +23,12 @@ void NavierStokesSolver::generateRHS2()
 			*yp_r	= thrust::raw_pointer_cast( &(bc[YPLUS][0]) ),
 			*xm_r	= thrust::raw_pointer_cast( &(bc[XMINUS][0]) ),
 			*xp_r	= thrust::raw_pointer_cast( &(bc[XPLUS][0]) ),
-			*distance_from_u_to_body_r = thrust::raw_pointer_cast( &(distance_from_u_to_bodyD[0]) ),
-			*distance_from_v_to_body_r = thrust::raw_pointer_cast( &(distance_from_v_to_bodyD[0]) );
+			*distance_from_u_to_body_r = thrust::raw_pointer_cast( &(distance_from_u_to_body[0]) ),
+			*distance_from_v_to_body_r = thrust::raw_pointer_cast( &(distance_from_v_to_body[0]) );
 
-	int		*tagsP_r= thrust::raw_pointer_cast( &(tagsPD[0]) ),
-			*tagsIn_r=thrust::raw_pointer_cast( &(tagsInD[0]) ),
-			*tagsPO_r=thrust::raw_pointer_cast( &(tagsPOutD[0]) );
+	int		*tagsP_r= thrust::raw_pointer_cast( &(tagsP[0]) ),
+			*tagsIn_r=thrust::raw_pointer_cast( &(tagsIn[0]) ),
+			*tagsPO_r=thrust::raw_pointer_cast( &(tagsPOut[0]) );
 	const int blocksize = 256;
 	
 	double	dt = (*paramDB)["simulation"]["dt"].get<double>();
@@ -57,13 +57,13 @@ void NavierStokesSolver::generateLHS2()
 			*dx_r	= thrust::raw_pointer_cast( &(domInfo->dxD[0]) ),
 			*dy_r	= thrust::raw_pointer_cast( &(domInfo->dyD[0]) ),
 			*val_r	= thrust::raw_pointer_cast( &(LHS2.values[0]) ),
-			*dxu_r	= thrust::raw_pointer_cast( &(distance_from_u_to_bodyD[0]) ),
-			*dyv_r	= thrust::raw_pointer_cast( &(distance_from_v_to_bodyD[0]) );
+			*dxu_r	= thrust::raw_pointer_cast( &(distance_from_u_to_body[0]) ),
+			*dyv_r	= thrust::raw_pointer_cast( &(distance_from_v_to_body[0]) );
 
 	int		*row_r	= thrust::raw_pointer_cast( &(LHS2.row_indices[0]) ),
 			*col_r	= thrust::raw_pointer_cast( &(LHS2.column_indices[0]) ),
-			*tagsP_r= thrust::raw_pointer_cast( &(tagsPD[0]) ),
-			*tagsPo_r= thrust::raw_pointer_cast( &(tagsPOutD[0]) );
+			*tagsP_r= thrust::raw_pointer_cast( &(tagsP[0]) ),
+			*tagsPo_r= thrust::raw_pointer_cast( &(tagsPOut[0]) );
 
 	const int blocksize = 256;
 	dim3 grid( int( (nx*ny-0.5)/blocksize ) +1, 1);
