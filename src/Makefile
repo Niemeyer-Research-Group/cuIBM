@@ -107,6 +107,8 @@ cleanall: clean cleanexternal cleandoc
 ################################################################################
 
 # commands to run cuIBM simulations
+oscKC5:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/Re100
 
 vivUred3:
 	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/viv/Ured3

@@ -5,3 +5,4 @@
 //todo add ured to parse, yaml
 //todo remove device/host from dominfo
 //todo remove a and b from .h files
+//todo detemplatize preconditioner.h

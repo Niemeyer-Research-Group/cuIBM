@@ -61,7 +61,6 @@ void NavierStokesSolver::calculateForce()
 {
 	int  nx = domInfo->nx,
 	     ny = domInfo->ny;
-
 	double	dt = (*paramDB)["simulation"]["dt"].get<double>(),
 			nu = (*paramDB)["flow"]["nu"].get<double>();
 
@@ -126,14 +125,16 @@ void NavierStokesSolver::calculateForce()
 	kernels::liftUnsteady <<<dimGridY, dimBlock>>> (FyU_r, u_r, uold_r, dxD, dyD, dt, \
 	                                                nx, ny, B.startI[0], B.startJ[0], B.numCellsX[0], B.numCellsY[0]);
 
-	B.forceY[0] = thrust::reduce(FyX.begin(), FyX.end()) + thrust::reduce(FyY.begin(), FyY.end()) + thrust::reduce(FyU.begin(), FyU.end());
-	if (timeStep == 138 || timeStep == 139 || timeStep == 146 || timeStep == 147 ||  timeStep == 159 || timeStep == 160)
-		print_forces(FyX, FyY, FyU);
+	//B.forceY[0] = thrust::reduce(FyX.begin(), FyX.end()) + thrust::reduce(FyY.begin(), FyY.end()) + thrust::reduce(FyU.begin(), FyU.end());
+	//if (timeStep == 138 || timeStep == 139 || timeStep == 146 || timeStep == 147 ||  timeStep == 159 || timeStep == 160)
+		//print_forces(FyX, FyY, FyU);
 	std::cout<<timeStep<<"\t";
 	std::cout<<"Fy: "<< B.forceY[0]<<"\t";
 	std::cout<<"FyX: "<< thrust::reduce(FyX.begin(), FyX.end())<<"\t";
 	std::cout<<"FyY: "<< thrust::reduce(FyY.begin(), FyY.end())<<"\t";
 	std::cout<<"FyU: "<< thrust::reduce(FyU.begin(), FyU.end())<<"\n";
+	B.forceY[0] = thrust::reduce(FyX.begin(), FyX.end()) + thrust::reduce(FyY.begin(), FyY.end()) + thrust::reduce(FyU.begin(), FyU.end());
+
 }
 
 void NavierStokesSolver::print_forces(cusp::array1d<double, cusp::device_memory> FyX, cusp::array1d<double, cusp::device_memory> FyY, cusp::array1d<double, cusp::device_memory> FyU)
@@ -148,7 +149,6 @@ void NavierStokesSolver::print_forces(cusp::array1d<double, cusp::device_memory>
 	out<<folder<<folder_name;
 	myfile.open(out.str().c_str());
 	myfile<<"FyX\n";
-	std::cout<<FyX[0]<<"\n";
 	for (int i = 0; i < B.numCellsY[0]+1; i++)
 	{
 		myfile<<FyX[i]<<"\n";

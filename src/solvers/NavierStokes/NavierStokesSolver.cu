@@ -198,14 +198,7 @@ void NavierStokesSolver::initialise()
 	generateLHS1();
 	generateLHS2();
 
-	if ((*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>() != NONE)
-	{
-		PC1 = new preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >(LHS1, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>());
-	}
-	if ((*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>() != NONE)
-	{
-		PC2 = new preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >(LHS2, (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
-	}
+	PC.generate(LHS1,LHS2, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>(), (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
 	std::cout << "Assembled LHS matrices!" << std::endl;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -289,14 +282,7 @@ void NavierStokesSolver::solveIntermediateVelocity()
 	int  maxIters = (*paramDB)["velocitySolve"]["maxIterations"].get<int>();
 	double relTol = (*paramDB)["velocitySolve"]["tolerance"].get<double>();
 	cusp::monitor<double> sys1Mon(rhs1,maxIters,relTol);
-	if ((*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>() != NONE)
-	{
-		cusp::krylov::bicgstab(LHS1, uhat, rhs1, sys1Mon, *PC1);
-	}
-	else
-	{
-		cusp::krylov::bicgstab(LHS1, uhat, rhs1, sys1Mon);
-	}
+	cusp::krylov::bicgstab(LHS1, uhat, rhs1, sys1Mon, *PC.PC1);
 
 	iterationCount1 = sys1Mon.iteration_count();
 
@@ -324,14 +310,7 @@ void NavierStokesSolver::solvePoisson()
 	double relTol   = (*paramDB)["PoissonSolve"]["tolerance"].get<double>();
 
 	cusp::monitor<double> sys2Mon(rhs2, maxIters, relTol);
-	if ((*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>() != NONE)
-	{
-		cusp::krylov::bicgstab(LHS2, pressure, rhs2, sys2Mon, *PC2);
-	}
-	else
-	{
-		cusp::krylov::bicgstab(LHS2, pressure, rhs2, sys2Mon);
-	}
+	cusp::krylov::bicgstab(LHS2, pressure, rhs2, sys2Mon, *PC.PC2);
 
 	iterationCount2 = sys2Mon.iteration_count();
 	if (!sys2Mon.converged())

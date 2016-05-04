@@ -90,36 +90,26 @@ void NavierStokesSolver::tagPoints()
 		   f = thrust::reduce(tagsPOld.begin(), tagsPOld.end()),
 		   g = thrust::reduce(tagsPOut.begin(), tagsPOut.end());
 
+	if (timeStep>0)
+	{
 	if (a!=b)
 	{
 		std::cout<<"tags x changed at " << timeStep<<"\n";
-		//std::cout<<"a " << a<<"\n";
-		//std::cout<<"b " << b<<"\n";
 		arrayprint(tags,"tagsx","x");
 		arrayprint(tagsOld,"tagsOldx","x");
 	}
 	if (c!=d)
 	{
 		std::cout<<"tags y changed at " << timeStep<<"\n";
-		//std::cout<<"c " << c<<"\n";
-		//std::cout<<"d " << d<<"\n";
 		arrayprint(tags,"tagsy","y");
 		arrayprint(tagsOld,"tagsOldy","y");
 	}
 	if (f!=g)
 	{
 		std::cout<<"tags p changed at " << timeStep<<"\n";
-		//std::cout<<"f " << f<<"\n";
-		//std::cout<<"g " << g<<"\n";
 		arrayprint(tagsPOut,"tagsp","p");
 		arrayprint(tagsPOld,"tagsPOldx","p");
 	}
-	//arrayprint(uhat,"uhat","x");
-	//arrayprint(uhat,"vhat","y");
-	//arrayprint(rhs2,"rhs2","p");
-	//arrayprint(rhs2test,"rhs2test","p");
-	//arrayprint(pressure,"pressure","p");
-	//arrayprint(u,"u","x");
-	//arrayprint(u,"v","y");
+	}
 	logger.stopTimer("tagPoints");
 }

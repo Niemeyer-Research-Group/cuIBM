@@ -229,10 +229,10 @@ void bodies::calculateBoundingBoxes(parameterDB &db, domain &D)
 		numCellsX[k] = i - startI[k];
 		numCellsY[k] = j - startJ[k];
 	}
-	std::cout<<startI[0]<<"\t";
-	std::cout<<startJ[0]<<"\t";
-	std::cout<<numCellsX[0]<<"\t";
-	std::cout<<numCellsY[0]<<"\n";
+	//std::cout<<startI[0]<<"\t";
+	//std::cout<<startJ[0]<<"\t";
+	//std::cout<<numCellsX[0]<<"\t";
+	//std::cout<<numCellsY[0]<<"\n";
 }
 
 /**

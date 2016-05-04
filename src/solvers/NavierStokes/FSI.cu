@@ -43,6 +43,7 @@ void FSI::updateSolver()
 	NavierStokesSolver::logger.startTimer("Preconditioner");
 	if (NavierStokesSolver::iterationCount2 > 20)
 	{
+		//NavierStokesSolver::PC.update(NavierStokesSolver::LHS1,NavierStokesSolver::LHS2);
 		//NavierStokesSolver::PC1->update(NavierStokesSolver::LHS1);
 		//NavierStokesSolver::PC2->update(NavierStokesSolver::LHS2);
 	}
@@ -136,6 +137,7 @@ void FSI::LC()
 	//Release the body after a certain timestep
 	if (NavierStokesSolver::timeStep >= (*NavierStokesSolver::paramDB)["simulation"]["startStep"].get<int>())
 	{
+		std::cout<<"5.1\n\n";
 		moveBody();
 		updateSolver();
 	}

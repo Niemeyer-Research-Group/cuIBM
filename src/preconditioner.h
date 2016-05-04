@@ -57,6 +57,8 @@ public:
 	// update the preconditioner of the system
 	void update(const Matrix &A);
 
+	void print();
+
 	// overload the operator ()
 	template <typename VectorType1, typename VectorType2>
 	void operator()(const VectorType1 &x, VectorType2 &y) const;
@@ -186,3 +188,15 @@ void preconditioner<Matrix>::operator()(const VectorType1 &x, VectorType2 &y) co
 	}
 }
 
+/**
+/ * \brief Print preconditioner information
+*///
+template <class Matrix>
+void preconditioner<Matrix>::print()
+{
+	typedef typename Matrix::value_type   ValueType;
+	typedef typename Matrix::index_type   IndexType;
+	typedef typename Matrix::memory_space MemorySpace;
+
+	LO->print();
+}

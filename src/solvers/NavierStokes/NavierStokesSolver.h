@@ -3,6 +3,7 @@
 #include <domain.h>
 #include <bodies.h>
 #include <io/io.h>
+#include "newPrecon.h"
 #include <parameterDB.h>
 #include <preconditioner.h>
 #include <cusp/precond/aggregation/smoothed_aggregation.h>
@@ -69,12 +70,10 @@ protected:
 	cusp::coo_matrix<int, double, cusp::device_memory>
 		LHS1,		///< Matrix for the unknown uhat
 		LHS2;		///< Matrix for the unknown phi
-	     
-	preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >
-	*PC1,		///< preconditioner for the intermediate flux solver
-	*PC2;		///< preconditioner for the Poisson solver
 
 	bodies 	B;		///< bodies in the flow
+
+	newPrecon PC;
 
 	Logger logger;	///< instance of the class \c Logger to track time of different tasks
 	
@@ -151,13 +150,13 @@ public:
 	void initialise();
 	
 	// calculate the variables at the next time step
-	void stepTime();
+	virtual void stepTime();
 	
 	// write numerical solution and number of iterations performed in each solver.
 	void writeCommon();
 	
 	// write data into files
-	void writeData();
+	virtual void writeData();
 	
 	// evaluate the condition required to stop the simulation
 	bool finished();

@@ -55,7 +55,8 @@ void parseSimulation(const YAML::Node &node, parameterDB &DB)
 	       scaleCV = 2.0;
 	int    nt = 100,
 	       nsave = 100,
-	       startStep = 0;
+	       startStep = 0,
+	       FSI = 0;
 	string convSch = "ADAMS_BASHFORTH_2";
 	bool   restart = false;
 
@@ -67,6 +68,13 @@ void parseSimulation(const YAML::Node &node, parameterDB &DB)
 	try
 	{
 		node["restart"] >> restart;
+	}
+	catch(...)
+	{
+	}
+	try
+	{
+		node["FSI"] >> FSI;
 	}
 	catch(...)
 	{
@@ -93,6 +101,7 @@ void parseSimulation(const YAML::Node &node, parameterDB &DB)
 	DB[dbKey]["nsave"].set<int>(nsave);
 	DB[dbKey]["nt"].set<int>(nt);
 	DB[dbKey]["restart"].set<bool>(restart);
+	DB[dbKey]["FSI"].set<int>(FSI);
 
 	string system = "velocity", linearSolver = "CG", preconditioner = "DIAGONAL";
 	double tol = 1e-5;
