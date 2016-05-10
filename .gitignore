@@ -73,3 +73,9 @@ scripts/python/*.bdy
 __pycache__/
 *.py[cod]
 *$py.class
+
+# Eclipse stuff
+.project
+.cproject
+
+.DS_Store
