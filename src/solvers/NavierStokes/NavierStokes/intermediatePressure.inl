@@ -17,8 +17,8 @@ void NavierStokesSolver::generateRHS2()
 
 	double	*rhs2_r	= thrust::raw_pointer_cast( &(rhs2[0]) ),
 			*uhat_r	= thrust::raw_pointer_cast( &(uhat[0]) ),
-			*dx_r	= thrust::raw_pointer_cast( &(domInfo->dxD[0]) ),
-			*dy_r	= thrust::raw_pointer_cast( &(domInfo->dyD[0]) ),
+			*dx_r	= thrust::raw_pointer_cast( &(domInfo->dx[0]) ),
+			*dy_r	= thrust::raw_pointer_cast( &(domInfo->dy[0]) ),
 			*ym_r	= thrust::raw_pointer_cast( &(bc[YMINUS][0]) ),
 			*yp_r	= thrust::raw_pointer_cast( &(bc[YPLUS][0]) ),
 			*xm_r	= thrust::raw_pointer_cast( &(bc[XMINUS][0]) ),
@@ -54,8 +54,8 @@ void NavierStokesSolver::generateLHS2()
 		ny = domInfo ->ny;
 
 	double	dt 		= (*paramDB)["simulation"]["dt"].get<double>(),
-			*dx_r	= thrust::raw_pointer_cast( &(domInfo->dxD[0]) ),
-			*dy_r	= thrust::raw_pointer_cast( &(domInfo->dyD[0]) ),
+			*dx_r	= thrust::raw_pointer_cast( &(domInfo->dx[0]) ),
+			*dy_r	= thrust::raw_pointer_cast( &(domInfo->dy[0]) ),
 			*val_r	= thrust::raw_pointer_cast( &(LHS2.values[0]) ),
 			*dxu_r	= thrust::raw_pointer_cast( &(distance_from_u_to_body[0]) ),
 			*dyv_r	= thrust::raw_pointer_cast( &(distance_from_v_to_body[0]) );

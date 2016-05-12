@@ -10,6 +10,7 @@
 /***************************************************************************//**
  * \file cuIBM.cu
  * \author Anush Krishnan (anush@bu.edu)
+ * \author Christopher Minar (minarc@oregonstate.edu)
  * \brief Main source-file of \c cuIBM.
  */
 
@@ -17,6 +18,7 @@
 #include "io/io.h"
 #include "solvers/NavierStokes/NavierStokesSolver.h"
 #include "solvers/NavierStokes/FSI.h"
+#include "solvers/NavierStokes/oscCylinder.h"
 
 int main(int argc, char **argv)
 {
@@ -34,10 +36,12 @@ int main(int argc, char **argv)
 
 	// create and initialize the flow solver, I think this can be simplified/streamlined now that there is only one solver
 	NavierStokesSolver *solver = 0;
-	if (paramDB["simulation"]["FSI"].get<int>() == 0)
+	if (paramDB["simulation"]["solverType"].get<int>() == 0)
 		solver = new NavierStokesSolver(&paramDB, &dom_info);
-	else
+	else if (paramDB["simulation"]["solverType"].get<int>() == 1)
 		solver = new FSI(&paramDB, &dom_info);
+	else
+		solver = new oscCylinder(&paramDB, &dom_info);
 	solver->initialise();
 
 	//prints to output and files

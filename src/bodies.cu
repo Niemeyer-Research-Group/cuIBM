@@ -1,6 +1,7 @@
 /***************************************************************************//**
  * \file bodies.cu
  * \author Anush Krishnan (anush@bu.edu)
+ * \author Christopher Minar (minarc@oregonstate.edu)
  * \brief Implementation of the methods of the class \c bodies.
  */
 
@@ -27,16 +28,24 @@ void bodies::initialise(parameterDB &db, domain &D)
 	// set the sizes of all the arrays
 	numPoints.resize(numBodies);
 	offsets.resize(numBodies);
-	
+
 	startI.resize(numBodies);
 	startJ.resize(numBodies);
 	numCellsX.resize(numBodies);
 	numCellsY.resize(numBodies);
-	
+	startI0.resize(numBodies);
+	startJ0.resize(numBodies);
+	numCellsX0.resize(numBodies);
+	numCellsY0.resize(numBodies);
+
 	xmin.resize(numBodies);
 	xmax.resize(numBodies);
 	ymin.resize(numBodies);
 	ymax.resize(numBodies);
+	xmin0.resize(numBodies);
+	xmax0.resize(numBodies);
+	ymin0.resize(numBodies);
+	ymax0.resize(numBodies);
 	
 	forceX.resize(numBodies);
 	forceY.resize(numBodies);
@@ -52,7 +61,7 @@ void bodies::initialise(parameterDB &db, domain &D)
 		numPoints[k] = (*B)[k].numPoints;
 		totalPoints += numPoints[k];
 	}
-	
+
 	// fill up coordinates of body points
 	X.resize(totalPoints);
 	Y.resize(totalPoints);
@@ -85,6 +94,7 @@ void bodies::initialise(parameterDB &db, domain &D)
 	cusp::blas::fill(uB, 0);
 	cusp::blas::fill(vBk, 0);
 	cusp::blas::fill(uBk, 0);
+
 	bodiesMove = false;
 	for(int k=0; k<numBodies; k++)
 	{
@@ -102,13 +112,18 @@ void bodies::initialise(parameterDB &db, domain &D)
 	}
 	// set initial position of the body
 	update(db, D, 0.0);
-		
+
 	if(numBodies)
 	{
 		calculateCellIndices(D);
+		calculateTightBoundingBoxes(db, D);
 		calculateBoundingBoxes(db, D);
 	}
 
+	midX=0;
+	midY=0;
+	midX0=0;
+	midY0=0;
 	for (int i=0;i<totalPoints;i++)
 	{
 		midX += x[i];
@@ -229,10 +244,41 @@ void bodies::calculateBoundingBoxes(parameterDB &db, domain &D)
 		numCellsX[k] = i - startI[k];
 		numCellsY[k] = j - startJ[k];
 	}
-	//std::cout<<startI[0]<<"\t";
-	//std::cout<<startJ[0]<<"\t";
-	//std::cout<<numCellsX[0]<<"\t";
-	//std::cout<<numCellsY[0]<<"\n";
+}
+
+void bodies::calculateTightBoundingBoxes(parameterDB &db, domain &D)
+{
+	double scale = db["simulation"]["scaleCV"].get<double>();
+	int  i, j;
+	for(int k=0; k<numBodies; k++)
+	{
+		xmin0[k] = x[offsets[k]];
+		xmax0[k] = xmin[k];
+		ymin0[k] = y[offsets[k]];
+		ymax0[k] = ymin[k];
+		for(int l=offsets[k]+1; l<offsets[k]+numPoints[k]; l++)
+		{
+			if(x[l] < xmin0[k]) xmin0[k] = x[l];
+			if(x[l] > xmax0[k]) xmax0[k] = x[l];
+			if(y[l] < ymin0[k]) ymin0[k] = y[l];
+			if(y[l] > ymax0[k]) ymax0[k] = y[l];
+		}
+
+		i=0; j=0;
+		while(D.x[i+1] < xmin0[k])
+			i++;
+		while(D.y[j+1] < ymin0[k])
+			j++;
+		startI0[k] = i;
+		startJ0[k] = j;
+
+		while(D.x[i] < xmax[k])
+			i++;
+		while(D.y[j] < ymax[k])
+			j++;
+		numCellsX0[k] = i - startI0[k];
+		numCellsY0[k] = j - startJ0[k];
+	}
 }
 
 /**

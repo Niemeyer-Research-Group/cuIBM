@@ -1,5 +1,6 @@
 /***************************************************************************//**
  * \file calculateForce.inl
+ * \author Anush Krishnan (anush@bu.edu),
  * \author Christopher Minar (minarc@oregonstate.edu)
  * \brief functions to invoke kernels that will calculate the force on the immersed body
  */
@@ -15,8 +16,8 @@ void NavierStokesSolver::calculateForceFadlun()
 			*force_r= thrust::raw_pointer_cast( &(force[0]) ),
 			*N_r	= thrust::raw_pointer_cast( &(N[0]) ),
 			*Nold_r	= thrust::raw_pointer_cast( &(Nold[0]) ),
-			*dx_r	= thrust::raw_pointer_cast( &(domInfo->dxD[0]) ),
-			*dy_r	= thrust::raw_pointer_cast( &(domInfo->dyD[0]) ),
+			*dx_r	= thrust::raw_pointer_cast( &(domInfo->dx[0]) ),
+			*dy_r	= thrust::raw_pointer_cast( &(domInfo->dy[0]) ),
 			*ym_r	= thrust::raw_pointer_cast( &(bc[YMINUS][0]) ),
 			*yp_r	= thrust::raw_pointer_cast( &(bc[YPLUS][0]) ),
 			*xm_r	= thrust::raw_pointer_cast( &(bc[XMINUS][0]) ),
@@ -67,8 +68,8 @@ void NavierStokesSolver::calculateForce()
 	double	*u_r		= thrust::raw_pointer_cast(&u[0]),
 			*uold_r		= thrust::raw_pointer_cast(&uold[0]),
 			*pressure_r	= thrust::raw_pointer_cast(&pressure[0]),
-			*dxD		= thrust::raw_pointer_cast(&(domInfo->dxD[0])),
-			*dyD		= thrust::raw_pointer_cast(&(domInfo->dyD[0]));
+			*dx		= thrust::raw_pointer_cast(&(domInfo->dx[0])),
+			*dy		= thrust::raw_pointer_cast(&(domInfo->dy[0]));
 
 	int		*tagsIn_r	= thrust::raw_pointer_cast( &(tagsIn[0]) );
 
@@ -86,24 +87,21 @@ void NavierStokesSolver::calculateForce()
 	dim3 dimGrid( int((B.numCellsX[0]+B.numCellsY[0]+1-0.5)/blockSize)+1, 1 );
 	dim3 dimBlock(blockSize, 1);
 
-	kernels::dragLeftRight <<<dimGrid, dimBlock>>> (FxX_r, u_r, pressure_r, nu, dxD, dyD, \
+	kernels::dragLeftRight <<<dimGrid, dimBlock>>> (FxX_r, u_r, pressure_r, nu, dx, dy, \
 	                                                nx, ny, B.startI[0], B.startJ[0], B.numCellsX[0], B.numCellsY[0]);
 
-	kernels::dragBottomTop <<<dimGrid, dimBlock>>> (FxY_r, u_r, nu, dxD, dyD, \
+	kernels::dragBottomTop <<<dimGrid, dimBlock>>> (FxY_r, u_r, nu, dx, dy, \
 	                                                nx, ny, B.startI[0], B.startJ[0], B.numCellsX[0], B.numCellsY[0]);
 
 	dim3 dimGridX( int( ( (B.numCellsX[0]+1)*B.numCellsY[0]-0.5 )/blockSize )+1, 1 );
-	kernels::dragUnsteady <<<dimGridX, dimBlock>>> (FxU_r, u_r, uold_r, tagsIn_r, dxD, dyD, dt, \
+	kernels::dragUnsteady <<<dimGridX, dimBlock>>> (FxU_r, u_r, uold_r, tagsIn_r, dx, dy, dt, \
 	                                                nx, ny, B.startI[0], B.startJ[0], B.numCellsX[0], B.numCellsY[0]);
 
-	B.forceX[0] = thrust::reduce(FxX.begin(), FxX.end()) + thrust::reduce(FxY.begin(), FxY.end()) + thrust::reduce(FxU.begin(), FxU.end());
-	//std::cout<<"FxX: "<< thrust::reduce(FxX.begin(), FxX.end())<<"\n";
-	//std::cout<<"FxY: "<< thrust::reduce(FxY.begin(), FxY.end())<<"\n";
-	//std::cout<<"FxU: "<< thrust::reduce(FxU.begin(), FxU.end())<<"\n";
-	///std::cout<<B.forceX[0]<<"\n";
-	//std::cout<<"Fx: "<< thrust::reduce(FxX.begin(), FxX.end())<<" ";
-	//std::cout<< thrust::reduce(FxY.begin(), FxY.end())<<" ";
-	//std::cout<< thrust::reduce(FxU.begin(), FxU.end())<<"\n";
+	fxx = thrust::reduce(FxX.begin(), FxX.end());
+	fxy = thrust::reduce(FxY.begin(), FxY.end());
+	fxu = thrust::reduce(FxU.begin(), FxU.end());
+	B.forceX[0] =  fxx + fxy + fxu;
+	//std::cout<<timeStep<<"\tFx\t"<<B.forceX[0]<<"\tFxX\t"<<fxx<<"\tFxY\t"<<fxy<<"\tFxU\t"<<fxu<<"\n";
 
 	// Calculating lift
 	cusp::array1d<double, cusp::device_memory>
@@ -115,24 +113,24 @@ void NavierStokesSolver::calculateForce()
 	     *FyY_r = thrust::raw_pointer_cast(&FyY[0]),
 	     *FyU_r = thrust::raw_pointer_cast(&FyU[0]);
 
-	kernels::liftLeftRight <<<dimGrid, dimBlock>>> (FyX_r, u_r, nu, dxD, dyD, \
+	kernels::liftLeftRight <<<dimGrid, dimBlock>>> (FyX_r, u_r, nu, dx, dy, \
 	                                                nx, ny, B.startI[0], B.startJ[0], B.numCellsX[0], B.numCellsY[0]);
 
-	kernels::liftBottomTop <<<dimGrid, dimBlock>>> (FyY_r, u_r, pressure_r, nu, dxD, dyD, \
+	kernels::liftBottomTop <<<dimGrid, dimBlock>>> (FyY_r, u_r, pressure_r, nu, dx, dy, \
 	                                                nx, ny, B.startI[0], B.startJ[0], B.numCellsX[0], B.numCellsY[0]);
 
 	dim3 dimGridY( int( ( B.numCellsX[0]*(B.numCellsY[0]+1)-0.5 )/blockSize )+1, 1 );
-	kernels::liftUnsteady <<<dimGridY, dimBlock>>> (FyU_r, u_r, uold_r, dxD, dyD, dt, \
+	kernels::liftUnsteady <<<dimGridY, dimBlock>>> (FyU_r, u_r, uold_r, dx, dy, dt, \
 	                                                nx, ny, B.startI[0], B.startJ[0], B.numCellsX[0], B.numCellsY[0]);
 
 	//B.forceY[0] = thrust::reduce(FyX.begin(), FyX.end()) + thrust::reduce(FyY.begin(), FyY.end()) + thrust::reduce(FyU.begin(), FyU.end());
 	//if (timeStep == 138 || timeStep == 139 || timeStep == 146 || timeStep == 147 ||  timeStep == 159 || timeStep == 160)
 		//print_forces(FyX, FyY, FyU);
-	std::cout<<timeStep<<"\t";
-	std::cout<<"Fy: "<< B.forceY[0]<<"\t";
-	std::cout<<"FyX: "<< thrust::reduce(FyX.begin(), FyX.end())<<"\t";
-	std::cout<<"FyY: "<< thrust::reduce(FyY.begin(), FyY.end())<<"\t";
-	std::cout<<"FyU: "<< thrust::reduce(FyU.begin(), FyU.end())<<"\n";
+	//std::cout<<timeStep<<"\t";
+	//std::cout<<"Fy: "<< B.forceY[0]<<"\t";
+	//std::cout<<"FyX: "<< thrust::reduce(FyX.begin(), FyX.end())<<"\t";
+	//std::cout<<"FyY: "<< thrust::reduce(FyY.begin(), FyY.end())<<"\t";
+	//std::cout<<"FyU: "<< thrust::reduce(FyU.begin(), FyU.end())<<"\n";
 	B.forceY[0] = thrust::reduce(FyX.begin(), FyX.end()) + thrust::reduce(FyY.begin(), FyY.end()) + thrust::reduce(FyU.begin(), FyU.end());
 
 }

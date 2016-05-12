@@ -71,13 +71,13 @@ print "Plotting the centerline velocities for flow in a lid-driven cavity at Rey
 print "-"*120
 
 gnuplotFile    = caseFolder + '/cavityRe' + Re + '.plt'
-uOutFile       = caseFolder + '/uRe' + Re + '.png'
-vOutFile       = caseFolder + '/vRe' + Re + '.png'
+uOutFile       = caseFolder + '/uRe' + Re + '.pdf'
+vOutFile       = caseFolder + '/vRe' + Re + '.pdf'
 
 f = open(gnuplotFile, 'w')
 #f.write("reset;\nset terminal png enhanced font 'Palatino, 11'\n\n"); # color size 15cm, 15cm;
 #f.write("reset;\nset terminal png enhanced font 'Palatino, 11' size 15cm, 15cm;\n\n");
-f.write("reset;\nset terminal png enhanced font Palatino 11 size 800,600;\n\n");
+f.write("reset;\nset terminal pdf enhanced font Palatino 11 size 800,600;\n\n");
 f.write("set title 'Velocity along the vertical centerline (Re=%s)'\n" % Re)
 f.write("set xlabel 'y-coordinate'\n")
 f.write("set ylabel 'Centerline u-velocity'\n")
@@ -88,7 +88,7 @@ f.write("'%s' u 1:%s w p pt 4 ps 2 lc rgb '#ff3232' title 'Ghia et al, 1982'\n" 
 
 
 f.write("\n")
-f.write("reset;\nset terminal png enhanced font 'Palatino, 11'\n\n"); #color size 15cm, 15cm, pdf instead of png;
+f.write("reset;\nset terminal pdf enhanced font 'Palatino, 11'\n\n"); #color size 15cm, 15cm, pdf instead of png;
 #f.write("reset;\nset terminal png enhanced font 'Palatino, 11' size 15cm, 15cm;\n\n");
 f.write("set title 'Velocity along the horizontal centerline (Re=%s)'\n" % Re)
 f.write("set xlabel 'x-coordinate'\n")

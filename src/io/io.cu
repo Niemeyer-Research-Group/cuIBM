@@ -175,7 +175,7 @@ void initialiseDefaultDB(parameterDB &DB)
 	DB[sim]["nsave"].set<int>(100);
 	DB[sim]["restart"].set<bool>(false);
 	DB[sim]["startStep"].set<bool>(0);
-	DB[sim]["FSI"].set<int>(0);
+	DB[sim]["solverType"].set<int>(0);
 	DB[sim]["Ured"].set<double>(3);
 
 	// velocity solver
@@ -427,10 +427,16 @@ void writeGrid(std::string &caseFolder, domain &D)
 	std::stringstream out;
 	out << caseFolder << "/grid";
 	std::ofstream file(out.str().c_str(), ios::binary);
+	double x[D.nx], y[D.ny];
+	for (int i=0; i < D.nx; i++)
+		x[i] = D.x[i];
+	for (int i=0; i < D.ny; i++)
+		y[i] = D.y[i];
+
 	file.write((char*)(&D.nx), sizeof(int));
-	file.write((char*)(&D.x[0]), (D.nx+1)*sizeof(double));
+	file.write((char*)(&x[0]), (D.nx+1)*sizeof(double));//flag, wrong size?
 	file.write((char*)(&D.ny), sizeof(int));
-	file.write((char*)(&D.y[0]), (D.ny+1)*sizeof(double));
+	file.write((char*)(&y[0]), (D.ny+1)*sizeof(double));
 	file.close();
 }
 

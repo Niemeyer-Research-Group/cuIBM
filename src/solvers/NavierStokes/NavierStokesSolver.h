@@ -65,7 +65,10 @@ protected:
 
 	double
 		forceX,		///< force acting on the body in the x direction
-		forceY;		///< force acting on the body in the y direction
+		forceY,		///< force acting on the body in the y direction
+		fxx,
+		fxy,
+		fxu;
 
 	cusp::coo_matrix<int, double, cusp::device_memory>
 		LHS1,		///< Matrix for the unknown uhat
@@ -145,6 +148,9 @@ public:
 
 	// tags points on the immersed boundary
 	void tagPoints();
+
+	// checks if points are on the IB //needs to be phased out//flag
+	void checkPoints();
 
 	// initialize parameters, arrays and matrices required for the simulation
 	void initialise();

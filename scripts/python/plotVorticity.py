@@ -42,7 +42,7 @@ def main():
 	folder = args.folder	# name of the folder
 
 	# read the parameters of the simulation
-	nt, start_step, nsave, _ = readSimulationParameters(folder)
+	nt, start_step, nsave, dt = readSimulationParameters(folder)
 
 	# calculate the mesh characteristics
 	nx, ny, dx, dy, _, yu, xv, _ = readGridData(folder)
@@ -76,14 +76,14 @@ def main():
 				Omg[j-j_start, i-i_start] = (v[j*nx+i+1] - v[j*nx+i]) / Dx \
 					  - (u[(j+1)*(nx-1)+i] - u[j*(nx-1)+i]) / Dy
 
-		CS = plt.contour(X, Y, Omg, levels=np.linspace(-args.vortlim, args.vortlim, args.numlevels))
-		plt.title("Vorticity")
+		CS = plt.contourf(X, Y, Omg, levels=np.linspace(-args.vortlim, args.vortlim, args.numlevels))
+		plt.title("Vorticity @ time = {0}".format(ite*dt))
 		plt.colorbar(CS)
 		plt.axis([xv[i_start], xv[i_end], yu[j_start], yu[j_end]])
 		plt.gca().set_aspect('equal', adjustable='box')
-		plt.savefig('{}/o{:0>7}.png'.format(folder,ite))
+		plt.savefig('%s/o%07d.png' % (folder, ite/nsave))
 		plt.clf()
-		print "Saved figure {}/O{:0>7}.png".format(folder,ite)
+		print "Saved figure {0}".format(ite)
 	
 	print 'DONE!'
 

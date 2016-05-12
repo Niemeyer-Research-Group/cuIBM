@@ -1,5 +1,6 @@
 /***************************************************************************//**
  * \file calculateForce.cu
+ * \author Anush Krishnan (anush@bu.edu),
  * \author Christopher Minar (minarc@oregonstate.edu)
  * \based of original cuIBM
  */

@@ -8,4 +8,4 @@
   xOscillation: [0.0, 0.0, 0.0]
   yOscillation: [0.0, 0.0, 0.0]
   pitchOscillation: [0.0, 0.0, 0.0]
-  circleOptions: [0.0, 0.0, 0.5, 158]
+  circleOptions: [0.0, 0.0, 0.5, 158, true, 0.02]

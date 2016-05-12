@@ -30,7 +30,202 @@ void operator >> (const YAML::Node &node, domain &D)
 	string dir;
 	double start;
 	int  numCells;
-	
+	double mid_dx;
+	node["direction"] >> dir;
+	node["start"] >> start;
+	node["mid_dx"] >> mid_dx;
+	D.mid_dx = mid_dx;
+
+
+	double end, stretchRatio, a, count = 0;
+	const YAML::Node &subDomains = node["subDomains"];
+	for (unsigned int i=0; i<subDomains.size(); i++) //first pass, gets nx and ny and resizes the arrays appropriately
+	{
+		subDomains[i]["end"] >> end;
+		subDomains[i]["stretchRatio"] >> stretchRatio;
+		if (stretchRatio<1)
+		{
+			//a = mid_dx/((end-start)*(stretchRatio-1));
+			//numCells = log(a/(a-1))/log(stretchRatio);
+			//count += int(numCells);
+			a = mid_dx/((start-end)*(stretchRatio-1));
+			numCells = log(1/a + 1)/log(stretchRatio);
+			count += int(numCells);
+		}
+		else if(stretchRatio == 1)
+		{
+			numCells = (end-start)/mid_dx;
+			count += int(numCells);
+		}
+		else
+		{
+			a = mid_dx/((end-start)*(stretchRatio-1));
+			numCells = log(1/a + 1)/log(stretchRatio);
+			count += int(numCells);
+		}
+		start = end;
+	}
+	if (dir=="x")
+	{
+		D.nx = count;
+		D.x.resize(D.nx);	//x location of the pressure nodes (cell center)
+		D.dx.resize(D.nx);	//x width of the pressure nodes
+		D.xv.resize(D.nx);	//x location of where v is stored (same x as pressure node)
+	}
+	else if(dir=="y")
+	{
+		D.ny = count;
+		D.y.resize(D.ny);	//y location of pressure nodes (cell center)
+		D.dy.resize(D.ny);	//y height of pressure nodes
+		D.yu.resize(D.ny);	//y location of where u is stored
+	}
+
+	// second pass, fills x,y,xv,yu,dx,dy
+	node["start"] >> start;
+	double h;
+	int beg = 0;
+	for (unsigned int i=0; i<subDomains.size(); i++)
+	{
+		subDomains[i]["end"] >> end;
+		subDomains[i]["stretchRatio"] >> stretchRatio;
+		if (stretchRatio<1)
+		{
+			//a = mid_dx/((end-start)*(stretchRatio-1));
+			//numCells = log(a/(a-1))/log(stretchRatio);
+			a = mid_dx/((start-end)*(stretchRatio-1));
+			numCells = log(1/a + 1)/log(stretchRatio);
+		}
+		else if(stretchRatio == 1)
+		{
+			numCells = (end-start)/mid_dx;
+		}
+		else
+		{
+			a = mid_dx/((end-start)*(stretchRatio-1));
+			numCells = log(1/a + 1)/log(stretchRatio);
+		}
+
+		if(fabs(stretchRatio-1.0) < 1.0e-6)  //no cell stretching
+		{
+			h = (end - start)/numCells;
+			for (int j=beg; j<beg+numCells; j++)
+			{
+				if (dir=="x")
+				{
+					if (j == beg)
+					{
+						D.x[j] = start + h/2;
+						D.xv[j] = D.x[j];     	//xv is measured in the same x location as the cell center
+						D.dx[j] = h;
+					}
+					else
+					{
+						D.dx[j] = h;
+						D.x[j] = D.x[j-1] + 0.5*D.dx[j] + 0.5*D.dx[j-1];//dx is the width of the cell so to move over to the next cell center you need half of each cells dx
+						D.xv[j] = D.x[j];
+					}
+				}
+				else if (dir=="y")
+				{
+					if (j == beg)
+					{
+						D.y[j] = start + h/2;
+						D.yu[j] = D.y[j];
+						D.dy[j] = h;
+					}
+					else
+					{
+						D.dy[j] = h;
+						D.y[j] = D.y[j-1] + 0.5*D.dy[j] + 0.5*D.dy[j-1];
+						D.yu[j] = D.y[j];
+					}
+				}//end x/y elseif
+			}//end for
+		}//end no cell stretching
+		else if (end < 0)
+		{
+			h = (end - start)*(stretchRatio-1)/(pow(stretchRatio, numCells)-1);
+			int jdx = beg;
+			for (int j=beg+numCells-1; j>=beg; j--)
+			{
+				if (dir=="x")
+				{
+					if (j == beg+numCells-1)
+					{
+						D.x[j] = end - h/2.0;
+						D.xv[j] = D.x[j];
+						D.dx[j] = h;
+					}
+					else
+					{
+						D.dx[j] = h*pow(stretchRatio, jdx-beg);
+						D.x[j] = D.x[j+1] - 0.5*D.dx[j] - 0.5*D.dx[j+1];
+						D.xv[j] = D.x[j];
+					}
+				}
+				if (dir=="y")
+				{
+					if (j == beg+numCells-1)
+					{
+						D.y[j] = end - h/2.0;
+						D.yu[j] = D.y[j];
+						D.dy[j] = h;
+					}
+					else
+					{
+						D.dy[j] = h*pow(stretchRatio, jdx-beg);
+						D.y[j] = D.y[j+1] - 0.5*D.dy[j] - 0.5*D.dy[j+1];
+						D.yu[j] = D.y[j];
+					}
+				}//end x/y elseif
+				jdx++;
+			}//end for
+		}//end cell shrink
+		else //cell growing
+		{
+			h = (end - start)*(stretchRatio-1)/(pow(stretchRatio, numCells)-1);
+			for (int j=beg; j<beg+numCells; j++)
+			{
+				if (dir=="x")
+				{
+					if (j == beg)
+					{
+						D.x[j] = start + h*pow(stretchRatio, j-beg)/2;
+						D.xv[j] = D.x[j];
+						D.dx[j] = h*pow(stretchRatio, j-beg);
+					}
+					else
+					{
+						D.dx[j] = h*pow(stretchRatio, j-beg);
+						D.x[j] = D.x[j-1] + 0.5*D.dx[j] + 0.5*D.dx[j-1];
+						D.xv[j] = D.x[j];
+					}
+				}
+				if (dir=="y")
+				{
+					if (j == beg)
+					{
+						D.y[j] = start + h*pow(stretchRatio, j-beg)/2;
+						D.yu[j] = D.y[j];
+						D.dy[j] = h*pow(stretchRatio, j-beg);
+					}
+					else
+					{
+						D.dy[j] = h*pow(stretchRatio, j-beg);
+						D.y[j] = D.y[j-1] + 0.5*D.dy[j] + 0.5*D.dy[j-1];
+						D.yu[j] = D.y[j];
+					}
+				}//end x/y elseif
+			}//end for
+		}//end cell grow
+		beg += numCells;
+		start = end;
+	}
+/*
+	string dir;
+	double start;
+	int  numCells;
+
 	node["direction"] >> dir;
 	node["start"] >> start;
 
@@ -55,16 +250,12 @@ void operator >> (const YAML::Node &node, domain &D)
 	{
 		D.x.resize(D.nx);	//x location of the pressure nodes (cell center)
 		D.dx.resize(D.nx);	//x width of the pressure nodes
-		D.xD.resize(D.nx);	//x location of the pressure nodes (cell center) on the device
-		D.dxD.resize(D.nx);	//x width of the pressure nodes on the device
 		D.xv.resize(D.nx);	//x location of where v is stored (same x as pressure node)
 	}
 	if(dir=="y")//y
 	{
 		D.y.resize(D.ny);	//y location of pressure nodes (cell center)
 		D.dy.resize(D.ny);	//y height of pressure nodes
-		D.yD.resize(D.ny);	//y location of pressure nodes (cell center) on the device
-		D.dyD.resize(D.ny);	//y height of pressure nodes on the device
 		D.yu.resize(D.ny);	//y location of where u is stored
 	}
 
@@ -138,14 +329,14 @@ void operator >> (const YAML::Node &node, domain &D)
 					if (j == beg)
 					{
 						D.y[j] = start + h*pow(stretchRatio, j-beg)/2;
-						D.yu[j] = D.x[j];
+						D.yu[j] = D.y[j];
 						D.dy[j] = h*pow(stretchRatio, j-beg);
 					}
 					else
 					{
 						D.dy[j] = h*pow(stretchRatio, j-beg);
 						D.y[j] = D.y[j-1] + 0.5*D.dy[j] + 0.5*D.dy[j-1];
-						D.yu[j] = D.y[j];
+						D.yu[j] = D.y[j];//D.y[j-1] + 0.5*D.dy[j] + 0.5*D.dy[j-1];
 					}
 				}//end x/y elseif
 			}//end for
@@ -153,17 +344,7 @@ void operator >> (const YAML::Node &node, domain &D)
 		beg += numCells;
 		start = end;
 	}
-
-	if(dir=="x")
-	{
-		D.xD  = D.x;
-		D.dxD = D.dx;
-	}
-	else if(dir=="y")
-	{
-		D.yD  = D.y;
-		D.dyD = D.dy;
-	}
+	*/
 }
 
 /**
@@ -181,30 +362,19 @@ void parseDomainFile(std::string &domFile, domain &D)
 	for (unsigned int i=0; i<doc.size(); i++)	//go through each node in domain.yaml
 		doc[i] >> D;
 
-	D.yv.resize(D.ny-1);	//resize variables, y location of where v is stored, offset dy/2 above cell center
-	D.xu.resize(D.nx-1);	//x location of where u is stored, offset dx/2 right of cell center
-
-	D.xuD.resize(D.nx-1);	//xu on device
-	D.yuD.resize(D.ny);		//yu on device
-	D.xvD.resize(D.nx);		//xv on device
-	D.yvD.resize(D.ny-1);	//yv on device
+	D.xu.resize(D.nx-1);	//xu on device
+	D.yu.resize(D.ny);		//yu on device
+	D.xv.resize(D.nx);		//xv on device
+	D.yv.resize(D.ny-1);	//yv on device
 
 	for(int i=0; i<D.nx-1; i++)	//set xu
 	{
 		D.xu[i] = D.x[i] + D.dx[i]/2;
 	}
-	
+
 	for(int j=0; j<D.ny-1; j++)	//set yv
 	{
 		D.yv[j] = D.y[j] + D.dy[j]/2;
 	}
-
-	D.yD = D.y;		//set device variables to host variables
-	D.xD = D.x;
-
-	D.xuD = D.xu;
-	D.yuD = D.yu;
-	D.xvD = D.xv;
-	D.yvD = D.yv;
 }
 } // end namespace io

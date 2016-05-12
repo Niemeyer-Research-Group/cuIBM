@@ -1,5 +1,6 @@
 /***************************************************************************//**
  * \file projectVelocity.cu
+ * \author Anush Krishnan (anush@bu.edu),
  * \author Christopher Minar (minarc@oregonstate.edu)
  * \brief kernels to update the velocity field
  */

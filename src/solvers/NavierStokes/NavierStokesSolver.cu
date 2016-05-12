@@ -128,10 +128,10 @@ void NavierStokesSolver::initialise()
 	dim3 dimGridV( int( (nx*(ny-1)-0.5)/blocksize ) +1, 1);
 
 	double *u_r		= thrust::raw_pointer_cast( &(u[0]) ),
-		   *xu_r	= thrust::raw_pointer_cast( &(domInfo->xuD[0]) ),
-		   *xv_r	= thrust::raw_pointer_cast( &(domInfo->xvD[0]) ),
-		   *yu_r	= thrust::raw_pointer_cast( &(domInfo->yuD[0]) ),
-		   *yv_r	= thrust::raw_pointer_cast( &(domInfo->yvD[0]) );
+		   *xu_r	= thrust::raw_pointer_cast( &(domInfo->xu[0]) ),
+		   *xv_r	= thrust::raw_pointer_cast( &(domInfo->xv[0]) ),
+		   *yu_r	= thrust::raw_pointer_cast( &(domInfo->yu[0]) ),
+		   *yv_r	= thrust::raw_pointer_cast( &(domInfo->yv[0]) );
 
 	kernels::initialiseU<<<dimGridU,dimBlock>>>(u_r, xu_r, yu_r, uInitial, uPerturb, M_PI, xmax, xmin, ymax, ymin, nx, ny);
 	kernels::initialiseV<<<dimGridV,dimBlock>>>(u_r, xv_r, yv_r, vInitial, vPerturb, M_PI, xmax, xmin, ymax, ymin, nx, ny);
@@ -189,6 +189,8 @@ void NavierStokesSolver::initialise()
 	if (B.numBodies>0) //only tag points if there is a body
 	{
 		tagPoints();
+		//std::cout<<"checking for coincident points\n";
+		//checkPoints();//flag
 		std::cout << "Tagged points!" << std::endl;
 	}
 
@@ -455,3 +457,4 @@ void NavierStokesSolver::shutDown()
 #include "NavierStokes/projectVelocity.inl"
 #include "NavierStokes/tagpoints.inl"
 #include "NavierStokes/calculateForce.inl"
+#include "NavierStokes/checkTags.inl"

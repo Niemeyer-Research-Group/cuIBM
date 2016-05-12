@@ -31,13 +31,21 @@ public:
 		startI,       ///< starting cell index of the bounding box of a body
 		startJ,       ///< starting cell index of the bounding box of a body
 		numCellsX,    ///< number of cells in the x-direction in the bounding box of a body
-		numCellsY;    ///< number of cells in the y-direction in the bounding box of a body
+		numCellsY,    ///< number of cells in the y-direction in the bounding box of a body
+		startI0,		///< starting cell index of the bounding box of a body (original size)
+		startJ0,		///< starting cell index of the bounding box of a body (og size)
+		numCellsX0,		///< number of cells in the x-direction in the bounding box of a body
+		numCellsY0;		///< number of cells in the y-direction in the bounding box of a body
 
 	cusp::array1d<double, cusp::device_memory>
 		xmin,  ///< lowest x-coordinate for the bounding box of a body
 		xmax,  ///< highest x-coordinate for the bounding box of a body
 		ymin,  ///< lowest y-coordinate for the bounding box of a body
-		ymax;  ///< highest y-coordinate for the bounding box of a body
+		ymax,  ///< highest y-coordinate for the bounding box of a body
+		xmin0,  ///< lowest x-coordinate for the bounding box of a body (original size)
+		xmax0,  ///< highest x-coordinate for the bounding box of a body (original size)
+		ymin0,  ///< lowest y-coordinate for the bounding box of a body (original size)
+		ymax0;  ///< highest y-coordinate for the bounding box of a body (original size)
 
 	cusp::array1d<double, cusp::device_memory>
 		forceX,		///< force acting on a body in the x-direction
@@ -88,6 +96,9 @@ public:
 
 	// store indices of the bounding box of each body
 	void calculateBoundingBoxes(parameterDB &db, domain &D);
+
+	// store indices of the non scaled bounding box of each body
+	void calculateTightBoundingBoxes(parameterDB &db, domain &D);
 
 	// update position, velocity and neighbors of each body
 	void update(parameterDB &db, domain &D, double Time);

@@ -18,12 +18,8 @@ void NavierStokesSolver::generateRHS1()
 			*L_r	= thrust::raw_pointer_cast( &(L[0]) ),
 			*rhs_r	= thrust::raw_pointer_cast( &(rhs1[0]) ),
 			*bc1_r	= thrust::raw_pointer_cast( &(bc1[0]) ),
-			*dxD_r	= thrust::raw_pointer_cast( &(domInfo->dxD[0]) ),
-			*dyD_r	= thrust::raw_pointer_cast( &(domInfo->dyD[0]) ),
 			*x_r	= thrust::raw_pointer_cast( &(domInfo->x[0]) ),
 			*y_r	= thrust::raw_pointer_cast( &(domInfo->y[0]) ),
-			*dx_r	= thrust::raw_pointer_cast( &(domInfo->dx[0]) ),
-			*dy_r	= thrust::raw_pointer_cast( &(domInfo->dy[0]) ),
 			*xp_r	= thrust::raw_pointer_cast( &(bc[XPLUS][0]) ),
 			*distance_from_intersection_to_node_r	= thrust::raw_pointer_cast( &(distance_from_intersection_to_node[0]) ),
 			*distance_between_nodes_at_IB_r	= thrust::raw_pointer_cast( &(distance_between_nodes_at_IB[0]) ),
@@ -69,8 +65,7 @@ void NavierStokesSolver::updateRobinBoundary()
 	logger.startTimer("update Boundary");
 	double	*u_r    = thrust::raw_pointer_cast( &(u[0]) ),
 			*xp_r	= thrust::raw_pointer_cast( &(bc[XPLUS][0]) ),
-			*dxD_r	= thrust::raw_pointer_cast( &(domInfo->dxD[0]) );
-			//*dyD_r	= thrust::raw_pointer_cast( &(domInfo->dyD[0]) );
+			*dx_r	= thrust::raw_pointer_cast( &(domInfo->dx[0]) );
 	double 	Uinf = 1, //need a better way to enforce these, ie read from yaml file
 			Vinf = 1;
 	int 	nx = domInfo ->nx,
@@ -84,8 +79,8 @@ void NavierStokesSolver::updateRobinBoundary()
 
 	if(B.numBodies>0)
 	{
-		kernels::updateBoundaryX<<<dimGridBCX,dimBlockBC>>>(u_r, xp_r, dxD_r, dt, Uinf, nx, ny);
-		kernels::updateBoundaryY<<<dimGridBCY,dimBlockBC>>>(u_r, xp_r, dxD_r, dt, Vinf, nx, ny);
+		kernels::updateBoundaryX<<<dimGridBCX,dimBlockBC>>>(u_r, xp_r, dx_r, dt, Uinf, nx, ny);
+		kernels::updateBoundaryY<<<dimGridBCY,dimBlockBC>>>(u_r, xp_r, dx_r, dt, Vinf, nx, ny);
 	}
 	logger.stopTimer("update Boundary");
 }
@@ -104,8 +99,8 @@ void NavierStokesSolver::generateN()
 	logger.startTimer("Advection Terms");
 	double	*u_r    = thrust::raw_pointer_cast( &(u[0]) ),
 			*N_r    = thrust::raw_pointer_cast( &(N[0]) ),
-			*dx_r	= thrust::raw_pointer_cast( &(domInfo->dxD[0]) ),
-			*dy_r	= thrust::raw_pointer_cast( &(domInfo->dyD[0]) ),
+			*dx_r	= thrust::raw_pointer_cast( &(domInfo->dx[0]) ),
+			*dy_r	= thrust::raw_pointer_cast( &(domInfo->dy[0]) ),
 			*ym_r	= thrust::raw_pointer_cast( &(bc[YMINUS][0]) ),
 			*yp_r	= thrust::raw_pointer_cast( &(bc[YPLUS][0]) ),
 			*xm_r	= thrust::raw_pointer_cast( &(bc[XMINUS][0]) ),
@@ -143,8 +138,8 @@ void NavierStokesSolver::generateL()
 	logger.startTimer("L");
 	double	*u_r    = thrust::raw_pointer_cast( &(u[0]) ),
 			*L_r    = thrust::raw_pointer_cast( &(L[0]) ),
-			*dx_r	= thrust::raw_pointer_cast( &(domInfo->dxD[0]) ),
-			*dy_r	= thrust::raw_pointer_cast( &(domInfo->dyD[0]) ),
+			*dx_r	= thrust::raw_pointer_cast( &(domInfo->dx[0]) ),
+			*dy_r	= thrust::raw_pointer_cast( &(domInfo->dy[0]) ),
 			*ym_r	= thrust::raw_pointer_cast( &(bc[YMINUS][0]) ),
 			*yp_r	= thrust::raw_pointer_cast( &(bc[YPLUS][0]) ),
 			*xm_r	= thrust::raw_pointer_cast( &(bc[XMINUS][0]) ),
@@ -174,8 +169,8 @@ void NavierStokesSolver::generateLHS1()
 	logger.startTimer("LHS1");
 
 	double 	*val_r	= thrust::raw_pointer_cast( &(LHS1.values[0])),
-			*dx_r	= thrust::raw_pointer_cast( &(domInfo->dxD[0])),
-			*dy_r	= thrust::raw_pointer_cast( &(domInfo->dyD[0])),
+			*dx_r	= thrust::raw_pointer_cast( &(domInfo->dx[0])),
+			*dy_r	= thrust::raw_pointer_cast( &(domInfo->dy[0])),
 			*distance_from_intersection_to_node_r	= thrust::raw_pointer_cast( &(distance_from_intersection_to_node[0]) ),
 			*distance_between_nodes_at_IB_r	= thrust::raw_pointer_cast( &(distance_between_nodes_at_IB[0]) );
 
@@ -216,8 +211,8 @@ void NavierStokesSolver::generateBC1()
 	logger.startTimer("BC1");
 	double	*u_r    = thrust::raw_pointer_cast( &(u[0]) ),
 			*bc1_r	= thrust::raw_pointer_cast( &(bc1[0]) ),
-			*dx_r	= thrust::raw_pointer_cast( &(domInfo->dxD[0]) ),
-			*dy_r	= thrust::raw_pointer_cast( &(domInfo->dyD[0]) ),
+			*dx_r	= thrust::raw_pointer_cast( &(domInfo->dx[0]) ),
+			*dy_r	= thrust::raw_pointer_cast( &(domInfo->dy[0]) ),
 			*ym_r	= thrust::raw_pointer_cast( &(bc[YMINUS][0]) ),
 			*yp_r	= thrust::raw_pointer_cast( &(bc[YPLUS][0]) ),
 			*xm_r	= thrust::raw_pointer_cast( &(bc[XMINUS][0]) ),

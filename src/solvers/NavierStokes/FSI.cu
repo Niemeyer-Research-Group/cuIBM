@@ -201,7 +201,7 @@ void FSI::callTest()
 	double	*test_r = thrust::raw_pointer_cast( &(NavierStokesSolver::test[0]) ),
 			*uhat_r = thrust::raw_pointer_cast( &(NavierStokesSolver::uhat[0]) ),
 			*pressure_r = thrust::raw_pointer_cast( &(NavierStokesSolver::pressure[0]) ),
-			*dx_r = thrust::raw_pointer_cast( &(NavierStokesSolver::domInfo->dxD[0]) );
+			*dx_r = thrust::raw_pointer_cast( &(NavierStokesSolver::domInfo->dx[0]) );
 
 
 	kernels::testkernel<<<grid,block>>>(test_r, uhat_r, pressure_r, dx_r, dt, nx, ny);

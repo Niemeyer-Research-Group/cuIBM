@@ -91,12 +91,28 @@ void operator >> (const YAML::Node &node, body &Body)
 	}
 	else if (type == "circle")
 	{
-		double cx, cy, R;
+		double cx, cy, R, mid_dx;
 		int numPoints;
+		bool selfSize;
 		node["circleOptions"][0] >> cx;
 		node["circleOptions"][1] >> cy;
 		node["circleOptions"][2] >> R;
 		node["circleOptions"][3] >> numPoints;
+		try
+		{
+			node["circleOptions"][4] >> selfSize;
+			node["circleOptions"][5] >> mid_dx;
+		}
+		catch(...)
+		{
+		}
+		if (selfSize == true)
+		{
+			numPoints = 2.0*R*M_PI/mid_dx;
+			if (numPoints%2!=0)
+				numPoints++;
+		}
+
 		Body.numPoints = numPoints;
 		// initialise circle
 		Body.X.resize(numPoints);

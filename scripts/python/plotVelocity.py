@@ -19,17 +19,17 @@ from readData import readSimulationParameters, readGridData, readVelocityData
 
 def read_inputs():
 	"""Parses the command-line."""
-	# create the parser
+	# create the parserpng
 	parser = argparse.ArgumentParser(description='Plots the velocity field at '
 						'all save points for a given simulation',
 						formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 	# fill the parser with arguments
 	parser.add_argument('-folder', dest='folder', type=str, default='.',
 						help='folder of the simulation')
-	parser.add_argument("-xmin", type=float, dest="xmin", help="lower x-limit of the plotting region", default=-2.0)
-	parser.add_argument("-xmax", type=float, dest="xmax", help="upper x-limit of the plotting region", default=4.0)
-	parser.add_argument("-ymin", type=float, dest="ymin", help="lower y-limit of the plotting region", default=-3.0)
-	parser.add_argument("-ymax", type=float, dest="ymax", help="upper y-limit of the plotting region", default=3.0)
+	parser.add_argument("-xmin", type=float, dest="xmin", help="lower x-limit of the plotting region", default=-15.0)
+	parser.add_argument("-xmax", type=float, dest="xmax", help="upper x-limit of the plotting region", default=15.0)
+	parser.add_argument("-ymin", type=float, dest="ymin", help="lower y-limit of the plotting region", default=-15.0)
+	parser.add_argument("-ymax", type=float, dest="ymax", help="upper y-limit of the plotting region", default=15.0)
 	parser.add_argument('-ulim', dest='u_lim', type=float, default=1.5,
 						help='x-velocity cutoff on the plot')
 	parser.add_argument('-vlim', dest='v_lim', type=float, default=1.0,
@@ -95,9 +95,9 @@ def main():
 		plt.ylabel('y')
 		plt.colorbar(CS)
 		plt.gca().set_aspect('equal',adjustable='box')
-		#plt.set_xlim([x_start,x_end])
-		#plt.set_ylim([y_start,y_end])
-		plt.savefig('%s/u%07d.png' % (folder, ite/nsave))
+		plt.xlim([x_start,x_end])
+		plt.ylim([y_start,y_end])
+		plt.savefig('%s/u%07d.pdf' % (folder, ite/nsave))
 		plt.clf()
 		
 	
@@ -109,9 +109,9 @@ def main():
 		plt.ylabel('y')
 		plt.colorbar(CS)
 		plt.gca().set_aspect('equal',adjustable='box')
-		#plt.set_xlim([x_start,x_end])
-		#plt.set_ylim([y_start,y_end])
-		plt.savefig('%s/v%07d.png' % (folder, ite/nsave))
+		plt.xlim([x_start,x_end])
+		plt.ylim([y_start,y_end])
+		plt.savefig('%s/v%07d.pdf' % (folder, ite/nsave))
 		plt.clf()
 
 if __name__ == '__main__':

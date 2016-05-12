@@ -2,7 +2,7 @@
   dt: 0.001
   scaleCV: 5.0
   nt: 50000
-  nsave: 200
+  nsave: 1000
   linearSolvers:
     - system: velocity
       solver: CG

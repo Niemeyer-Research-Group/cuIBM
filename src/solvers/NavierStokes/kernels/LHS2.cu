@@ -240,7 +240,7 @@ void LHS2_mid(int *row, int *col, double *val, double *distance_from_u_to_body, 
 	col[numE] = ip;
 	val[numE] = temp;
 
-	//do some jank so the solver works, although this modifies the matricies it doesn't really change the results
+	//do some jank so the solver works, although this modifies the matricies it doesn't really change the results //flag
 	if(row[numE]==col[numE] && col[numE]==(ny/2)*nx+nx/2)
 	{
 		val[numE] += val[numE];

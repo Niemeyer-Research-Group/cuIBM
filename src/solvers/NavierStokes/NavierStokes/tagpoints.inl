@@ -30,10 +30,10 @@ void NavierStokesSolver::tagPoints()
 			*by_r		= thrust::raw_pointer_cast ( &(B.y[0]) ),
 			*uB_r		= thrust::raw_pointer_cast ( &(B.uB[0]) ),
 			*vB_r		= thrust::raw_pointer_cast ( &(B.vB[0]) ),
-			*yu_r		= thrust::raw_pointer_cast ( &(NavierStokesSolver::domInfo->yuD[0]) ),
-			*xu_r		= thrust::raw_pointer_cast ( &(NavierStokesSolver::domInfo->xuD[0]) ),
-			*yv_r		= thrust::raw_pointer_cast ( &(NavierStokesSolver::domInfo->yvD[0]) ),
-			*xv_r		= thrust::raw_pointer_cast ( &(NavierStokesSolver::domInfo->xvD[0]) ),
+			*yu_r		= thrust::raw_pointer_cast ( &(NavierStokesSolver::domInfo->yu[0]) ),
+			*xu_r		= thrust::raw_pointer_cast ( &(NavierStokesSolver::domInfo->xu[0]) ),
+			*yv_r		= thrust::raw_pointer_cast ( &(NavierStokesSolver::domInfo->yv[0]) ),
+			*xv_r		= thrust::raw_pointer_cast ( &(NavierStokesSolver::domInfo->xv[0]) ),
 			*a_r		= thrust::raw_pointer_cast ( &(distance_from_intersection_to_node[0]) ),
 			*b_r		= thrust::raw_pointer_cast ( &(distance_between_nodes_at_IB[0]) ),
 			*dub_r		= thrust::raw_pointer_cast ( &(distance_from_u_to_body[0]) ),
@@ -95,20 +95,20 @@ void NavierStokesSolver::tagPoints()
 	if (a!=b)
 	{
 		std::cout<<"tags x changed at " << timeStep<<"\n";
-		arrayprint(tags,"tagsx","x");
-		arrayprint(tagsOld,"tagsOldx","x");
+		//arrayprint(tags,"tagsx","x");
+		//arrayprint(tagsOld,"tagsOldx","x");
 	}
 	if (c!=d)
 	{
 		std::cout<<"tags y changed at " << timeStep<<"\n";
-		arrayprint(tags,"tagsy","y");
-		arrayprint(tagsOld,"tagsOldy","y");
+		//arrayprint(tags,"tagsy","y");
+		//arrayprint(tagsOld,"tagsOldy","y");
 	}
 	if (f!=g)
 	{
 		std::cout<<"tags p changed at " << timeStep<<"\n";
-		arrayprint(tagsPOut,"tagsp","p");
-		arrayprint(tagsPOld,"tagsPOldx","p");
+		//arrayprint(tagsPOut,"tagsp","p");
+		//arrayprint(tagsPOld,"tagsPOldx","p");
 	}
 	}
 	logger.stopTimer("tagPoints");
