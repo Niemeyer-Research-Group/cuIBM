@@ -1,6 +1,6 @@
 - direction: x
   start: -15.0
-  mid_dx: 0.01
+  mid_dx: 0.001
   subDomains:
     - end: -0.6
       stretchRatio: 1.05
@@ -11,7 +11,7 @@
 
 - direction: y
   start: -15.0
-  mid_dx: 0.01
+  mid_dx: 0.001
   subDomains:
     - end: -0.6
       stretchRatio: 1.05
