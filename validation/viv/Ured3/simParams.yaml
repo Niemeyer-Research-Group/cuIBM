@@ -4,7 +4,7 @@
   nt: 16000
   nsave: 1000
   startStep: 0
-  solverType: 1
+  SolverType: FSI
   Ured: 3
   linearSolvers:
     - system: velocity

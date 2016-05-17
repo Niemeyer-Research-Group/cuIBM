@@ -30,12 +30,11 @@ void operator >> (const YAML::Node &node, domain &D)
 	string dir;
 	double start;
 	int  numCells;
-	double mid_dx;
+	double mid_h;
 	node["direction"] >> dir;
 	node["start"] >> start;
-	node["mid_dx"] >> mid_dx;
-	D.mid_dx = mid_dx;
-
+	node["mid_h"] >> mid_h;
+	D.mid_h = mid_h;
 
 	double end, stretchRatio, a, count = 0;
 	const YAML::Node &subDomains = node["subDomains"];
@@ -45,21 +44,21 @@ void operator >> (const YAML::Node &node, domain &D)
 		subDomains[i]["stretchRatio"] >> stretchRatio;
 		if (stretchRatio<1)
 		{
-			//a = mid_dx/((end-start)*(stretchRatio-1));
+			//a = mid_h/((end-start)*(stretchRatio-1));
 			//numCells = log(a/(a-1))/log(stretchRatio);
 			//count += int(numCells);
-			a = mid_dx/((start-end)*(stretchRatio-1));
+			a = mid_h/((start-end)*(stretchRatio-1));
 			numCells = log(1/a + 1)/log(stretchRatio);
 			count += int(numCells);
 		}
 		else if(stretchRatio == 1)
 		{
-			numCells = (end-start)/mid_dx;
+			numCells = (end-start)/mid_h;
 			count += int(numCells);
 		}
 		else
 		{
-			a = mid_dx/((end-start)*(stretchRatio-1));
+			a = mid_h/((end-start)*(stretchRatio-1));
 			numCells = log(1/a + 1)/log(stretchRatio);
 			count += int(numCells);
 		}
@@ -90,18 +89,18 @@ void operator >> (const YAML::Node &node, domain &D)
 		subDomains[i]["stretchRatio"] >> stretchRatio;
 		if (stretchRatio<1)
 		{
-			//a = mid_dx/((end-start)*(stretchRatio-1));
+			//a = mid_h/((end-start)*(stretchRatio-1));
 			//numCells = log(a/(a-1))/log(stretchRatio);
-			a = mid_dx/((start-end)*(stretchRatio-1));
+			a = mid_h/((start-end)*(stretchRatio-1));
 			numCells = log(1/a + 1)/log(stretchRatio);
 		}
 		else if(stretchRatio == 1)
 		{
-			numCells = (end-start)/mid_dx;
+			numCells = (end-start)/mid_h;
 		}
 		else
 		{
-			a = mid_dx/((end-start)*(stretchRatio-1));
+			a = mid_h/((end-start)*(stretchRatio-1));
 			numCells = log(1/a + 1)/log(stretchRatio);
 		}
 

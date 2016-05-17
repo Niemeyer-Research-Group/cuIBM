@@ -1,2 +1,2 @@
 - type: circle
-  circleOptions: [0.0, 0.0, 0.5, 786]
+  circleOptions: [0.0, 0.0, 0.5, 786, true, 0.004]

@@ -11,6 +11,7 @@
 #include "io.h"
 #include <parameterDB.h>
 #include <preconditioner.h>
+#include <types.h>
 
 
 /**
@@ -43,6 +44,20 @@ preconditionerType preconditionerTypeFromString(string &s)
     return NONE;
 }
 
+solverType solverTypeFromString(string &s)
+{
+	if (s =="NAVIER_STOKES_SOLVER")
+		return NAVIERSTOKES;
+	else if (s == "FADLUN")
+		return FADLUN;
+	else if (s == "OSC_CYLINDER")
+		return OSC;
+	else if (s == "FSI")
+		return FSI;
+	else
+		return NAVIERSTOKES;
+}
+
 /**
  * \brief Fills the database with the simulation parameters.
  *
@@ -55,26 +70,25 @@ void parseSimulation(const YAML::Node &node, parameterDB &DB)
 	       scaleCV = 2.0;
 	int    nt = 100,
 	       nsave = 100,
-	       startStep = 0,
-	       solverType = 0;
+	       startStep = 0;
 	string convSch = "ADAMS_BASHFORTH_2";
 	bool   restart = false;
 
-
+	string SolverType = "NAVIER_STOKES_SOLVER";
 	// read simulation parameters
 	node["dt"] >> dt;
 	node["nsave"] >> nsave;
 	node["nt"] >> nt;
 	try
 	{
-		node["restart"] >> restart;
+		node["SolverType"] >> SolverType;
 	}
 	catch(...)
 	{
 	}
 	try
 	{
-		node["solverType"] >> solverType;
+		node["restart"] >> restart;
 	}
 	catch(...)
 	{
@@ -101,7 +115,7 @@ void parseSimulation(const YAML::Node &node, parameterDB &DB)
 	DB[dbKey]["nsave"].set<int>(nsave);
 	DB[dbKey]["nt"].set<int>(nt);
 	DB[dbKey]["restart"].set<bool>(restart);
-	DB[dbKey]["solverType"].set<int>(solverType);
+	DB[dbKey]["SolverType"].set<solverType>(solverTypeFromString(SolverType));
 
 	string system = "velocity", linearSolver = "CG", preconditioner = "DIAGONAL";
 	double tol = 1e-5;

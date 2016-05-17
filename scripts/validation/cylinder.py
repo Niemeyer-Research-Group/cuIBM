@@ -46,10 +46,10 @@ print "Plotting the drag coefficient for flow over an impulsively started circul
 print "-"*120
 
 gnuplotFile    = caseFolder + '/cylinderRe' + Re + '.plt'
-outFile        = caseFolder + '/cylRe' + Re + 'Drag.pdf'
+outFile        = caseFolder + '/cylRe' + Re + 'Drag.png'
 
 f = open(gnuplotFile, 'w')
-f.write("reset;\nset terminal pdf enhanced font 'Palatino, 11';\n\n");
+f.write("reset;\nset terminal png enhanced font 'Palatino, 11';\n\n");
 f.write("set title 'Flow over an impulsively started cylinder at Reynolds number %s'\n" % Re)
 f.write("set xlabel 'Non-dimensional time'\n")
 f.write("set ylabel 'Drag Coefficient'\n")

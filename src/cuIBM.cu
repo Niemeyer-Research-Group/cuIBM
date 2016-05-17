@@ -19,6 +19,8 @@
 #include "solvers/NavierStokes/NavierStokesSolver.h"
 #include "solvers/NavierStokes/FSI.h"
 #include "solvers/NavierStokes/oscCylinder.h"
+#include "solvers/NavierStokes/fadlunModified.h"
+#include "types.h"
 
 int main(int argc, char **argv)
 {
@@ -36,12 +38,22 @@ int main(int argc, char **argv)
 
 	// create and initialize the flow solver, I think this can be simplified/streamlined now that there is only one solver
 	NavierStokesSolver *solver = 0;
-	if (paramDB["simulation"]["solverType"].get<int>() == 0)
+	solverType st = paramDB["simulation"]["SolverType"].get<solverType>();
+	switch(st)
+	{
+	case NAVIERSTOKES:
 		solver = new NavierStokesSolver(&paramDB, &dom_info);
-	else if (paramDB["simulation"]["solverType"].get<int>() == 1)
-		solver = new FSI(&paramDB, &dom_info);
-	else
+		break;
+	case FADLUN:
+		solver = new fadlunModified(&paramDB, &dom_info);
+		break;
+	case OSC:
 		solver = new oscCylinder(&paramDB, &dom_info);
+		break;
+	//case FSI:
+		//solver = new FSI(&paramDB, &dom_info);
+		//break;
+	}
 	solver->initialise();
 
 	//prints to output and files

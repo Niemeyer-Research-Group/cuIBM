@@ -9,6 +9,7 @@
 #include "io.h"
 #include <boundaryCondition.h>
 #include "preconditioner.h"
+#include <types.h>
 
 using std::string;
 using std::ios;
@@ -114,7 +115,7 @@ void readInputs(int argc, char **argv, parameterDB &DB, domain &D)
 
 	// case folder
 	string folder = DB["inputs"]["caseFolder"].get<std::string>();
-
+	std::cout<<"Parsing...\n";
 	// read the simulation file
 	string fname = folder + "/simParams.yaml";
 	parseSimulationFile(fname, DB);
@@ -125,11 +126,12 @@ void readInputs(int argc, char **argv, parameterDB &DB, domain &D)
 
 	// read the domain file
 	fname = folder + "/domain.yaml";
-	parseDomainFile(fname, D);;
+	parseDomainFile(fname, D);
 
 	// read the body file
 	fname = folder + "/bodies.yaml";
 	parseBodiesFile(fname, DB);
+	std::cout<<"...Finished Parsing\n";
 
 	// second pass of command line -- overwrite values in DB
 	commandLineParse2(argc, argv, DB);
@@ -177,6 +179,7 @@ void initialiseDefaultDB(parameterDB &DB)
 	DB[sim]["startStep"].set<bool>(0);
 	DB[sim]["solverType"].set<int>(0);
 	DB[sim]["Ured"].set<double>(3);
+	DB[sim]["SolverType"].set<solverType>(NAVIERSTOKES);
 
 	// velocity solver
 	string solver = "velocitySolve";

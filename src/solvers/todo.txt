@@ -19,6 +19,7 @@
 	//looks like it might be blending frames, moving the fps from 10 to 5 seems to improve it, but obviously it takes 2x longer
 //todo make solver spit out arrays when it fails
 //todo make shell cleanup script not delete whole computer
+//todo get rid of all gnuploting and replace it with matplotlib python plotting
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //code cleanup
@@ -26,7 +27,7 @@
 //todo update what stuff is stored in the paramdb
 //todo remove multibody remants
 //todo replace a, b, uv with more desciptive names
-//todo remove a and b from .h files
+	//todo remove a and b from .h files and tagpoints.inl
 //todo detemplatize preconditioner.h //not sure if worth, it works as it is and is very confusing
 //todo merge newprecond.cu and preconditioner.h class?
 //todo figure out where exactly the "NavierStokesSolver::variable" specifier is needed then clean it up
@@ -36,10 +37,13 @@
 //todo eclipse is finding a lot of errors that are not errors, fix that
 //todo fix warnings
 //todo lots of unused functionality in body.h and bodies.cu
-//todo git is tracking strage, annoying eclipse things
-//todo currently you have to set the mid_dx in both the body file and domain file
+//todo remove old solverType int
+//todo currently you have to set the mid_h in both the body file and domain file
 //todo go through all the thrust pointer casts and make sure they are being used
 //todo make sure all the things being passed into kernels are being used still
+//todo remove various testing constructs
+//todo change naverstokes folder and spawn to fractional step
+//todo merge boundaryTypes.h and types.h
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //documentation
@@ -56,7 +60,6 @@
 //solver methods
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //todo fix jank so it works
-//todo move osccylinder initialise body out of stepTime()
 //todo cylinderRe3000 isn't working, fix it
 //todo optimize various gpu routines
 //todo change tagpoints to use a tighter bounding box
@@ -77,6 +80,7 @@
 //todo multiple fluids (vof)
 //todo add rotational degree of freedom
 //todo different force calculation method
+//todo add a verbose mode where it spits out more information about the timestep, should be able to turn on at runtime
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -100,6 +104,8 @@
 //remove device/host from dominfo 5/11/16
 //the current way we handle grid sizing sucks, should be more automated/needs built in derp check 5/11/16
 //solver is unreasonably unsteady when it comes to grid/body sizing 5/11/16
-
-
-
+//move osccylinder initialise body out of stepTime() 5/16/16
+//seperate ns and fadlun solvers 5/16/16
+//git is tracking strage, annoying eclipse things --fixed by Kyle
+//change mid_h to mid_h 5/17/16
+//change domainl.yaml for all cases 5/17/16

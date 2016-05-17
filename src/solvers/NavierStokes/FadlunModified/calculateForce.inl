@@ -5,49 +5,7 @@
  * \brief functions to invoke kernels that will calculate the force on the immersed body
  */
 
-#include <solvers/NavierStokes/kernels/calculateForce.h>
-
-void NavierStokesSolver::calculateForceFadlun()
-{
-	double	*uold_r	= thrust::raw_pointer_cast( &(uold[0]) ),
-			*Lnew_r	= thrust::raw_pointer_cast( &(Lnew[0]) ),
-			*L_r	= thrust::raw_pointer_cast( &(L[0]) ),
-			*u_r	= thrust::raw_pointer_cast( &(uhat[0]) ),
-			*force_r= thrust::raw_pointer_cast( &(force[0]) ),
-			*N_r	= thrust::raw_pointer_cast( &(N[0]) ),
-			*Nold_r	= thrust::raw_pointer_cast( &(Nold[0]) ),
-			*dx_r	= thrust::raw_pointer_cast( &(domInfo->dx[0]) ),
-			*dy_r	= thrust::raw_pointer_cast( &(domInfo->dy[0]) ),
-			*ym_r	= thrust::raw_pointer_cast( &(bc[YMINUS][0]) ),
-			*yp_r	= thrust::raw_pointer_cast( &(bc[YPLUS][0]) ),
-			*xm_r	= thrust::raw_pointer_cast( &(bc[XMINUS][0]) ),
-			*xp_r	= thrust::raw_pointer_cast( &(bc[XPLUS][0]) );
-
-	int		*tags_r	= thrust::raw_pointer_cast( &(tags[0]) ),
-			*tags2_r= thrust::raw_pointer_cast( &(tags2[0]) );
-
-	int nx = domInfo ->nx,
-		ny = domInfo ->ny;
-
-	const int blocksize = 256;
-
-	double	nu = (*paramDB)["flow"]["nu"].get<double>();
-	double	dt = (*paramDB)["simulation"]["dt"].get<double>();
-
-	dim3 gridU( int( ((nx-1)*ny-0.5)/blocksize ) +1, 1);
-	dim3 blockU(blocksize, 1);
-	kernels::Lmidx<<<gridU, blockU>>>(Lnew_r,u_r,dx_r,dy_r,nx,ny,nu);
-	kernels::Lbcx<<<gridU, blockU>>>(Lnew_r, u_r, dx_r, dy_r, ym_r, yp_r, xm_r, xp_r, nx, ny, nu);
-
-	dim3 gridV( int( (nx*(ny-1)-0.5)/blocksize ) +1, 1);
-	dim3 blockV(blocksize, 1);
-	kernels::Lmidy<<<gridV, blockV>>>(Lnew_r,u_r,dx_r,dy_r,nx,ny,nu);
-	kernels::Lbcy<<<gridV, blockV>>>(Lnew_r, u_r, dx_r, dy_r, ym_r, yp_r, xm_r, xp_r, nx, ny, nu);
-
-	dim3 gridUV( int( (nx*(ny-1)+(nx-1)*ny-0.5)/blocksize ) +1, 1);
-	dim3 blockUV(blocksize, 1);
-	kernels::calcForceFadlun<<<gridUV,blockUV>>>(force_r, L_r, Lnew_r, Nold_r, N_r, u_r, uold_r, tags_r, dt, nx, ny);
-}
+#include <solvers/NavierStokes/FadlunModified/kernels/calculateForce.h>
 
 /**
  * \brief Calculates forces acting on an immersed body (on the device).
@@ -58,18 +16,19 @@ void NavierStokesSolver::calculateForceFadlun()
  * does not involve any body forces on the immersed boundary.
  * Currently works only for one body.
  */
-void NavierStokesSolver::calculateForce()
+void fadlunModified::calculateForce()
 {
-	int  nx = domInfo->nx,
-	     ny = domInfo->ny;
-	double	dt = (*paramDB)["simulation"]["dt"].get<double>(),
-			nu = (*paramDB)["flow"]["nu"].get<double>();
+	int  nx = NavierStokesSolver::domInfo->nx,
+	     ny = NavierStokesSolver::domInfo->ny;
+	parameterDB  &db = *NavierStokesSolver::paramDB;
+	double	dt = db["simulation"]["dt"].get<double>(),
+			nu = db["flow"]["nu"].get<double>();
 
-	double	*u_r		= thrust::raw_pointer_cast(&u[0]),
-			*uold_r		= thrust::raw_pointer_cast(&uold[0]),
-			*pressure_r	= thrust::raw_pointer_cast(&pressure[0]),
-			*dx		= thrust::raw_pointer_cast(&(domInfo->dx[0])),
-			*dy		= thrust::raw_pointer_cast(&(domInfo->dy[0]));
+	double	*u_r		= thrust::raw_pointer_cast(&NavierStokesSolver::u[0]),
+			*uold_r		= thrust::raw_pointer_cast(&NavierStokesSolver::uold[0]),
+			*pressure_r	= thrust::raw_pointer_cast(&NavierStokesSolver::pressure[0]),
+			*dx		= thrust::raw_pointer_cast(&(NavierStokesSolver::domInfo->dx[0])),
+			*dy		= thrust::raw_pointer_cast(&(NavierStokesSolver::domInfo->dy[0]));
 
 	int		*tagsIn_r	= thrust::raw_pointer_cast( &(tagsIn[0]) );
 
@@ -134,7 +93,7 @@ void NavierStokesSolver::calculateForce()
 	B.forceY[0] = thrust::reduce(FyX.begin(), FyX.end()) + thrust::reduce(FyY.begin(), FyY.end()) + thrust::reduce(FyU.begin(), FyU.end());
 
 }
-
+/*
 void NavierStokesSolver::print_forces(cusp::array1d<double, cusp::device_memory> FyX, cusp::array1d<double, cusp::device_memory> FyY, cusp::array1d<double, cusp::device_memory> FyU)
 {
 	logger.startTimer("output");
@@ -196,4 +155,4 @@ void NavierStokesSolver::print_forces(cusp::array1d<double, cusp::device_memory>
 	myfile3.close();
 	std::cout<<"printed FyU\n";
 	logger.stopTimer("output");
-}
+}*/

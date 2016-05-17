@@ -9,6 +9,7 @@
 #include "boundaryCondition.h"
 #include "body.h"
 #include "preconditioner.h"
+#include "types.h"
 
 /**
  * \brief Converts a number to a string.
@@ -45,6 +46,21 @@ std::string toString(bcType b)
     return "Error";
 }
 
+template<>
+std::string toString(solverType b)
+{
+	if (b == NAVIERSTOKES)
+		return "Navier Stokes";
+	else if (b == FADLUN)
+		return "Fadlun";
+	else if (b == OSC)
+		return "Oscillating Cylinders";
+	else if (b == FSI)
+		return "Fluid Structure Interaction";
+	else
+		return "error";
+}
+
 /**
  * \brief Gets the value of the property as a string.
  *
@@ -75,6 +91,7 @@ template float property::get<float>();
 template int property::get<int>();
 template bool property::get<bool>();
 template preconditionerType property::get<preconditionerType>();
+template solverType property::get<solverType>();
 template std::vector<body> *property::get<std::vector<body>*>();
 template boundaryCondition **property::get<boundaryCondition **>();
 
@@ -141,5 +158,6 @@ template void property::set(float v);
 template void property::set(double v);
 template void property::set(bool v);
 template void property::set(preconditionerType v);
+template void property::set(solverType v);
 template void property::set(boundaryCondition **v);
 template void property::set(std::vector<body> *v);

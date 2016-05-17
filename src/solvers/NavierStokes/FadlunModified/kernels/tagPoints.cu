@@ -53,9 +53,7 @@ void tag_u(int *tags, int *tagsIn, int *tags2, double *bx, double *by, double *u
 			eps = 1.e-10,
 			x,
 			y;
-	double testx,
-			testy;//flag
-	distance_from_intersection_to_node[iu]		= xu[I];
+
 	distance_from_u_to_body[ip] = 0;
 	distance_from_u_to_body[ip] = 0;
 	// cycle through all the segments on the body surface
@@ -115,7 +113,6 @@ void tag_u(int *tags, int *tagsIn, int *tags2, double *bx, double *by, double *u
 				if (x>xu[I-1]+eps && x<xu[I]-eps)
 				{
 					bdryFlagX  = iu;
-					testx=x;//flag
 					bdryFlag2X = iu+1;
 					if (tags[iu-1]==-1)
 						tagsIn[iu-1]	= iu-1;
@@ -129,7 +126,6 @@ void tag_u(int *tags, int *tagsIn, int *tags2, double *bx, double *by, double *u
 				else if (x>xu[I]+eps && x<xu[I+1]-eps)
 				{
 					bdryFlagX  = iu;
-					testx =x;//flag
 					bdryFlag2X = iu-1;
 					if(tags[iu+1] == -1)
 						tagsIn[iu+1]	= iu+1;
@@ -174,7 +170,6 @@ void tag_u(int *tags, int *tagsIn, int *tags2, double *bx, double *by, double *u
 				if (y>yu[J-1]+eps && y<yu[J]-eps)
 				{
 					bdryFlagY = iu;
-					testy = yu[J];//flag
 					bdryFlag2Y= iu+(nx-1);
 					//if (outsideY)
 					if(tags[iu-nx+1]==-1)
@@ -186,7 +181,6 @@ void tag_u(int *tags, int *tagsIn, int *tags2, double *bx, double *by, double *u
 				else if (y>yu[J]+eps && y<yu[J+1]-eps)
 				{
 					bdryFlagY = iu;
-					testy=1;//flag
 					bdryFlag2Y= iu-(nx-1);
 					//if (outsideY)
 					if (tags[iu+nx-1]==-1)
@@ -206,7 +200,6 @@ void tag_u(int *tags, int *tagsIn, int *tags2, double *bx, double *by, double *u
 		tags[iu]	= bdryFlagX;
 		tags2[iu]	= bdryFlag2X;
 		distance_from_intersection_to_node[iu]		= Xa;
-		//distance_from_intersection_to_node[iu]		= testx;
 		distance_between_nodes_at_IB[iu]		= Xb;
 		uv[iu]		= uvX;
 	}
@@ -216,7 +209,6 @@ void tag_u(int *tags, int *tagsIn, int *tags2, double *bx, double *by, double *u
 		tags[iu]	= bdryFlagY;
 		tags2[iu]	= bdryFlag2Y;
 		distance_from_intersection_to_node[iu]		= Ya;
-		//distance_from_intersection_to_node[iu] = testy;
 		distance_between_nodes_at_IB[iu]		= Yb;
 		uv[iu]		= uvY;
 	}

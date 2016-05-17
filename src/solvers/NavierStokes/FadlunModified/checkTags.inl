@@ -1,9 +1,10 @@
+
 /***************************************************************************//**
  * \file checkTags.inl
  * \author Christopher Minar (minarc@oregonstate.edu)
  * \brief checks to see if tags are coincident with body edge
  */
-
+/*
 void NavierStokesSolver::checkPoints()
 {
 	int  nx = domInfo->nx,
@@ -136,7 +137,7 @@ std::cout<<"xdonzeo\n";
 				* if the ray intersects the boundary segment
 				* top endpoint must be strictly above the ray
 				* bottom can be on or below the ray
-				*/
+				*//*
 				if (B.y[bottom]-eps < domInfo->yv[j] && B.y[top]-eps > domInfo->yv[j] && !flag)
 				{
 					// if the segment is not parallel to the ray
@@ -176,4 +177,4 @@ std::cout<<"xdonzeo\n";
 		}
 	}
 	std::cout<<"donzo\n";
-}
+}*/

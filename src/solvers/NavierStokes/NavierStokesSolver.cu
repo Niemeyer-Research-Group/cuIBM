@@ -5,7 +5,7 @@
  */
 
 #include "NavierStokesSolver.h"
-#include "kernels/initialise.h"
+#include "NavierStokes/kernels/initialise.h"
 #include <sys/stat.h>
 #include <io/io.h>
 #include <cusp/precond/aggregation/smoothed_aggregation.h>//flag
@@ -29,10 +29,17 @@
 
 void NavierStokesSolver::initialise()
 {
-	printf("NS initalising\n");
 	logger.startTimer("initialise");
+	initialiseNoBody();
+	initialiseLHS();
+	logger.stopTimer("initialise");
+}
+
+void NavierStokesSolver::initialiseNoBody()
+{
+	printf("NS initalising\n");
 	int nx = domInfo->nx,
-	    ny = domInfo->ny;
+		ny = domInfo->ny;
 
 	int numUV = (nx-1)*ny + nx*(ny-1);
 	int numP  = nx*ny;
@@ -49,15 +56,6 @@ void NavierStokesSolver::initialise()
 
 	// writes the grids information to a file
 	io::writeGrid(folder, *domInfo);
-
-	// opens the file to which the number of iterations at every step is written
-	std::stringstream outiter;
-	outiter << folder << "/iterations";
-	iterationsFile.open(outiter.str().c_str());
-
-	std::stringstream outPosition;
-	outPosition << folder <<"/midPosition";
-	midPositionFile.open(outPosition.str().c_str());
 
 	std::cout << "Initialised common stuff!" << std::endl;
 
@@ -78,36 +76,16 @@ void NavierStokesSolver::initialise()
 	Lnew.resize(numUV);
 	rhs1.resize(numUV);
 	bc1.resize(numUV);
-	force.resize(numUV);
-
-	//tagpoints, size uv, device
-	tags.resize(numUV);//used in lhs1
-	tagsOld.resize(numUV);
-	tagsPOld.resize(numP);
-	tags2.resize(numUV);//used in lhs1
-	tagsIn.resize(numUV);//used in lhs1
-	distance_from_intersection_to_node.resize(numUV);
-	distance_between_nodes_at_IB.resize(numUV);
-	uv.resize(numUV);
 
 	//doubles, size np, device
 	pressure.resize(numP);
 	rhs2.resize(numP);
 	pressure_old.resize(numP);
-	test.resize(numP);//flag
-
-	//tagpoints, size np, device
-	tagsP.resize(numP);//flag
-	tagsPOut.resize(numP);//flag
-	distance_from_u_to_body.resize(numP);
-	distance_from_v_to_body.resize(numP);
 
 	cusp::blas::fill(rhs2, 0);//flag
 	cusp::blas::fill(uhat, 0);//flag
 	cusp::blas::fill(Nold, 0);//flag
 	cusp::blas::fill(N, 0);//flag
-	cusp::blas::fill(tagsOld,-1);
-	cusp::blas::fill(tagsPOld,-1);
 	std::cout<<"Initialised Arrays!" <<std::endl;
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
@@ -145,7 +123,7 @@ void NavierStokesSolver::initialise()
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	boundaryCondition
 		**bcInfo
-	     = (*paramDB)["flow"]["boundaryConditions"].get<boundaryCondition **>();
+		 = (*paramDB)["flow"]["boundaryConditions"].get<boundaryCondition **>();
 
 	//resize boundary arrays by the number of velocity points on boundaries (u and v points)
 	bc[XMINUS].resize(2*ny-1);
@@ -178,38 +156,20 @@ void NavierStokesSolver::initialise()
 	std::cout << "Initialised boundary conditions!" << std::endl;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	//Initialize Bodies
+	//OUTPUT
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	B.initialise((*paramDB), *domInfo);
-	std::cout << "Initialised bodies!" << std::endl;
+	std::stringstream outiter;
+	outiter << folder << "/iterations";
+	iterationsFile.open(outiter.str().c_str());
+}
 
-	/////////////////////////////////////////////////////////////////////////////////////////////////
-	//TAG POINTS
-	/////////////////////////////////////////////////////////////////////////////////////////////////
-	if (B.numBodies>0) //only tag points if there is a body
-	{
-		tagPoints();
-		//std::cout<<"checking for coincident points\n";
-		//checkPoints();//flag
-		std::cout << "Tagged points!" << std::endl;
-	}
-
-	////////////////////////////////////////////////////////////////////////////////////////////////
-	//LHS MATRICIES
-	////////////////////////////////////////////////////////////////////////////////////////////////
+void NavierStokesSolver::initialiseLHS()
+{
 	generateLHS1();
 	generateLHS2();
 
 	PC.generate(LHS1,LHS2, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>(), (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
 	std::cout << "Assembled LHS matrices!" << std::endl;
-
-	////////////////////////////////////////////////////////////////////////////////////////////////
-	//OUTPUT
-	////////////////////////////////////////////////////////////////////////////////////////////////
-	std::stringstream out;
-	out << folder << "/forces";
-	forceFile.open(out.str().c_str());
-	logger.stopTimer("initialise");
 }
 
 //##############################################################################
@@ -398,15 +358,10 @@ void NavierStokesSolver::writeCommon()
 
 	// write the velocity fluxes and the pressure values
 	if (timeStep % nsave == 0)
-	{
 		io::writeData(folder, timeStep, uhat, pressure, *domInfo);//, *paramDB);
-		B.writeToFile(folder, timeStep);
-	}
 
 	// write the number of iterations for each solve
 	iterationsFile << timeStep << '\t' << iterationCount1 << '\t' << iterationCount2 << std::endl;
-	if (B.numBodies>0)
-		midPositionFile << timeStep << '\t' << B.midX << '\t' << B.midY <<std::endl;
 }
 
 /**
@@ -415,28 +370,9 @@ void NavierStokesSolver::writeCommon()
 void NavierStokesSolver::writeData()
 {
 	logger.startTimer("output");
-	double         dt  = (*paramDB)["simulation"]["dt"].get<double>();
+
 	writeCommon();
-	logger.stopTimer("output");
-	logger.startTimer("calculateForce");
-	/*int ny = domInfo->ny;
-	int nx = domInfo->nx;
-	calculateForceFadlun();
-	int num = nx*(ny - 1);
-	int nump = 0;
-	for (int i=0; i <(nx-1)*ny; i++)
-	{
-		if (tags[i] != -1)
-			nump++;
-	}
-	B.forceX[0] = thrust::reduce(force.begin(), force.end() - num)/nump;
-	 */
-	if (B.numBodies != 0)
-		calculateForce();
-	logger.stopTimer("calculateForce");
-	logger.startTimer("output");
-	if (B.numBodies != 0)
-		forceFile << timeStep*dt << '\t' << B.forceX[0] << '\t' << B.forceY[0] << std::endl;
+
 	logger.stopTimer("output");
 }
 
@@ -447,14 +383,9 @@ void NavierStokesSolver::shutDown()
 {
 	io::printTimingInfo(logger);
 	iterationsFile.close();
-	midPositionFile.close();
-	forceFile.close();
 }
 
 // include inline files
 #include "NavierStokes/intermediateVelocity.inl"
 #include "NavierStokes/intermediatePressure.inl"
 #include "NavierStokes/projectVelocity.inl"
-#include "NavierStokes/tagpoints.inl"
-#include "NavierStokes/calculateForce.inl"
-#include "NavierStokes/checkTags.inl"

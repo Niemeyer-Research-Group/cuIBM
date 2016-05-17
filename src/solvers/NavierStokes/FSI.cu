@@ -5,9 +5,9 @@
  * \brief Declaration of the class FSI.
  */
 
-#include <solvers/NavierStokes/kernels/structure.h>
+#include <solvers/NavierStokes/oscCylinder/kernels/structure.h>
 #include "FSI.h"
-#include <solvers/NavierStokes/kernels/intermediatePressure.h>
+#include <solvers/NavierStokes/NavierStokes/kernels/intermediatePressure.h>
 #include <sys/stat.h>
 
 /**
@@ -15,7 +15,7 @@
  *
  * \param pDB database that contains all the simulation parameters
  * \param dInfo information related to the computational grid
- */
+ *//*
 FSI::FSI(parameterDB *pDB, domain *dInfo)
 {
 	paramDB = pDB;
@@ -187,7 +187,7 @@ void FSI::SC()
 
 	NavierStokesSolver::timeStep++;
 
-}
+}*/
 /*
 void FSI::callTest()
 {

@@ -5,7 +5,7 @@
  * \brief Declaration of the class oscCylinder.
  */
 
-#include <solvers/NavierStokes/kernels/structure.h>
+#include <solvers/NavierStokes/oscCylinder/kernels/structure.h>
 #include "oscCylinder.h"
 #include <sys/stat.h>
 
@@ -26,20 +26,26 @@ void oscCylinder::writeData()
 	parameterDB  &db = *NavierStokesSolver::paramDB;
 	double dt  = db["simulation"]["dt"].get<double>();
 	NavierStokesSolver::logger.startTimer("output");
-	NavierStokesSolver::writeCommon();
+	writeCommon();
 	if (NavierStokesSolver::timeStep == 0)
 		forceFile<<"timestep\tFx\tFxX\tFxY\tFxU\tFy\n";
 	forceFile << timeStep*dt << '\t' << B.forceX[0] << '\t'<<fxx<<"\t"<<fxy<<"\t"<<fxu<<"\t" << B.forceY[0] << std::endl;
 	logger.stopTimer("output");
 }
 
+void oscCylinder::writeCommon()
+{
+	fadlunModified::writeCommon();
+	midPositionFile << timeStep << '\t' << B.midX << '\t' << B.midY <<std::endl;
+}
+
 void oscCylinder::updateSolver()
 {
-	NavierStokesSolver::B.calculateCellIndices(*NavierStokesSolver::domInfo);
-	NavierStokesSolver::B.calculateBoundingBoxes(*NavierStokesSolver::paramDB, *NavierStokesSolver::domInfo);
-	NavierStokesSolver::tagPoints();
-	NavierStokesSolver::generateLHS1();//is this needed?
-	NavierStokesSolver::generateLHS2();
+	fadlunModified::B.calculateCellIndices(*NavierStokesSolver::domInfo);
+	fadlunModified::B.calculateBoundingBoxes(*NavierStokesSolver::paramDB, *NavierStokesSolver::domInfo);
+	fadlunModified::tagPoints();
+	fadlunModified::generateLHS1();//is this needed?
+	fadlunModified::generateLHS2();
 
 	NavierStokesSolver::logger.startTimer("Preconditioner");
 	if (NavierStokesSolver::iterationCount2 > 100)
@@ -52,10 +58,10 @@ void oscCylinder::updateSolver()
 void oscCylinder::moveBody()
 {
 	parameterDB  &db = *NavierStokesSolver::paramDB;
-	NavierStokesSolver::calculateForce();
+	fadlunModified::calculateForce();
 
-	double *x_r	= thrust::raw_pointer_cast( &(NavierStokesSolver::B.x[0]) ),
-		   *uB_r= thrust::raw_pointer_cast( &(NavierStokesSolver::B.uB[0]) );
+	double *x_r	= thrust::raw_pointer_cast( &(fadlunModified::B.x[0]) ),
+		   *uB_r= thrust::raw_pointer_cast( &(fadlunModified::B.uB[0]) );
 	double	dt	= db["simulation"]["dt"].get<double>(),
 			nu	= db["flow"]["nu"].get<double>(),
 			t = dt*NavierStokesSolver::timeStep,
@@ -63,16 +69,16 @@ void oscCylinder::moveBody()
 			uMax = 100*nu/D, //Re
 			f = uMax*D/5.0, //KC
 			A = uMax/(M_PI*2.0*f), //umax
-			totalPoints=NavierStokesSolver::B.totalPoints,
-			xold= NavierStokesSolver::B.midX,
+			totalPoints=fadlunModified::B.totalPoints,
+			xold= fadlunModified::B.midX,
 			unew,
 			xnew;
 
 	//calc new velocity and position
 	xnew = A*cos(2*M_PI*f*t);
 	unew = -A*2*M_PI*f*sin(2*M_PI*f*t);
-	NavierStokesSolver::B.centerVelocityU = unew;
-	NavierStokesSolver::B.midX = xnew;
+	fadlunModified::B.centerVelocityU = unew;
+	fadlunModified::B.midX = xnew;
 
 	const int blocksize = 256;
 	dim3 grid( int( (totalPoints)/blocksize ) +1, 1);
@@ -83,10 +89,17 @@ void oscCylinder::moveBody()
 
 void oscCylinder::initialise()
 {
-	parameterDB  &db = *NavierStokesSolver::paramDB;
+	fadlunModified::initialise();
 
-	double *x_r	= thrust::raw_pointer_cast( &(NavierStokesSolver::B.x[0]) ),
-		   *uB_r= thrust::raw_pointer_cast( &(NavierStokesSolver::B.uB[0]) );
+	//output
+	parameterDB  &db = *NavierStokesSolver::paramDB;
+	std::string folder = db["inputs"]["caseFolder"].get<std::string>();
+	std::stringstream outPosition;
+	outPosition << folder <<"/midPosition";
+	midPositionFile.open(outPosition.str().c_str());
+
+	double *x_r	= thrust::raw_pointer_cast( &(fadlunModified::B.x[0]) ),
+		   *uB_r= thrust::raw_pointer_cast( &(fadlunModified::B.uB[0]) );
 	double	dt	= db["simulation"]["dt"].get<double>(),
 			nu	= db["flow"]["nu"].get<double>(),
 			t = dt*NavierStokesSolver::timeStep,
@@ -94,16 +107,16 @@ void oscCylinder::initialise()
 			uMax = 100*nu/D, //Re
 			f = uMax*D/5.0, //KC
 			A = uMax/(M_PI*2.0*f), //umax
-			totalPoints=NavierStokesSolver::B.totalPoints,
-			xold= NavierStokesSolver::B.midX,
+			totalPoints=fadlunModified::B.totalPoints,
+			xold= fadlunModified::B.midX,
 			unew,
 			xnew;
 
 	//calc new velocity and position
 	xnew = A*cos(2*M_PI*f*t);
 	unew = -A*2*M_PI*f*sin(2*M_PI*f*t);
-	NavierStokesSolver::B.centerVelocityU = unew;
-	NavierStokesSolver::B.midX = xnew;
+	fadlunModified::B.centerVelocityU = unew;
+	fadlunModified::B.midX = xnew;
 
 	const int blocksize = 256;
 	dim3 grid( int( (totalPoints)/blocksize ) +1, 1);
@@ -113,10 +126,7 @@ void oscCylinder::initialise()
 
 void oscCylinder::stepTime()
 {
-	if (timeStep == 0)
-		initialise();
-
-	NavierStokesSolver::generateRHS1();
+	fadlunModified::generateRHS1();
 	//arrayprint(tags,"tags","x");
 	//arrayprint(tagsP,"tagsP","p");
 	//arrayprint(distance_from_u_to_body,"dub","p");
@@ -124,11 +134,11 @@ void oscCylinder::stepTime()
 	NavierStokesSolver::solveIntermediateVelocity();
 	//arrayprint(uhat,"uhat","x");
 
-	NavierStokesSolver::generateRHS2();
+	fadlunModified::generateRHS2();
 	//arrayprint(rhs2,"rhs2","p");
 	NavierStokesSolver::solvePoisson();
 
-	NavierStokesSolver::velocityProjection();
+	fadlunModified::velocityProjection();
 	//arrayprint(u,"u","x");
 
 	//Release the body after a certain timestep
@@ -145,3 +155,8 @@ void oscCylinder::stepTime()
 	}
 }
 
+void oscCylinder::shutDown()
+{
+	fadlunModified::shutDown();
+	midPositionFile.close();
+}

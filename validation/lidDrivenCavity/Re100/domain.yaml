@@ -1,13 +1,13 @@
 - direction: x
   start: 0.0
+  mid_h: 0.03125
   subDomains:
     - end: 1.0
-      cells: 32
       stretchRatio: 1.0
 
 - direction: y
   start: 0.0
+  mid_h: 0.03125
   subDomains:
     - end: 1.0
-      cells: 32
       stretchRatio: 1.0

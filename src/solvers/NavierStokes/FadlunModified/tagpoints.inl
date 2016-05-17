@@ -9,10 +9,10 @@
  * \brief Tags the forcing nodes among the velocity nodes, i.e. the nodes at 
  *        which the velocity interpolation is performed.
  */
-#include <solvers/NavierStokes/kernels/tagPoints.h>
+#include <solvers/NavierStokes/FadlunModified/kernels/tagPoints.h>
 #include <cusp/print.h>
 
-void NavierStokesSolver::tagPoints()
+void fadlunModified::tagPoints()
 {
 	logger.startTimer("tagPoints");
 	int  nx = NavierStokesSolver::domInfo->nx,

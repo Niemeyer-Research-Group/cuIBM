@@ -17,11 +17,5 @@ __global__
 void project_velocity_X(double *u, double *uhat, double *uold, double *pressure, int *tagsP, int *tagsIn, double *dx, double dt, int nx, int ny);
 
 __global__
-void project_velocity_X_nobody(double *u, double *uhat, double *uold, double *pressure, double *dx, double dt, int nx, int ny);
-
-__global__
 void project_velocity_Y(double *u, double *uhat, double *uold, double *pressure, int *tagsP, int *tagsIn, double *dy, double dt, int nx, int ny);
-
-__global__
-void project_velocity_Y_nobody(double *u, double *uhat, double *uold, double *pressure, double *dy, double dt, int nx, int ny);
 }

@@ -8,11 +8,12 @@
 #pragma once
 
 #include "NavierStokesSolver.h"
+#include "fadlunModified.h"
 
-
-class oscCylinder : public NavierStokesSolver
+class oscCylinder : public fadlunModified
 {
-
+protected:
+	std::ofstream midPositionFile;
 public:
 	//constructor -- copy the database and information about the computational grid
 	oscCylinder(parameterDB *pDB=NULL, domain *dInfo=NULL);
@@ -26,8 +27,12 @@ public:
 	//write stuff
 	virtual void writeData();
 
+	virtual void writeCommon();
+
 	//perform motion calculation
 	void moveBody();
 
-	void initialise();
+	virtual void initialise();
+
+	virtual void shutDown();
 };

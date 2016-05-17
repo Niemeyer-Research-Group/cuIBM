@@ -19,7 +19,7 @@ public:
 	int   nx, ///< number of cells in the x-direction
 	      ny; ///< number of cells in the y-direction
 	
-	double mid_dx; ///< dx/dy value in the middle
+	double mid_h; ///< dx/dy value in the middle
 
 	cusp::array1d<double, cusp::device_memory>
 		x,  ///< x-coordinates of the nodes stored on the device

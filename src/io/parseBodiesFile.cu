@@ -91,7 +91,7 @@ void operator >> (const YAML::Node &node, body &Body)
 	}
 	else if (type == "circle")
 	{
-		double cx, cy, R, mid_dx;
+		double cx, cy, R, mid_h;
 		int numPoints;
 		bool selfSize;
 		node["circleOptions"][0] >> cx;
@@ -101,14 +101,14 @@ void operator >> (const YAML::Node &node, body &Body)
 		try
 		{
 			node["circleOptions"][4] >> selfSize;
-			node["circleOptions"][5] >> mid_dx;
+			node["circleOptions"][5] >> mid_h;
 		}
 		catch(...)
 		{
 		}
 		if (selfSize == true)
 		{
-			numPoints = 2.0*R*M_PI/mid_dx;
+			numPoints = 2.0*R*M_PI/mid_h;
 			if (numPoints%2!=0)
 				numPoints++;
 		}
