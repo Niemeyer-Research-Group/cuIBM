@@ -10,6 +10,17 @@
 
 namespace kernels 
 {
+/*
+ * gets velocity from intermediate velocity and pressure
+ * param u velocities
+ * param uhat intermediate velocities
+ * param uold velocites from previous time step
+ * param presure pressure
+ * param dx distance between nodes in the x direction (measured between node sides, where u velocites are stored)
+ * param dt change in time
+ * param nx number of cells in x direction
+ * param ny number of cells in y direction
+ */
 __global__
 void project_velocity_X_nobody(double *u, double *uhat, double *uold, double *pressure, double *dx, double dt, int nx, int ny)
 {
@@ -27,6 +38,17 @@ void project_velocity_X_nobody(double *u, double *uhat, double *uold, double *pr
 	u[i] = uhat[i] - dt*(pressure[ip+1]-pressure[ip]) / (0.5*dx[I+1]+0.5*dx[I]);
 }
 
+/*
+ * gets velocity from intermediate velocity and pressure
+ * param u velocities
+ * param uhat intermediate velocities
+ * param uold velocites from previous time step
+ * param presure pressure
+ * param dx distance between nodes in the x direction (measured between node sides, where u velocites are stored)
+ * param dt change in time
+ * param nx number of cells in x direction
+ * param ny number of cells in y direction
+ */
 __global__
 void project_velocity_Y_nobody(double *u, double *uhat, double *uold, double *pressure, double *dy, double dt, int nx, int ny)
 {

@@ -21,6 +21,9 @@ oscCylinder::oscCylinder(parameterDB *pDB, domain *dInfo)
 	domInfo = dInfo;
 }
 
+/**
+ * \brief Writes data into files.
+ */
 void oscCylinder::writeData()
 {
 	parameterDB  &db = *NavierStokesSolver::paramDB;
@@ -33,12 +36,25 @@ void oscCylinder::writeData()
 	logger.stopTimer("output");
 }
 
+/**
+ * \brief Writes numerical solution at current time-step,
+ *        as well as the number of iterations performed in each solver,
+ *        the force,
+ *        and the middle position of the body (calculated as an average of all the nodes)
+ */
 void oscCylinder::writeCommon()
 {
 	fadlunModified::writeCommon();
 	midPositionFile << timeStep << '\t' << B.midX << '\t' << B.midY <<std::endl;
 }
 
+/*
+ * Calculates new cell indices
+ * Calculates new body bounding boxes
+ * Tags Points
+ * Remakes LHS matricies
+ * updates Preconditioners
+ */
 void oscCylinder::updateSolver()
 {
 	fadlunModified::B.calculateCellIndices(*NavierStokesSolver::domInfo);
@@ -55,6 +71,10 @@ void oscCylinder::updateSolver()
 	NavierStokesSolver::logger.stopTimer("Preconditioner");
 }
 
+/*
+ * Calculates Force
+ * Moves body
+ */
 void oscCylinder::moveBody()
 {
 	parameterDB  &db = *NavierStokesSolver::paramDB;
@@ -87,6 +107,9 @@ void oscCylinder::moveBody()
 
 }
 
+/*
+ * initialise the simulation
+ */
 void oscCylinder::initialise()
 {
 	fadlunModified::initialise();
@@ -124,6 +147,9 @@ void oscCylinder::initialise()
 	kernels::update_body_viv<<<grid,block>>>(x_r, uB_r, xnew-xold, unew, totalPoints);
 }
 
+/**
+ * \brief Calculates the variables at the next time step.
+ */
 void oscCylinder::stepTime()
 {
 	fadlunModified::generateRHS1();
@@ -155,6 +181,9 @@ void oscCylinder::stepTime()
 	}
 }
 
+/**
+ * \brief Prints timing information and closes the different files.
+ */
 void oscCylinder::shutDown()
 {
 	fadlunModified::shutDown();

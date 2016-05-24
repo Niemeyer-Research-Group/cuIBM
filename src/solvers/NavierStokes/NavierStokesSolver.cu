@@ -27,6 +27,9 @@
  * \brief Initializes parameters, arrays and matrices required for the simulation.
  */
 
+/* initialise the simulation
+ *
+ */
 void NavierStokesSolver::initialise()
 {
 	logger.startTimer("initialise");
@@ -35,6 +38,9 @@ void NavierStokesSolver::initialise()
 	logger.stopTimer("initialise");
 }
 
+/* intialise the parts of the simulation that share no similarities to a body solver
+ *
+ */
 void NavierStokesSolver::initialiseNoBody()
 {
 	printf("NS initalising\n");
@@ -163,6 +169,10 @@ void NavierStokesSolver::initialiseNoBody()
 	iterationsFile.open(outiter.str().c_str());
 }
 
+/*
+ * Initialise the left hand sides of the velocity and poission solvers
+ * create preconditioners
+ */
 void NavierStokesSolver::initialiseLHS()
 {
 	generateLHS1();

@@ -1,11 +1,11 @@
 /***************************************************************************//**
- * \file  fadlunModified.cu
+ * \file  luoIBM.cu
  * \author Christopher Minar (minarc@oregonstate.edu)
  * \based on code by Anush Krishnan (anush@bu.edu)
  * \brief Declaration of the class oscCylinder.
  */
 
-#include "fadlunModified.h"
+#include "luoIBM.h"
 #include <sys/stat.h>
 
 /**
@@ -14,7 +14,7 @@
  * \param pDB database that contains all the simulation parameters
  * \param dInfo information related to the computational grid
  */
-fadlunModified::fadlunModified(parameterDB *pDB, domain *dInfo)
+luoIBM::luoIBM(parameterDB *pDB, domain *dInfo)
 {
 	paramDB = pDB;
 	domInfo = dInfo;
@@ -23,7 +23,7 @@ fadlunModified::fadlunModified(parameterDB *pDB, domain *dInfo)
 /*
  * Initialise the solver
  */
-void fadlunModified::initialise()
+void luoIBM::initialise()
 {
 
 	NavierStokesSolver::initialiseNoBody();
@@ -37,25 +37,28 @@ void fadlunModified::initialise()
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	//ARRAYS
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	//tagpoints, size uv, device
-	tags.resize(numUV);//used in lhs1
-	tagsOld.resize(numUV);
-	tagsPOld.resize(numP);
-	tags2.resize(numUV);//used in lhs1
-	tagsIn.resize(numUV);//used in lhs1
+	//tagpoints, size numuv
+	ustar.resize(numUV);
+	ghostTagsUV.resize(numUV);
+	hybridTagsUV.resize(numUV);
+	hybridTagsUV2.resize(numUV);
+	x1.resize(numUV);
+	x2.resize(numUV);
+	y1.resize(numUV);
+	y2.resize(numUV);
+	body_intercept_x.resize(numUV);
+	body_intercept_y.resize(numUV);
+	image_point_x.resize(numUV);
+	image_point_y.resize(numUV);
 	distance_from_intersection_to_node.resize(numUV);
 	distance_between_nodes_at_IB.resize(numUV);
 	uv.resize(numUV);
 
-	//tagpoints, size np, device
-	tagsP.resize(numP);//flag
-	tagsPOut.resize(numP);//flag
+	//tagpoints, size nump
+	ghostTagsP.resize(numP);
+	hybridTagsP.resize(numP);
 	distance_from_u_to_body.resize(numP);
 	distance_from_v_to_body.resize(numP);
-	test.resize(numP); //flag
-
-	cusp::blas::fill(tagsOld,-1);
-	cusp::blas::fill(tagsPOld,-1);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	//Initialize Bodies
@@ -87,32 +90,30 @@ void fadlunModified::initialise()
 }
 
 /*
- * Initliase the LHS matrices
+ * Initialise the LHS matricies
  */
-void fadlunModified::initialiseLHS()
+void luoIBM::initialiseLHS()
 {
 	parameterDB  &db = *NavierStokesSolver::paramDB;
 	generateLHS1();
 	generateLHS2();
 
 	NavierStokesSolver::PC.generate(NavierStokesSolver::LHS1,NavierStokesSolver::LHS2, db["velocitySolve"]["preconditioner"].get<preconditionerType>(), db["PoissonSolve"]["preconditioner"].get<preconditionerType>());
-	std::cout << "Assembled FADLUN LHS matrices!" << std::endl;
+	std::cout << "Assembled LUO LHS matrices!" << std::endl;
 }
-
 
 /**
  * \brief Writes data into files.
  */
-void fadlunModified::writeData()
+void luoIBM::writeData()
 {
-
 	parameterDB  &db = *NavierStokesSolver::paramDB;
 	double dt  = db["simulation"]["dt"].get<double>();
 
 	logger.startTimer("output");
 
 	writeCommon();
-	calculateForce();
+	//calculateForce();
 	if (NavierStokesSolver::timeStep == 0)
 		forceFile<<"timestep\tFx\tFxX\tFxY\tFxU\tFy\n";
 	forceFile << timeStep*dt << '\t' << B.forceX[0] << '\t'<<fxx<<"\t"<<fxy<<"\t"<<fxu<<"\t" << B.forceY[0] << std::endl;
@@ -124,7 +125,7 @@ void fadlunModified::writeData()
  * \brief Writes numerical solution at current time-step,
  *        as well as the number of iterations performed in each solver.
  */
-void fadlunModified::writeCommon()
+void luoIBM::writeCommon()
 {
 	NavierStokesSolver::writeCommon();
 	parameterDB  &db = *NavierStokesSolver::paramDB;
@@ -136,34 +137,42 @@ void fadlunModified::writeCommon()
 	{
 		B.writeToFile(folder, NavierStokesSolver::timeStep);
 	}
+
+	// write the number of iterations for each solve
+	iterationsFile << timeStep << '\t' << iterationCount1 << '\t' << iterationCount2 << std::endl;
 }
 
-void fadlunModified::stepTime()
+/**
+ * \brief Calculates the variables at the next time step.
+ */
+void luoIBM::stepTime()
 {
 	generateRHS1();
 	NavierStokesSolver::solveIntermediateVelocity();
+	arrayprint(uhat,"uhat","x");
+	arrayprint(ghostTagsUV,"gn","x");
 
 	generateRHS2();
 	NavierStokesSolver::solvePoisson();
 
 	velocityProjection();
 
-	//std::cout<<timeStep<<std::endl;
+	std::cout<<timeStep<<std::endl;
 	NavierStokesSolver::timeStep++;
 }
 
 /**
  * \brief Prints timing information and closes the different files.
  */
-void fadlunModified::shutDown()
+void luoIBM::shutDown()
 {
 	NavierStokesSolver::shutDown();
 	forceFile.close();
 }
 
-#include "FadlunModified/intermediateVelocity.inl"
-#include "FadlunModified/intermediatePressure.inl"
-#include "FadlunModified/projectVelocity.inl"
-#include "FadlunModified/tagpoints.inl"
-#include "FadlunModified/calculateForce.inl"
-#include "FadlunModified/checkTags.inl"
+#include "luoIBM/intermediateVelocity.inl"
+#include "luoIBM/intermediatePressure.inl"
+#include "luoIBM/projectVelocity.inl"
+#include "luoIBM/tagpoints.inl"
+//#include "luoIBM/calculateForce.inl"
+//#include "luoIBM/checkTags.inl"

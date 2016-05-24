@@ -8,6 +8,18 @@
 
 namespace kernels
 {
+/*
+ * calculates the boundary terms for the left hand side matrix for the velocity solve
+ * param row array storing the row indices for the sparse LHS matrix
+ * param col array storing the column indices for the sparse LHS matrix
+ * param val array storing the values for the sparse LHS matrix
+ * param dx distance between nodes in the x direction (measured between node sides, where u velocites are stored)
+ * param dy distance between nodes in the y direction (measured between node top/bot, where v velocites are stored)
+ * param dt change in time
+ * param nu viscosity
+ * param nx number of cells in x direction
+ * param ny number of cells in y direction
+ */
 __global__
 void LHS_BC_X(int *row, int *col, double *val, double *dx, double *dy, double dt, double nu, int nx, int ny)
 {
@@ -104,6 +116,18 @@ void LHS_BC_X(int *row, int *col, double *val, double *dx, double *dy, double dt
 	numE++;
 }
 
+/*
+ * calculates the boundary terms for the left hand side matrix for the velocity solve
+ * param row array storing the row indices for the sparse LHS matrix
+ * param col array storing the column indices for the sparse LHS matrix
+ * param val array storing the values for the sparse LHS matrix
+ * param dx distance between nodes in the x direction (measured between node sides, where u velocites are stored)
+ * param dy distance between nodes in the y direction (measured between node top/bot, where v velocites are stored)
+ * param dt change in time
+ * param nu viscosity
+ * param nx number of cells in x direction
+ * param ny number of cells in y direction
+ */
 __global__
 void LHS_BC_Y(int *row, int *col, double *val, double *dx, double *dy, double dt, double nu, int nx, int ny)
 {
@@ -201,6 +225,18 @@ void LHS_BC_Y(int *row, int *col, double *val, double *dx, double *dy, double dt
 	numE++;
 }
 
+/*
+ * calculates the middle terms for the left hand side matrix for the velocity solve
+ * param row array storing the row indices for the sparse LHS matrix
+ * param col array storing the column indices for the sparse LHS matrix
+ * param val array storing the values for the sparse LHS matrix
+ * param dx distance between nodes in the x direction (measured between node sides, where u velocites are stored)
+ * param dy distance between nodes in the y direction (measured between node top/bot, where v velocites are stored)
+ * param dt change in time
+ * param nu viscosity
+ * param nx number of cells in x direction
+ * param ny number of cells in y direction
+ */
 __global__
 void LHS_mid_X_nobody(int *row, int *col, double *val, double *dx, double *dy, double dt, double nu, int nx, int ny)
 {
@@ -251,6 +287,18 @@ void LHS_mid_X_nobody(int *row, int *col, double *val, double *dx, double *dy, d
 	numE++;
 }
 
+/*
+ * calculates the middle terms for the left hand side matrix for the velocity solve
+ * param row array storing the row indices for the sparse LHS matrix
+ * param col array storing the column indices for the sparse LHS matrix
+ * param val array storing the values for the sparse LHS matrix
+ * param dx distance between nodes in the x direction (measured between node sides, where u velocites are stored)
+ * param dy distance between nodes in the y direction (measured between node top/bot, where v velocites are stored)
+ * param dt change in time
+ * param nu viscosity
+ * param nx number of cells in x direction
+ * param ny number of cells in y direction
+ */
 __global__
 void LHS_mid_Y_nobody(int *row, int *col, double *val, double *dx, double *dy, double dt, double nu, int nx, int ny)
 {

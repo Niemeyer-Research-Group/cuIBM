@@ -8,6 +8,17 @@
 
 namespace kernels
 {
+/*
+ * calculates the boundary terms for the left hand side matrix for the poisson solve
+ * param row array storing the row indices for the sparse LHS matrix
+ * param col array storing the column indices for the sparse LHS matrix
+ * param val array storing the values for the sparse LHS matrix
+ * param dx distance between nodes in the x direction (measured between node sides, where u velocites are stored)
+ * param dy distance between nodes in the y direction (measured between node top/bot, where v velocites are stored)
+ * param nx number of cells in x direction
+ * param ny number of cells in y direction
+ * param dt change in time
+ */
 __global__
 void LHS2_BC(int *row, int *col, double *val, double *dx, double *dy, int nx, int ny, double dt)
 {
@@ -96,6 +107,17 @@ void LHS2_BC(int *row, int *col, double *val, double *dx, double *dy, int nx, in
 		//val[numE] *= val[numE];
 }
 
+/*
+ * calculates the middle terms for the left hand side matrix for the poisson solve
+ * param row array storing the row indices for the sparse LHS matrix
+ * param col array storing the column indices for the sparse LHS matrix
+ * param val array storing the values for the sparse LHS matrix
+ * param dx distance between nodes in the x direction (measured between node sides, where u velocites are stored)
+ * param dy distance between nodes in the y direction (measured between node top/bot, where v velocites are stored)
+ * param nx number of cells in x direction
+ * param ny number of cells in y direction
+ * param dt change in time
+ */
 __global__
 void LHS2_mid_nobody(int *row, int *col, double *val, double *dx, double *dy, int nx, int ny, double dt)
 {

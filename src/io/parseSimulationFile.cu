@@ -54,6 +54,8 @@ solverType solverTypeFromString(string &s)
 		return OSC;
 	else if (s == "FSI")
 		return FSI;
+	else if (s == "LUO")
+		return LUO;
 	else
 		return NAVIERSTOKES;
 }

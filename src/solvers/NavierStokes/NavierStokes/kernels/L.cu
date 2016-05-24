@@ -10,7 +10,16 @@
 namespace kernels
 {
 
-//input in range from 0 to ~ nx*ny
+/*
+ * calculates explicit diffusion terms in the middle of the domain
+ * param L explicit diffusion terms
+ * param u u velocities
+ * param dx distance between nodes in the x direction (measured between node sides, where u velocites are stored)
+ * param dy distance between nodes in the y direction (measured between node top/bot, where v velocites are stored)
+ * param nx number of cells in x direction
+ * param ny number of cells in y direction
+ * param nu viscosity
+ */
 __global__
 void Lmidx(double *L, double *u, double *dx, double *dy, int nx, int ny, double nu)
 {
@@ -31,6 +40,20 @@ void Lmidx(double *L, double *u, double *dx, double *dy, int nx, int ny, double 
 			   );
 }
 
+/*
+ * calculates explicit diffusion terms at the edge of the domain
+ * param L explicit diffusion terms
+ * param u u velocities
+ * param dx distance between nodes in the x direction (measured between node sides, where u velocites are stored)
+ * param dy distance between nodes in the y direction (measured between node top/bot, where v velocites are stored)
+ * param ym yminus boundary velocities
+ * param yp yplus boundary velocities
+ * param xm xminus boundary velocities
+ * param xp xplus boundary velocities
+ * param nx number of cells in x direction
+ * param ny number of cells in y direction
+ * param nu viscosity
+ */
 __global__
 void Lbcx(double *L, double *u, double *dx, double *dy, double *ym, double *yp, double *xm, double *xp, int nx, int ny, double nu)
 {
@@ -76,8 +99,16 @@ void Lbcx(double *L, double *u, double *dx, double *dy, double *ym, double *yp, 
 
 	L[i] = temp;
 }
-
-//input in range from 0 to ~ nx*ny
+/*
+ * calculates explicit diffusion terms in the middle of the domain
+ * param L explicit diffusion terms
+ * param u v velocities
+ * param dx distance between nodes in the x direction (measured between node sides, where u velocites are stored)
+ * param dy distance between nodes in the y direction (measured between node top/bot, where v velocites are stored)
+ * param nx number of cells in x direction
+ * param ny number of cells in y direction
+ * param nu viscosity
+ */
 __global__
 void Lmidy(double *L, double *u, double *dx, double *dy, int nx, int ny, double nu)
 {
@@ -100,6 +131,20 @@ void Lmidy(double *L, double *u, double *dx, double *dy, int nx, int ny, double 
 				 );
 }
 
+/*
+ * calculates explicit diffusion terms at the edge of the domain
+ * param L explicit diffusion terms
+ * param u v velocities
+ * param dx distance between nodes in the x direction (measured between node sides, where u velocites are stored)
+ * param dy distance between nodes in the y direction (measured between node top/bot, where v velocites are stored)
+ * param ym yminus boundary velocities
+ * param yp yplus boundary velocities
+ * param xm xminus boundary velocities
+ * param xp xplus boundary velocities
+ * param nx number of cells in x direction
+ * param ny number of cells in y direction
+ * param nu viscosity
+ */
 __global__
 void Lbcy(double *L, double *u, double *dx, double *dy, double *ym, double *yp, double *xm, double *xp, int nx, int ny, double nu)
 {

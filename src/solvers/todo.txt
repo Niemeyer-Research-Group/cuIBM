@@ -18,7 +18,6 @@
 //todo video files seem to make a lot of losses eg, its blurry, why? fix
 	//looks like it might be blending frames, moving the fps from 10 to 5 seems to improve it, but obviously it takes 2x longer
 //todo make solver spit out arrays when it fails
-//todo make shell cleanup script not delete whole computer
 //todo get rid of all gnuploting and replace it with matplotlib python plotting
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -37,13 +36,13 @@
 //todo eclipse is finding a lot of errors that are not errors, fix that
 //todo fix warnings
 //todo lots of unused functionality in body.h and bodies.cu
-//todo remove old solverType int
 //todo currently you have to set the mid_h in both the body file and domain file
 //todo go through all the thrust pointer casts and make sure they are being used
 //todo make sure all the things being passed into kernels are being used still
 //todo remove various testing constructs
 //todo change naverstokes folder and spawn to fractional step
 //todo merge boundaryTypes.h and types.h
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //documentation
@@ -69,10 +68,7 @@
 //functionality
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //todo enable robin bc on all sides
-//todo viv
-	//todo loose coupling
-	//todo strong coupling
-//todo forced motion
+//todo periodic boundary conditions
 //todo unit tests
 //todo upgrade to amgx
 //todo 3D
@@ -94,6 +90,31 @@
 //todo is midx,midy set to 0 before calculating?
 //todo look at gpu memory over time
 //todo parsing time?
+//todo look at testing
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//luo method
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//todo luo method framework
+//todo luo method point tagging
+	// ghost nodes
+	// hybrid nodes
+//todo luo method extrapolation for ghost nodes
+	//todo u
+	//todo v
+	//todo p
+//todo luo method treatment at hybrid cells
+	//todo blend function
+	//todo interpolation vel
+	//todo NS vel
+//todo luo method treatment of pressure at hybrid nodes 
+//todo validate luo method with lid driven cavity
+//todo validate luo method with static cylinder
+//todo validate luo method with osc cylinder
+//todo validate luo method with fsi cylinder
+
+
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -109,3 +130,5 @@
 //git is tracking strage, annoying eclipse things --fixed by Kyle
 //change mid_h to mid_h 5/17/16
 //change domainl.yaml for all cases 5/17/16
+//make shell cleanup script not delete whole computer 5/17/16
+//remove old solverType int 5/17/16

@@ -16,7 +16,15 @@
 namespace kernels
 {
 
-//input in range from 0 to ~ nx*ny
+/*
+ * calculates explicit advection terms in the middle of the domain
+ * param N explicit advection terms
+ * param u u velocities
+ * param dx distance between nodes in the x direction (measured between node sides, where u velocites are stored)
+ * param dy distance between nodes in the y direction (measured between node top/bot, where v velocites are stored)
+ * param nx number of cells in x direction
+ * param ny number of cells in y direction
+ */
 __global__
 void Nmidx(double *N, double *u, double *dx, double *dy, int nx, int ny)
 {
@@ -42,7 +50,19 @@ void Nmidx(double *N, double *u, double *dx, double *dy, int nx, int ny)
 		        );
 }
 
-//
+/*
+ * calculates explicit advection terms at the edge of the domain
+ * param N explicit advection terms
+ * param u u velocities
+ * param dx distance between nodes in the x direction (measured between node sides, where u velocites are stored)
+ * param dy distance between nodes in the y direction (measured between node top/bot, where v velocites are stored)
+ * param ym yminus boundary velocities
+ * param yp yplus boundary velocities
+ * param xm xminus boundary velocities
+ * param xp xplus boundary velocities
+ * param nx number of cells in x direction
+ * param ny number of cells in y direction
+ */
 __global__
 void Nbcx(double *N, double *u, double *dx, double *dy, double *ym, double *yp, double *xm, double *xp, int nx, int ny)
 {
@@ -108,7 +128,15 @@ void Nbcx(double *N, double *u, double *dx, double *dy, double *ym, double *yp, 
 	N[i] = temp;
 }
 
-//input in range from 0 to ~ nx*ny
+/*
+ * calculates explicit advection terms in the middle of the domain
+ * param N explicit advection terms
+ * param u u velocities
+ * param dx distance between nodes in the x direction (measured between node sides, where u velocites are stored)
+ * param dy distance between nodes in the y direction (measured between node top/bot, where v velocites are stored)
+ * param nx number of cells in x direction
+ * param ny number of cells in y direction
+ */
 __global__
 void Nmidy(double *N, double *u, double *dx, double *dy, int nx, int ny)
 {
@@ -137,6 +165,19 @@ void Nmidy(double *N, double *u, double *dx, double *dy, int nx, int ny)
 				 );
 }
 
+/*
+ * calculates explicit advection terms at the edge of the domain
+ * param N explicit advection terms
+ * param u v velocities
+ * param dx distance between nodes in the x direction (measured between node sides, where u velocites are stored)
+ * param dy distance between nodes in the y direction (measured between node top/bot, where v velocites are stored)
+ * param ym yminus boundary velocities
+ * param yp yplus boundary velocities
+ * param xm xminus boundary velocities
+ * param xp xplus boundary velocities
+ * param nx number of cells in x direction
+ * param ny number of cells in y direction
+ */
 __global__
 void Nbcy(double *N, double *u, double *dx, double *dy, double *ym, double *yp, double *xm, double *xp, int nx, int ny)
 {

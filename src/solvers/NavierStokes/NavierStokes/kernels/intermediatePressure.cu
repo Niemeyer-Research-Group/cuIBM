@@ -13,6 +13,19 @@
 
 namespace kernels
 {
+/*
+ * Generate the right hand side of the pressure equation when no body is present
+ * param rhs2 right hand side of the pressure eq
+ * param uhat intermediate velocity
+ * param ym yminus boundary velocities
+ * param yp yplus boundary velocities
+ * param xm xminus boundary velocities
+ * param xp xplus boundary velocities
+ * param dx distance between nodes in the x direction (measured between node sides, where u velocites are stored)
+ * param dy distance between nodes in the y direction (measured between node top/bot, where v velocites are stored)
+ * param nx number of cells in x direction
+ * param ny number of cells in y direction
+ */
 __global__
 void intermediatePressureNoBody(double *rhs2, double *uhat, double *ym, double *yp, double *xm, double *xp, double *dx, double *dy, int nx, int ny)
 {

@@ -14,15 +14,15 @@
 namespace kernels
 {
 __global__
-void Lmidx(double *N, double *u, double *dx, double *dy, int nx, int ny, double nu);
+void Lmidx(double *L, double *u, double *dx, double *dy, int nx, int ny, double nu);
 
 __global__
-void Lbcx(double *N, double *u, double *dx, double *dy, double *ym, double *yp, double *xm, double *xp, int nx, int ny, double nu);
+void Lbcx(double *L, double *u, double *dx, double *dy, double *ym, double *yp, double *xm, double *xp, int nx, int ny, double nu);
 
 __global__
-void Lmidy(double *N, double *u, double *dx, double *dy, int nx, int ny, double nu);
+void Lmidy(double *L, double *u, double *dx, double *dy, int nx, int ny, double nu);
 
 __global__
-void Lbcy(double *N, double *u, double *dx, double *dy, double *ym, double *yp, double *xm, double *xp, int nx, int ny, double nu);
+void Lbcy(double *L, double *u, double *dx, double *dy, double *ym, double *yp, double *xm, double *xp, int nx, int ny, double nu);
 
 } // end of namespace kernels

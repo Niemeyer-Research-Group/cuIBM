@@ -57,6 +57,8 @@ std::string toString(solverType b)
 		return "Oscillating Cylinders";
 	else if (b == FSI)
 		return "Fluid Structure Interaction";
+	else if (b == LUO)
+		return "LUO";
 	else
 		return "error";
 }

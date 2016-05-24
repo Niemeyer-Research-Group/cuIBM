@@ -5,5 +5,6 @@ enum solverType
 	NAVIERSTOKES,
 	FADLUN,
 	OSC,
-	FSI
+	FSI,
+	LUO
 };

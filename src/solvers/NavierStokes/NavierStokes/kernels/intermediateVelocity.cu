@@ -14,6 +14,17 @@
 
 namespace kernels
 {
+/*
+ * sums the components of the right hand side of the intermediate velocity equation
+ * param rhs right hand side fo the velocity equation
+ * param L explicit diffusion terms
+ * param N explicit advection terms
+ * param u u velocities
+ * param bc1 boundary condition terms
+ * param dt change in time
+ * param nx number of cells in x direction
+ * param ny number of cells in y direction
+ */
 __global__
 void generateRHS(double *rhs, double *L, double *Nold, double *N, double *u, double *bc1, double dt, int nx, int ny)
 {
@@ -23,6 +34,21 @@ void generateRHS(double *rhs, double *L, double *Nold, double *N, double *u, dou
 	rhs[i]  = u[i] + dt*(0.5*Nold[i] - 1.5*N[i] + 0.5*L[i]) + bc1[i];
 }
 
+/*
+ * calculates boundary terms for u intermediate velocity
+ * param u u velocities
+ * param bc1 boundry terms
+ * param ym yminus boundary velocities
+ * param yp yplus boundary velocities
+ * param xm xminus boundary velocities
+ * param xp xplus boundary velocities
+ * param dx distance between nodes in the x direction (measured between node sides, where u velocites are stored)
+ * param dy distance between nodes in the y direction (measured between node top/bot, where v velocites are stored)
+ * param nu viscosity
+ * param dt change in time
+ * param nx number of cells in x direction
+ * param ny number of cells in y direction
+ */
 __global__
 void bc1X(double *u, double *bc1, double *ym, double *yp, double *xm, double *xp, double *dx, double *dy, double nu, double dt, int nx, int ny)
 {
@@ -62,6 +88,21 @@ void bc1X(double *u, double *bc1, double *ym, double *yp, double *xm, double *xp
 	bc1[i] = temp;
 }
 
+/*
+ * calculates boundary terms for u intermediate velocity
+ * param u v velocities
+ * param bc1 boundry terms
+ * param ym yminus boundary velocities
+ * param yp yplus boundary velocities
+ * param xm xminus boundary velocities
+ * param xp xplus boundary velocities
+ * param dx distance between nodes in the x direction (measured between node sides, where u velocites are stored)
+ * param dy distance between nodes in the y direction (measured between node top/bot, where v velocites are stored)
+ * param nu viscosity
+ * param dt change in time
+ * param nx number of cells in x direction
+ * param ny number of cells in y direction
+ */
 __global__
 void bc1Y(double *u, double *bc1, double *ym, double *yp, double *xm, double *xp, double *dx, double *dy, double nu, double dt, int nx, int ny)
 {

@@ -20,6 +20,7 @@
 #include "solvers/NavierStokes/FSI.h"
 #include "solvers/NavierStokes/oscCylinder.h"
 #include "solvers/NavierStokes/fadlunModified.h"
+#include "solvers/NavierStokes/luoIBM.h"
 #include "types.h"
 
 int main(int argc, char **argv)
@@ -49,6 +50,9 @@ int main(int argc, char **argv)
 		break;
 	case OSC:
 		solver = new oscCylinder(&paramDB, &dom_info);
+		break;
+	case LUO:
+		solver = new luoIBM(&paramDB, &dom_info);
 		break;
 	//case FSI:
 		//solver = new FSI(&paramDB, &dom_info);
