@@ -42,10 +42,6 @@ void luoIBM::initialise()
 	ghostTagsUV.resize(numUV);
 	hybridTagsUV.resize(numUV);
 	hybridTagsUV2.resize(numUV);
-	x1.resize(numUV);
-	x2.resize(numUV);
-	y1.resize(numUV);
-	y2.resize(numUV);
 	body_intercept_x.resize(numUV);
 	body_intercept_y.resize(numUV);
 	image_point_x.resize(numUV);
@@ -53,6 +49,25 @@ void luoIBM::initialise()
 	distance_from_intersection_to_node.resize(numUV);
 	distance_between_nodes_at_IB.resize(numUV);
 	uv.resize(numUV);
+
+	//testing
+	x1_ip.resize(numUV);
+	x2_ip.resize(numUV);
+	y1_ip.resize(numUV);
+	y2_ip.resize(numUV);
+	ip_u.resize(numUV);
+	x1.resize(numUV);
+	x2.resize(numUV);
+	x3.resize(numUV);
+	x4.resize(numUV);
+	y1.resize(numUV);
+	y2.resize(numUV);
+	y3.resize(numUV);
+	y4.resize(numUV);
+	q1.resize(numUV);
+	q2.resize(numUV);
+	q3.resize(numUV);
+	q4.resize(numUV);
 
 	//tagpoints, size nump
 	ghostTagsP.resize(numP);
@@ -149,8 +164,10 @@ void luoIBM::stepTime()
 {
 	generateRHS1();
 	NavierStokesSolver::solveIntermediateVelocity();
-	arrayprint(uhat,"uhat","x");
-	arrayprint(ghostTagsUV,"gn","x");
+	arrayprint(image_point_x,"ip","y");
+	//arrayprint(uhat,"uhat","x");
+	arrayprint(hybridTagsUV,"hyT","y");
+	arrayprint(x1,"x1","y");
 
 	generateRHS2();
 	NavierStokesSolver::solvePoisson();
@@ -175,4 +192,3 @@ void luoIBM::shutDown()
 #include "luoIBM/projectVelocity.inl"
 #include "luoIBM/tagpoints.inl"
 //#include "luoIBM/calculateForce.inl"
-//#include "luoIBM/checkTags.inl"

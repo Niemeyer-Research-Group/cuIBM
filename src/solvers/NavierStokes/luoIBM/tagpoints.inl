@@ -43,10 +43,10 @@ void luoIBM::tagPoints()
 			*body_intercept_y_r = thrust::raw_pointer_cast( &(body_intercept_y[0]) ),
 			*image_point_x_r = thrust::raw_pointer_cast( &(image_point_x[0]) ),
 			*image_point_y_r = thrust::raw_pointer_cast( &(image_point_y[0]) ),
-			*x1_r = thrust::raw_pointer_cast( &(x1[0]) ),
-			*x2_r = thrust::raw_pointer_cast( &(x2[0]) ),
-			*y1_r = thrust::raw_pointer_cast( &(y1[0]) ),
-			*y2_r = thrust::raw_pointer_cast( &(y2[0]) );
+			*x1_r = thrust::raw_pointer_cast( &(x1_ip[0]) ),
+			*x2_r = thrust::raw_pointer_cast( &(x2_ip[0]) ),
+			*y1_r = thrust::raw_pointer_cast( &(y1_ip[0]) ),
+			*y2_r = thrust::raw_pointer_cast( &(y2_ip[0]) );
 	
 	int 	*ghostTagsUV_r		= thrust::raw_pointer_cast ( &(ghostTagsUV[0]) ),
 			*hybridTagsUV2_r	= thrust::raw_pointer_cast ( &(hybridTagsUV2[0]) ),
@@ -61,10 +61,10 @@ void luoIBM::tagPoints()
 	cusp::blas::fill(hybridTagsUV2, -1);
 	cusp::blas::fill(distance_from_intersection_to_node, 1);
 	cusp::blas::fill(distance_between_nodes_at_IB, 1);
-	cusp::blas::fill(x1,0);
-	cusp::blas::fill(y1,0);
-	cusp::blas::fill(x2,0);
-	cusp::blas::fill(y2,0);
+	cusp::blas::fill(x1_ip,0);
+	cusp::blas::fill(y1_ip,0);
+	cusp::blas::fill(x2_ip,0);
+	cusp::blas::fill(y2_ip,0);
 	cusp::blas::fill(body_intercept_x, 0);
 	cusp::blas::fill(body_intercept_y, 0);
 	cusp::blas::fill(image_point_x, 0);
@@ -77,12 +77,14 @@ void luoIBM::tagPoints()
 	
 	//tag u direction nodes for tags, tagsout and hybridTagsUV2
 	kernels::tag_u_luo<<<dimGrid,dimBlock>>>(hybridTagsUV_r, ghostTagsUV_r, hybridTagsUV2_r, bx_r, by_r, uB_r, vB_r, yu_r, xu_r,
-											body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r, x1_r, y1_r, x2_r, y2_r,
-											a_r, b_r, dub_r, dvb_r, uv_r, 
+											body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
+											x1_r, y1_r, x2_r, y2_r,
+											a_r, b_r, dub_r, dvb_r, uv_r,
 											start_index_i, start_index_j, end_index_i, end_index_j, nx, ny, totalPoints, B.midX, B.midY);
 	//tag v direction nodes for tags, tagsout and tag2
 	kernels::tag_v_luo<<<dimGrid,dimBlock>>>(hybridTagsUV_r, ghostTagsUV_r, hybridTagsUV2_r, bx_r, by_r, uB_r, vB_r, yv_r, xv_r,
-											body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r, x1_r, y1_r, x2_r, y2_r,
+											body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
+											x1_r, y1_r, x2_r, y2_r,
 											a_r, b_r, dub_r, dvb_r, uv_r, 
 											start_index_i, start_index_j, end_index_i, end_index_j, nx, ny, totalPoints, B.midX, B.midY);
 	//tag pressure nodes for ghostTagsP and hybridTagsP
@@ -97,7 +99,7 @@ void luoIBM::tagPoints()
 	kernels::zero_y_luo<<<dimGrid0,dimBlock>>>(ghostTagsUV_r, start_index_i, start_index_j, end_index_i, end_index_j, nx, ny);
 	
 	//testOutputX();
-	//testOutputY();
+	testOutputY();
 	logger.stopTimer("tagPoints");
 }
 
@@ -117,19 +119,20 @@ void luoIBM::testOutputX()
 	std::stringstream out;
 	out << folder << "/body_nodesX.csv";
 	body_nodes.open(out.str().c_str());
-	body_nodes << "x1\ty1\tx2\ty2\tg_x\tg_y\tbi_x\tbi_y\tip_x\tip_y\n";
+	body_nodes << "BN_X1\tBN_Y1\tBN_X2\tBN_Y2\tGN_X\tGN_Y\tBI_X\tBI_Y\tIP_X\tIP_Y\n";
 	for (int J=start_index_j;  J<end_index_j;  J++)
 	{
 		for (int I=start_index_i;  I<end_index_i;  I++)
 		{
 			iu = J*(nx-1) + I;
-			if (ghostTagsUV[iu] >0)
+			if (hybridTagsUV[iu] >0) //for testing outside interpolation
+			//if (ghostTagsUV[iu] >0) //for testing inside interpolation
 			{
 				std::cout<<iu<<std::endl;
-				body_nodes << x1[iu]<<"\t";
-				body_nodes << y1[iu]<<"\t";
-				body_nodes << x2[iu]<<"\t";
-				body_nodes << y2[iu]<<"\t";
+				body_nodes << x1_ip[iu]<<"\t";
+				body_nodes << y1_ip[iu]<<"\t";
+				body_nodes << x2_ip[iu]<<"\t";
+				body_nodes << y2_ip[iu]<<"\t";
 				body_nodes << domInfo->xu[I]<<"\t";
 				body_nodes << domInfo->yu[J]<<"\t";
 				body_nodes << body_intercept_x[iu] <<"\t";
@@ -168,13 +171,14 @@ void luoIBM::testOutputY()
 			for (int I=start_index_i;  I<end_index_i;  I++)
 			{
 				iv = J*(nx) + I + ny*(nx-1);
-				if (ghostTagsUV[iv] >0)
+				if (hybridTagsUV[iv] >0) //for testing outside interpolation
+				//if (ghostTagsUV[iv] >0) //for testing inside interpolation
 				{
 					std::cout<<iv<<std::endl;
-					body_nodes << x1[iv]<<"\t";
-					body_nodes << y1[iv]<<"\t";
-					body_nodes << x2[iv]<<"\t";
-					body_nodes << y2[iv]<<"\t";
+					body_nodes << x1_ip[iv]<<"\t";
+					body_nodes << y1_ip[iv]<<"\t";
+					body_nodes << x2_ip[iv]<<"\t";
+					body_nodes << y2_ip[iv]<<"\t";
 					body_nodes << domInfo->xv[I]<<"\t";
 					body_nodes << domInfo->yv[J]<<"\t";
 					body_nodes << body_intercept_x[iv] <<"\t";

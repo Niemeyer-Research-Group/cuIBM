@@ -23,10 +23,6 @@ protected:
 
 	cusp::array1d<double, cusp::device_memory>
 		ustar,
-		x1,
-		x2,
-		y1,
-		y2,
 		body_intercept_x,
 		body_intercept_y,
 		image_point_x,
@@ -36,6 +32,26 @@ protected:
 		distance_from_u_to_body,
 		distance_from_v_to_body,
 		uv;									///< velocity at the IB on the device
+
+	//testing variables
+	cusp::array1d<double, cusp::device_memory>
+		x1_ip,
+		x2_ip,
+		y1_ip,
+		y2_ip,
+		ip_u,
+		x1,
+		x2,
+		x3,
+		x4,
+		y1,
+		y2,
+		y3,
+		y4,
+		q1,
+		q2,
+		q3,
+		q4;
 
 	bodies 	B;		///< bodies in the flow
 
@@ -51,6 +67,8 @@ protected:
 	//////////////////////////
 	void updateRobinBoundary();
 	void preRHS1Interpolation();
+	void testInterpX();
+	void testInterpY();
 
 	//////////////////////////
 	//tagpoints.inl
