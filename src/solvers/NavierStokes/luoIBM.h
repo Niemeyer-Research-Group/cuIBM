@@ -22,11 +22,16 @@ protected:
 
 
 	cusp::array1d<double, cusp::device_memory>
+		pressureStar,
 		ustar,
 		body_intercept_x,
 		body_intercept_y,
 		image_point_x,
 		image_point_y,
+		body_intercept_p_x,
+		body_intercept_p_y,
+		image_point_p_x,
+		image_point_p_y,
 		distance_from_intersection_to_node,			///< distance between IB and tagged node on the device
 		distance_between_nodes_at_IB,			///< distance between tags and tags2 on the device
 		distance_from_u_to_body,
@@ -39,6 +44,10 @@ protected:
 		x2_ip,
 		y1_ip,
 		y2_ip,
+		x1_ip_p,
+		x2_ip_p,
+		y1_ip_p,
+		y2_ip_p,
 		ip_u,
 		x1,
 		x2,
@@ -51,7 +60,24 @@ protected:
 		q1,
 		q2,
 		q3,
-		q4;
+		q4,
+		x1_p,
+		x2_p,
+		x3_p,
+		x4_p,
+		y1_p,
+		y2_p,
+		y3_p,
+		y4_p,
+		q1_p,
+		q2_p,
+		q3_p,
+		q4_p,
+		a0,
+		a1,
+		a2,
+		a3;
+
 
 	bodies 	B;		///< bodies in the flow
 
@@ -66,9 +92,17 @@ protected:
 	//intermediateVelocity.inl
 	//////////////////////////
 	void updateRobinBoundary();
+	void weightUhat();
 	void preRHS1Interpolation();
 	void testInterpX();
 	void testInterpY();
+
+	//////////////////////////
+	//intermediatePressure.inl
+	//////////////////////////
+	void preRHS2Interpolation();
+	void weightPressure();
+	void testInterpP();
 
 	//////////////////////////
 	//tagpoints.inl

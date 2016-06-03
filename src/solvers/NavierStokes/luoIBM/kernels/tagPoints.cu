@@ -114,6 +114,7 @@ void tag_u_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *
 					outsideX = !outsideX;
 
 				// if the point of intersection is in the cell to the immediate left of the grid point
+				//right of body
 				if (x>xu[I-1]+eps && x<xu[I]-eps)
 				{
 					bdryFlagX  = iu;
@@ -166,6 +167,7 @@ void tag_u_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *
 					//case 1
 				}
 				// if the point of intersection is in the cell to the immediate right of the grid point
+				//left of body
 				else if (x>xu[I]+eps && x<xu[I+1]-eps)
 				{
 					bdryFlagX  = iu;
@@ -248,6 +250,7 @@ void tag_u_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *
 					outsideY = !outsideY; // then flip if inside or outside (start with true, i.e. outside)
 
 				// if point of intersection is just below the concerned grid point
+				//above body
 				if (y>yu[J-1]+eps && y<yu[J]-eps)
 				{
 					bdryFlagY = iu;
@@ -296,6 +299,7 @@ void tag_u_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *
 					Yb = yu[J+1]-yu[J];
 				}
 				// if point of intersection is just above the concerned grid point
+				//below body
 				else if (y>yu[J]+eps && y<yu[J+1]-eps)
 				{
 					bdryFlagY = iu;
@@ -464,12 +468,12 @@ void tag_v_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *
 				else if (x > xv[I]+eps)
 					outsideX = !outsideX;
 
-				// if the point of intersection is in the cell to the immediate right of the grid point
+				//right of body
 				if (x>xv[I-1]+eps && x<xv[I]-eps)
 				{
 					bdryFlagX  = iv;
 					bdryFlag2X = iv+1;
-					if (x<midX-eps)
+					if (x>midX+eps)
 					{
 						ghostTagsUV[iv-1] = iv-1;
 						//ghost node interpolation
@@ -506,18 +510,18 @@ void tag_v_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *
 
 						body_intercept_y[iv] = by[k] + (by[l]-by[k])/p * a/tan(theta_321); //body intercept point, forms a right angle with lines 1-2 and 4-3
 						body_intercept_x[iv] = bx[k] + (bx[l]-bx[k])/p * a/tan(theta_321);
-						image_point_y[iv] = body_intercept_y[iv]+(body_intercept_y[iv]-yv[J]); //image point, mirror the ghost node accross line 1-2
-						image_point_x[iv] = body_intercept_x[iv]+(body_intercept_x[iv]-xv[I]);
+						image_point_y[iv] = 2*yv[J] - body_intercept_y[iv];
+						image_point_x[iv] = 2*xv[I] - body_intercept_x[iv];
 					}
 					Xa = xv[I]-x;
 					Xb = xv[I+1]-xv[I];
 				}
-				// if the point of intersection is in the cell to the immediate left of the grid point
+				// left of body
 				else if (x>xv[I]+eps && x<xv[I+1]-eps)
 				{
 					bdryFlagX  = iv;
 					bdryFlag2X = iv-1;
-					if (x>midX+eps)
+					if (x<midX-eps)
 					{
 						ghostTagsUV[iv+1] = iv+1;
 						x1[iv+1] = bx[l];
@@ -553,8 +557,8 @@ void tag_v_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *
 
 						body_intercept_y[iv] = by[k] + (by[l]-by[k])/p * a/tan(theta_321); //body intercept point, forms a right angle with lines 1-2 and 4-3
 						body_intercept_x[iv] = bx[k] + (bx[l]-bx[k])/p * a/tan(theta_321);
-						image_point_y[iv] = body_intercept_y[iv]+(body_intercept_y[iv]-yv[J]); //image point, mirror the ghost node accross line 1-2
-						image_point_x[iv] = body_intercept_x[iv]+(body_intercept_x[iv]-xv[I]);
+						image_point_y[iv] = 2*yv[J] - body_intercept_y[iv];
+						image_point_x[iv] = 2*xv[I] - body_intercept_x[iv];
 					}
 					Xa = x-xv[I];
 					Xb = xv[I]-xv[I-1];
@@ -587,11 +591,12 @@ void tag_v_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *
 				else if (y > yv[J]+eps)
 					outsideY = !outsideY;
 
+				//above body
 				if (y>yv[J-1]+eps && y<yv[J]-eps)
 				{
 					bdryFlagY  = iv;
 					bdryFlag2Y = iv+nx;
-					if (y<midY-eps)
+					if (y>midY+eps)
 					{
 						ghostTagsUV[iv-nx] = iv-nx;
 						x1[iv-nx] = bx[l];
@@ -627,8 +632,8 @@ void tag_v_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *
 
 						body_intercept_y[iv] = by[k] + (by[l]-by[k])/p * a/tan(theta_321); //body intercept point, forms a right angle with lines 1-2 and 4-3
 						body_intercept_x[iv] = bx[k] + (bx[l]-bx[k])/p * a/tan(theta_321);
-						image_point_y[iv] = body_intercept_y[iv]+(body_intercept_y[iv]-yv[J]); //image point, mirror the ghost node accross line 1-2
-						image_point_x[iv] = body_intercept_x[iv]+(body_intercept_x[iv]-xv[I]);
+						image_point_y[iv] = 2*yv[J] - body_intercept_y[iv];
+						image_point_x[iv] = 2*xv[I] - body_intercept_x[iv];
 					}
 					Ya = yv[J]-y;
 					Yb = yv[J+1]-yv[J];
@@ -636,11 +641,13 @@ void tag_v_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *
 					if (outsideY)
 						distance_from_v_to_body[ip] = Ya;
 				}
+				// if point of intersection is just below the concerned grid point
+				//below body
 				else if (y>yv[J]+eps && y<yv[J+1]-eps)
 				{
 					bdryFlagY  = iv;
 					bdryFlag2Y = iv-nx;
-					if(y>midY+eps)
+					if(y<midY-eps)
 					{
 						ghostTagsUV[iv+nx] = iv+nx;
 						x1[iv+nx] = bx[l];
@@ -676,8 +683,8 @@ void tag_v_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *
 
 						body_intercept_y[iv] = by[k] + (by[l]-by[k])/p * a/tan(theta_321); //body intercept point, forms a right angle with lines 1-2 and 4-3
 						body_intercept_x[iv] = bx[k] + (bx[l]-bx[k])/p * a/tan(theta_321);
-						image_point_y[iv] = body_intercept_y[iv]+(body_intercept_y[iv]-yv[J]); //image point, mirror the ghost node accross line 1-2
-						image_point_x[iv] = body_intercept_x[iv]+(body_intercept_x[iv]-xv[I]);
+						image_point_y[iv] = 2*yv[J] - body_intercept_y[iv];
+						image_point_x[iv] = 2*xv[I] - body_intercept_x[iv];
 					}
 					Ya = y-yv[J];
 					Yb = yv[J]-yv[J-1];
@@ -712,7 +719,8 @@ void tag_v_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *
 
 __global__
 void tag_p_luo(int *ghostTagsP, int *hybridTagsP, double *bx, double *by, double *yu, double *xv,
-		   int i_start, int j_start, int i_end, int j_end, int nx, int ny, int totalPoints, double midX, double midY)
+				double *body_intercept_p_x, double *body_intercept_p_y, double *image_point_p_x, double *image_point_p_y, double *x1_p, double *y1_p, double *x2_p, double *y2_p,
+				int i_start, int j_start, int i_end, int j_end, int nx, int ny, int totalPoints, double midX, double midY)
 {
 	// calculate indicies indices
 	int idx	= threadIdx.x + blockDim.x * blockIdx.x,
@@ -738,7 +746,9 @@ void tag_p_luo(int *ghostTagsP, int *hybridTagsP, double *bx, double *by, double
 			right;
 	double	eps = 1.e-10,
 			x,
-			y;
+			y,
+			p,o,b,a,
+			theta_321;
 
 	//ghostTagsP[ip] = 1000;
 	while(l<totalPoints)
@@ -773,31 +783,96 @@ void tag_p_luo(int *ghostTagsP, int *hybridTagsP, double *bx, double *by, double
 				// calculate the point of intersection of the double ray with the boundary
 				x = bx[k] + (bx[l]-bx[k]) * (yu[J]-by[k])/(by[l]-by[k]);
 
-				// if the point of intersection coincides with the grid point
-				/*if (fabs(x-xv[I]) < eps)
-				{
-					std::cout<<"tagpoints warning\n\n\n\n\n";
-				}*/
 				// just inside, right of mid
 				if (x > midX + eps && x > xv[I] + eps && x < xv[I+1] + eps)
 				{
 					ghostTagsP[ip] = ip;
+					x1_p[ip] = bx[l];
+					y1_p[ip] = by[l];
+					x2_p[ip] = bx[k];
+					y2_p[ip] = by[k];
+
+					p = sqrt(pow((bx[l]-bx[k]),2) + pow((by[l]-by[k]),2)); //distance from 1 to 2
+					o = sqrt(pow((bx[l]-xv[I]),2) + pow((by[l]-yu[J]),2)); //distance from 3 to 1
+					b = sqrt(pow((xv[I]-bx[k]),2) + pow((yu[J]-by[k]),2)); //distance from 2 to 3
+
+					theta_321 = acos((p*p+b*b-o*o)/(2*p*b)); //angle format: start point,vertex,endpoint
+
+					a = sin(theta_321)*b;//distance from 3 to 4
+
+					body_intercept_p_y[ip] = by[k] + (by[l]-by[k])/p * a/tan(theta_321); //body intercept point, forms a right angle with lines 1-2 and 4-3
+					body_intercept_p_x[ip] = bx[k] + (bx[l]-bx[k])/p * a/tan(theta_321);
+					image_point_p_y[ip] = body_intercept_p_y[ip]+(body_intercept_p_y[ip]-yu[J]); //image point, mirror the ghost node accross line 1-2
+					image_point_p_x[ip] = body_intercept_p_x[ip]+(body_intercept_p_x[ip]-xv[I]);
 				}
 				// just inside, left of mid
 				else if (x < midX + eps && x < xv[I] +eps && x > xv[I-1])
 				{
 					ghostTagsP[ip] = ip;
+					x1_p[ip] = bx[l];
+					y1_p[ip] = by[l];
+					x2_p[ip] = bx[k];
+					y2_p[ip] = by[k];
+
+					p = sqrt(pow((bx[l]-bx[k]),2) + pow((by[l]-by[k]),2)); //distance from 1 to 2
+					o = sqrt(pow((bx[l]-xv[I]),2) + pow((by[l]-yu[J]),2)); //distance from 3 to 1
+					b = sqrt(pow((xv[I]-bx[k]),2) + pow((yu[J]-by[k]),2)); //distance from 2 to 3
+
+					theta_321 = acos((p*p+b*b-o*o)/(2*p*b)); //angle format: start point,vertex,endpoint
+
+					a = sin(theta_321)*b;//distance from 3 to 4
+
+					body_intercept_p_y[ip] = by[k] + (by[l]-by[k])/p * a/tan(theta_321); //body intercept point, forms a right angle with lines 1-2 and 4-3
+					body_intercept_p_x[ip] = bx[k] + (bx[l]-bx[k])/p * a/tan(theta_321);
+					image_point_p_y[ip] = body_intercept_p_y[ip]+(body_intercept_p_y[ip]-yu[J]); //image point, mirror the ghost node accross line 1-2
+					image_point_p_x[ip] = body_intercept_p_x[ip]+(body_intercept_p_x[ip]-xv[I]);
 				}
 
 				// just inside, right of mid
 				if (x > midX + eps && x < xv[I] + eps && x > xv[I-1] + eps)
 				{
 					hybridTagsP[ip] = ip;
+					//hybrid node interpolation
+					x1_p[ip] = bx[l];
+					y1_p[ip] = by[l];
+					x2_p[ip] = bx[k];
+					y2_p[ip] = by[k];
+
+					p = sqrt(pow((bx[l]-bx[k]),2) + pow((by[l]-by[k]),2)); //distance from 1 to 2
+					o = sqrt(pow((bx[l]-xv[I]),2) + pow((by[l]-yu[J]),2)); //distance from 3 to 1
+					b = sqrt(pow((xv[I]-bx[k]),2) + pow((yu[J]-by[k]),2)); //distance from 2 to 3
+
+					theta_321 = acos((p*p+b*b-o*o)/(2*p*b)); //angle format: start point,vertex,endpoint
+
+					a = sin(theta_321)*b;//distance from 3 to 4
+
+					body_intercept_p_y[ip] = by[k] + (by[l]-by[k])/p * a/tan(theta_321); //body intercept point, forms a right angle with lines 1-2 and 4-3
+					body_intercept_p_x[ip] = bx[k] + (bx[l]-bx[k])/p * a/tan(theta_321);
+					image_point_p_y[ip] = 2*yu[J] - body_intercept_p_y[ip];
+					image_point_p_x[ip] = 2*xv[I] - body_intercept_p_x[ip];
 				}
 				// just inside, left of mid
 				else if (x < midX + eps && x > xv[I] +eps && x < xv[I+1] + eps)
 				{
 					hybridTagsP[ip] = ip;
+					//hybrid node interpolation
+					x1_p[ip] = bx[l];
+					y1_p[ip] = by[l];
+					x2_p[ip] = bx[k];
+					y2_p[ip] = by[k];
+
+					p = sqrt(pow((bx[l]-bx[k]),2) + pow((by[l]-by[k]),2)); //distance from 1 to 2
+					o = sqrt(pow((bx[l]-xv[I]),2) + pow((by[l]-yu[J]),2)); //distance from 3 to 1
+					b = sqrt(pow((xv[I]-bx[k]),2) + pow((yu[J]-by[k]),2)); //distance from 2 to 3
+
+					theta_321 = acos((p*p+b*b-o*o)/(2*p*b)); //angle format: start point,vertex,endpoint
+
+					a = sin(theta_321)*b;//distance from 3 to 4
+
+					body_intercept_p_y[ip] = by[k] + (by[l]-by[k])/p * a/tan(theta_321); //body intercept point, forms a right angle with lines 1-2 and 4-3
+					body_intercept_p_x[ip] = bx[k] + (bx[l]-bx[k])/p * a/tan(theta_321);
+					image_point_p_y[ip] = 2*yu[J] - body_intercept_p_y[ip];
+					image_point_p_x[ip] = 2*xv[I] - body_intercept_p_x[ip];
 				}
 			}
 		}
@@ -819,22 +894,92 @@ void tag_p_luo(int *ghostTagsP, int *hybridTagsP, double *bx, double *by, double
 				if (y > midY + eps && y > yu[J] +eps && y < yu[J+1])
 				{
 					ghostTagsP[ip] = ip;
+					x1_p[ip] = bx[l];
+					y1_p[ip] = by[l];
+					x2_p[ip] = bx[k];
+					y2_p[ip] = by[k];
+
+					p = sqrt(pow((bx[l]-bx[k]),2) + pow((by[l]-by[k]),2)); //distance from 1 to 2
+					o = sqrt(pow((bx[l]-xv[I]),2) + pow((by[l]-yu[J]),2)); //distance from 3 to 1
+					b = sqrt(pow((xv[I]-bx[k]),2) + pow((yu[J]-by[k]),2)); //distance from 2 to 3
+
+					theta_321 = acos((p*p+b*b-o*o)/(2*p*b)); //angle format: start point,vertex,endpoint
+
+					a = sin(theta_321)*b;//distance from 3 to 4
+
+					body_intercept_p_y[ip] = by[k] + (by[l]-by[k])/p * a/tan(theta_321); //body intercept point, forms a right angle with lines 1-2 and 4-3
+					body_intercept_p_x[ip] = bx[k] + (bx[l]-bx[k])/p * a/tan(theta_321);
+					image_point_p_y[ip] = body_intercept_p_y[ip]+(body_intercept_p_y[ip]-yu[J]); //image point, mirror the ghost node accross line 1-2
+					image_point_p_x[ip] = body_intercept_p_x[ip]+(body_intercept_p_x[ip]-xv[I]);
 				}
 				//just inside, south of mid
 				else if (y < midY + eps && y < yu[J] +eps && y > yu[J-1] +eps)
 				{
 					ghostTagsP[ip] = ip;
+					x1_p[ip] = bx[l];
+					y1_p[ip] = by[l];
+					x2_p[ip] = bx[k];
+					y2_p[ip] = by[k];
+
+					p = sqrt(pow((bx[l]-bx[k]),2) + pow((by[l]-by[k]),2)); //distance from 1 to 2
+					o = sqrt(pow((bx[l]-xv[I]),2) + pow((by[l]-yu[J]),2)); //distance from 3 to 1
+					b = sqrt(pow((xv[I]-bx[k]),2) + pow((yu[J]-by[k]),2)); //distance from 2 to 3
+
+					theta_321 = acos((p*p+b*b-o*o)/(2*p*b)); //angle format: start point,vertex,endpoint
+
+					a = sin(theta_321)*b;//distance from 3 to 4
+
+					body_intercept_p_y[ip] = by[k] + (by[l]-by[k])/p * a/tan(theta_321); //body intercept point, forms a right angle with lines 1-2 and 4-3
+					body_intercept_p_x[ip] = bx[k] + (bx[l]-bx[k])/p * a/tan(theta_321);
+					image_point_p_y[ip] = body_intercept_p_y[ip]+(body_intercept_p_y[ip]-yu[J]); //image point, mirror the ghost node accross line 1-2
+					image_point_p_x[ip] = body_intercept_p_x[ip]+(body_intercept_p_x[ip]-xv[I]);
 				}
 
 				// just inside, north of mid
 				if (y > midY + eps && y < yu[J] +eps && y > yu[J-1])
 				{
 					hybridTagsP[ip] = ip;
+					//hybrid node interpolation
+					x1_p[ip] = bx[l];
+					y1_p[ip] = by[l];
+					x2_p[ip] = bx[k];
+					y2_p[ip] = by[k];
+
+					p = sqrt(pow((bx[l]-bx[k]),2) + pow((by[l]-by[k]),2)); //distance from 1 to 2
+					o = sqrt(pow((bx[l]-xv[I]),2) + pow((by[l]-yu[J]),2)); //distance from 3 to 1
+					b = sqrt(pow((xv[I]-bx[k]),2) + pow((yu[J]-by[k]),2)); //distance from 2 to 3
+
+					theta_321 = acos((p*p+b*b-o*o)/(2*p*b)); //angle format: start point,vertex,endpoint
+
+					a = sin(theta_321)*b;//distance from 3 to 4
+
+					body_intercept_p_y[ip] = by[k] + (by[l]-by[k])/p * a/tan(theta_321); //body intercept point, forms a right angle with lines 1-2 and 4-3
+					body_intercept_p_x[ip] = bx[k] + (bx[l]-bx[k])/p * a/tan(theta_321);
+					image_point_p_y[ip] = 2*yu[J] - body_intercept_p_y[ip];
+					image_point_p_x[ip] = 2*xv[I] - body_intercept_p_x[ip];
 				}
 				//just inside, south of mid
 				else if (y < midY + eps && y > yu[J] +eps && y < yu[J+1] +eps)
 				{
 					hybridTagsP[ip] = ip;
+					//hybrid node interpolation
+					x1_p[ip] = bx[l];
+					y1_p[ip] = by[l];
+					x2_p[ip] = bx[k];
+					y2_p[ip] = by[k];
+
+					p = sqrt(pow((bx[l]-bx[k]),2) + pow((by[l]-by[k]),2)); //distance from 1 to 2
+					o = sqrt(pow((bx[l]-xv[I]),2) + pow((by[l]-yu[J]),2)); //distance from 3 to 1
+					b = sqrt(pow((xv[I]-bx[k]),2) + pow((yu[J]-by[k]),2)); //distance from 2 to 3
+
+					theta_321 = acos((p*p+b*b-o*o)/(2*p*b)); //angle format: start point,vertex,endpoint
+
+					a = sin(theta_321)*b;//distance from 3 to 4
+
+					body_intercept_p_y[ip] = by[k] + (by[l]-by[k])/p * a/tan(theta_321); //body intercept point, forms a right angle with lines 1-2 and 4-3
+					body_intercept_p_x[ip] = bx[k] + (bx[l]-bx[k])/p * a/tan(theta_321);
+					image_point_p_y[ip] = 2*yu[J] - body_intercept_p_y[ip];
+					image_point_p_x[ip] = 2*xv[I] - body_intercept_p_x[ip];
 				}
 			}
 		}

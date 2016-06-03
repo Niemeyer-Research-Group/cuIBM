@@ -37,7 +37,7 @@ void luoIBM::initialise()
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	//ARRAYS
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	//tagpoints, size numuv
+	pressureStar.resize(numP);
 	ustar.resize(numUV);
 	ghostTagsUV.resize(numUV);
 	hybridTagsUV.resize(numUV);
@@ -46,6 +46,10 @@ void luoIBM::initialise()
 	body_intercept_y.resize(numUV);
 	image_point_x.resize(numUV);
 	image_point_y.resize(numUV);
+	body_intercept_p_x.resize(numP);
+	body_intercept_p_y.resize(numP);
+	image_point_p_x.resize(numP);
+	image_point_p_y.resize(numP);
 	distance_from_intersection_to_node.resize(numUV);
 	distance_between_nodes_at_IB.resize(numUV);
 	uv.resize(numUV);
@@ -55,6 +59,10 @@ void luoIBM::initialise()
 	x2_ip.resize(numUV);
 	y1_ip.resize(numUV);
 	y2_ip.resize(numUV);
+	x1_ip_p.resize(numP);
+	x2_ip_p.resize(numP);
+	y1_ip_p.resize(numP);
+	y2_ip_p.resize(numP);
 	ip_u.resize(numUV);
 	x1.resize(numUV);
 	x2.resize(numUV);
@@ -68,6 +76,22 @@ void luoIBM::initialise()
 	q2.resize(numUV);
 	q3.resize(numUV);
 	q4.resize(numUV);
+	x1_p.resize(numP);
+	x2_p.resize(numP);
+	x3_p.resize(numP);
+	x4_p.resize(numP);
+	y1_p.resize(numP);
+	y2_p.resize(numP);
+	y3_p.resize(numP);
+	y4_p.resize(numP);
+	q1_p.resize(numP);
+	q2_p.resize(numP);
+	q3_p.resize(numP);
+	q4_p.resize(numP);
+	a0.resize(numP);
+	a1.resize(numP);
+	a2.resize(numP);
+	a3.resize(numP);
 
 	//tagpoints, size nump
 	ghostTagsP.resize(numP);
@@ -128,7 +152,7 @@ void luoIBM::writeData()
 	logger.startTimer("output");
 
 	writeCommon();
-	//calculateForce();
+	calculateForce();
 	if (NavierStokesSolver::timeStep == 0)
 		forceFile<<"timestep\tFx\tFxX\tFxY\tFxU\tFy\n";
 	forceFile << timeStep*dt << '\t' << B.forceX[0] << '\t'<<fxx<<"\t"<<fxy<<"\t"<<fxu<<"\t" << B.forceY[0] << std::endl;
@@ -163,19 +187,22 @@ void luoIBM::writeCommon()
 void luoIBM::stepTime()
 {
 	generateRHS1();
-	NavierStokesSolver::solveIntermediateVelocity();
-	arrayprint(image_point_x,"ip","y");
-	//arrayprint(uhat,"uhat","x");
-	arrayprint(hybridTagsUV,"hyT","y");
-	arrayprint(x1,"x1","y");
+	solveIntermediateVelocity();
+	weightUhat();
+	//arrayprint(uhat,"uhat final","x");
 
 	generateRHS2();
-	NavierStokesSolver::solvePoisson();
+	solvePoisson();
+	arrayprint(pressure,"pressure before","p");
+	weightPressure();
+	arrayprint(pressure,"pressure after","p");
 
 	velocityProjection();
 
 	std::cout<<timeStep<<std::endl;
-	NavierStokesSolver::timeStep++;
+	timeStep++;
+	if (timeStep == 1000)
+		arrayprint(u,"u","x");
 }
 
 /**
@@ -191,4 +218,4 @@ void luoIBM::shutDown()
 #include "luoIBM/intermediatePressure.inl"
 #include "luoIBM/projectVelocity.inl"
 #include "luoIBM/tagpoints.inl"
-//#include "luoIBM/calculateForce.inl"
+#include "luoIBM/calculateForce.inl"

@@ -97,7 +97,7 @@ def main():
 		plt.gca().set_aspect('equal',adjustable='box')
 		plt.xlim([x_start,x_end])
 		plt.ylim([y_start,y_end])
-		plt.savefig('%s/u%07d.pdf' % (folder, ite/nsave))
+		plt.savefig('%s/u%07d.png' % (folder, ite/nsave))
 		plt.clf()
 		
 	
@@ -111,7 +111,7 @@ def main():
 		plt.gca().set_aspect('equal',adjustable='box')
 		plt.xlim([x_start,x_end])
 		plt.ylim([y_start,y_end])
-		plt.savefig('%s/v%07d.pdf' % (folder, ite/nsave))
+		plt.savefig('%s/v%07d.png' % (folder, ite/nsave))
 		plt.clf()
 
 if __name__ == '__main__':

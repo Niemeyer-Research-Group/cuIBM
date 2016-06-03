@@ -4,10 +4,10 @@ namespace kernels
 {
 __global__
 void tag_u_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *bx, double *by, double *uB, double *vB, double *yu, double *xu,
-			double *body_intercept_x, double *body_intercept_y, double *image_point_x, double *image_point_y,
-			double *x1, double *y1, double *x2, double *y2, //testing
-			double *a, double *b, double *distance_from_u_to_body, double *distance_from_v_to_body, double *uv,
-			int i_start, int j_start, int i_end, int j_end, int nx, int ny, int totalPoints, double midX, double midY);
+				double *body_intercept_x, double *body_intercept_y, double *image_point_x, double *image_point_y,
+				double *x1, double *y1, double *x2, double *y2, //testing
+				double *a, double *b, double *distance_from_u_to_body, double *distance_from_v_to_body, double *uv,
+				int i_start, int j_start, int i_end, int j_end, int nx, int ny, int totalPoints, double midX, double midY);
 
 __global__
 void tag_v_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *bx, double *by, double *uB, double *vB, double *yv, double *xv,
@@ -17,7 +17,8 @@ void tag_v_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *
 
 __global__
 void tag_p_luo(int *ghostTagsP, int *hybridTagsP, double *bx, double *by, double *yu, double *xv,
-		   int i_start, int j_start, int i_end, int j_end, int nx, int ny, int totalPoints, double midX, double midY);
+				double *body_intercept_p_x, double *body_intercept_p_y, double *image_point_p_x, double *image_point_p_y, double *x1_p, double *y1_p, double *x2_p, double *y2_p,
+				int i_start, int j_start, int i_end, int j_end, int nx, int ny, int totalPoints, double midX, double midY);
 
 __global__
 void zero_pressure_luo(int *ghostTagsP,  int i_start, int j_start, int i_end, int j_end, int nx, int ny);

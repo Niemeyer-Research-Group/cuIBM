@@ -77,6 +77,8 @@
 //todo add rotational degree of freedom
 //todo different force calculation method
 //todo add a verbose mode where it spits out more information about the timestep, should be able to turn on at runtime
+//todo when solving for pressure* at the first time step the initial pressure is 0 everywhere which makes the determinant 0 which makes our eventual pressure* nan, to remedy I'm
+	//going to solve the pressure for the timestep, then solve for pressure* with the updated pressure. not sure if this is ok or not
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -18,12 +18,12 @@ void fadlunModified::tagPoints()
 	int  nx = NavierStokesSolver::domInfo->nx,
 		 ny = NavierStokesSolver::domInfo->ny,
 		 totalPoints = B.totalPoints,
-		 start_index_i = B.startI[0],
-		 start_index_j = B.startJ[0],
+		 i_start = B.startI[0],
+		 j_start = B.startJ[0],
 		 width_i = B.numCellsX[0],
 		 height_j = B.numCellsY[0],
-		 end_index_i = start_index_i + width_i,
-		 end_index_j = start_index_j + height_j;
+		 i_end = i_start + width_i,
+		 j_end = j_start + height_j;
 	
 	double	*pressure_r = thrust::raw_pointer_cast ( &(pressure[0]) ),
 			*bx_r		= thrust::raw_pointer_cast ( &(B.x[0]) ),//not sure if these are on the host or not
@@ -61,26 +61,26 @@ void fadlunModified::tagPoints()
 	const int blocksize = 256;
 	dim3 dimGrid( int( (width_i*height_j-0.5)/blocksize ) +1, 1);
 	dim3 dimBlock(blocksize, 1);
-	dim3 dimGrid0(int( (end_index_i-start_index_i-0.5)/blocksize ) +1, 1);
+	dim3 dimGrid0(int( (i_end-i_start-0.5)/blocksize ) +1, 1);
 	
 	//tag u direction nodes for tags, tagsout and tags2
 	kernels::tag_u<<<dimGrid,dimBlock>>>(tags_r, tagsIn_r, tags2_r,
 										   bx_r, by_r, uB_r, vB_r, yu_r, xu_r, a_r, b_r, dub_r, dvb_r, uv_r, 
-										   start_index_i, start_index_j, end_index_i, end_index_j, nx, ny, totalPoints, B.midX, B.midY);
+										   i_start, j_start, i_end, j_end, nx, ny, totalPoints, B.midX, B.midY);
 	//tag v direction nodes for tags, tagsout and tag2
 	kernels::tag_v<<<dimGrid,dimBlock>>>(tags_r, tagsIn_r, tags2_r,
 										   bx_r, by_r, uB_r, vB_r, yv_r, xv_r, a_r, b_r, dub_r, dvb_r, uv_r, 
-										   start_index_i, start_index_j, end_index_i, end_index_j, nx, ny, totalPoints, B.midX, B.midY);
+										   i_start, j_start, i_end, j_end, nx, ny, totalPoints, B.midX, B.midY);
 	//tag pressure nodes for tagsp and tagspout
 	kernels::tag_p<<<dimGrid,dimBlock>>>(tagsP_r, tagsPOut_r,
 											bx_r, by_r, yu_r, xv_r, 
-											start_index_i, start_index_j, end_index_i, end_index_j, nx, ny, totalPoints, B.midX, B.midY);
+											i_start, j_start, i_end, j_end, nx, ny, totalPoints, B.midX, B.midY);
 	//zero the inside of tagsp
-	kernels::zero_pressure<<<dimGrid0, dimBlock>>>(tagsP_r, start_index_i, start_index_j, end_index_i, end_index_j, nx, ny);
+	kernels::zero_pressure<<<dimGrid0, dimBlock>>>(tagsP_r, i_start, j_start, i_end, j_end, nx, ny);
 	//zero the inside of tagsinx
-	kernels::zero_x<<<dimGrid0,dimBlock>>>(tagsIn_r, start_index_i, start_index_j, end_index_i, end_index_j, nx, ny);
+	kernels::zero_x<<<dimGrid0,dimBlock>>>(tagsIn_r, i_start, j_start, i_end, j_end, nx, ny);
 	//zero the inside of tagsiny
-	kernels::zero_y<<<dimGrid0,dimBlock>>>(tagsIn_r, start_index_i, start_index_j, end_index_i, end_index_j, nx, ny);
+	kernels::zero_y<<<dimGrid0,dimBlock>>>(tagsIn_r, i_start, j_start, i_end, j_end, nx, ny);
 	
 	//testing //flag
 	double a = thrust::reduce(tagsOld.begin(),tagsOld.end()-nx*(ny-1)),
