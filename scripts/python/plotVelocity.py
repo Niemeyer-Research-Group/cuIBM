@@ -34,7 +34,7 @@ def read_inputs():
 						help='x-velocity cutoff on the plot')
 	parser.add_argument('-vlim', dest='v_lim', type=float, default=1.0,
 						help='y-velocity cutoff on the plot')
-	
+
 	return parser.parse_args()
 
 
@@ -72,14 +72,14 @@ def main():
 	j_end = np.where(yu <= args.ymax)[0][-1]
 
 	x_start = xu[i_start] - dx[i_start]
-	x_end   = xu[i_end] + dx[i_end+1]
+	x_end   = xu[i_end] + dx[i_end]
 	y_start = yu[j_start] - dy[j_start]/2.
 	y_end   = yu[j_end] + dy[j_end]/2.
 
 	# generate a mesh grid for u- and v- velocities
 	Xu, Yu = np.meshgrid(xu, yu)
 	Xv, Yv = np.meshgrid(xv, yv)
-
+	
 	for ite in xrange(start_step+nsave, nt+1, nsave):
 		print 'iteration %d' % ite
 		# read the velocity data at the given time-step
@@ -88,8 +88,7 @@ def main():
 			break
 
 		# plot u-velocity contourf
-		CS = plt.contourf(Xu, Yu, u.reshape((ny, nx-1)),
-					levels=np.linspace(-args.u_lim, args.u_lim, 21))
+		CS = plt.contourf(Xu, Yu, u.reshape((ny, nx-1)), levels=np.linspace(-args.u_lim, args.u_lim, 21))
 		plt.title("U-Velocity @ time = {0}".format(ite*dt))
 		plt.xlabel('x')
 		plt.ylabel('y')

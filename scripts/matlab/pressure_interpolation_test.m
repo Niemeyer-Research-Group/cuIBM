@@ -8,7 +8,7 @@ M = dlmread('/scratch/src/cuIBM/validation/luo/test/interp_testP.csv','\t',1,0);
 X = zeros(1,7);
 Y = zeros(1,7);
 Z = zeros(1,7);
-for i =62%1:length(M)
+for i =1:length(M)
     X(1) = M(i,5); %ghost node
     X(2) = M(i,7); %body intercept
     X(3) = M(i,11); %corner1
@@ -35,25 +35,27 @@ for i =62%1:length(M)
     [Q, a] = interpolateP(X(3:6), Y(3:6), Z(3:6));
     
     scatter3(X(1),Y(1),Z(1),'ks'), hold on %ghost node
-    scatter3(X(2),Y(2),Z(2),'ko') %body intercept
-    xx = linspace(X(3),X(4), 10);
-    yy = linspace(Y(3),Y(5),10);
-    for j = 1:length(xx)
-        for k = 1:length(yy)
-            scatter3(xx(j),yy(k),Q(xx(j),yy(k)))
-        end
-    end
-    for j=3:6
+%     scatter3(X(7),Y(7),Z(1),'ks'), hold on %image point node
+    scatter3(X(2),Y(2),Z(2),'ko'), hold on %body intercept
+%     xx = linspace(X(3),X(4), 10);
+%     yy = linspace(Y(3),Y(5),10);
+%     for j = 1:length(xx)
+%         for k = 1:length(yy)
+%             scatter3(xx(j),yy(k),Q(xx(j),yy(k)))
+%         end
+%     end
+    for j=3:6 %corners
         scatter3(X(j),Y(j),Z(j),'rd')
     end
-    plot3([X(1) X(2)], [Y(1) Y(2)], [Z(1),Z(2)],'--') %line between gn and cpp ip
+%     plot3([X(1) X(2)], [Y(1) Y(2)], [Z(1),Z(2)],'--') %line between gn and cpp ip
 end
-    
 axis square
 legend('Ghost node', 'Body Intercept')
 xlabel('x')
 ylabel('y')
 zlabel('pressure')
+
+
 
 %% aww yeee
 clc
@@ -65,7 +67,7 @@ M = dlmread('/scratch/src/cuIBM/validation/luo/test/interp_testP.csv','\t',1,0);
 X = zeros(1,7);
 Y = zeros(1,7);
 Z = zeros(1,7);
-for i =[60 62 64]%1:length(M)
+for i =1:length(M)
     X(1) = M(i,5); %ghost node
     X(2) = M(i,7); %body intercept
     X(3) = M(i,11); %corner1
@@ -98,7 +100,8 @@ for i =[60 62 64]%1:length(M)
     %plot([X(1) X(7)], [Y(1) Y(7)], 'k-') % line between ghost node and image point
     linecolor = rand(1,3);
     for j=3:6
-        plot([X(j) X(1)], [Y(j) Y(1)], 'color', linecolor) % line between corner and image point
+       % plot([X(j) X(1)], [Y(j) Y(1)], 'color', linecolor) % line between corner and image point outside
+       plot([X(j) X(7)], [Y(j) Y(7)], 'color', linecolor) % line between corner and image point inside
     end
 end
     

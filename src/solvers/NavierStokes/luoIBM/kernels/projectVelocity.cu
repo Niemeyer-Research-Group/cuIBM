@@ -11,7 +11,7 @@
 namespace kernels 
 {
 __global__
-void project_velocity_luo_X(double *u, double *uhat, double *uold, double *pressure, int *ghostTagsP, int *ghostTagsUV, double *dx, double dt, int nx, int ny)
+void project_velocity_luo_X(double *u, double *uhat, double *uold, double *pressure, double *dx, double dt, int nx, int ny)
 {
 	int i	= threadIdx.x + (blockDim.x * blockIdx.x),
 		I	= i % (nx-1),
@@ -24,11 +24,11 @@ void project_velocity_luo_X(double *u, double *uhat, double *uold, double *press
 
 	uold[i] = u[i];
 
-	u[i] = uhat[i] - (ghostTagsP[ip+1] ==-1 && ghostTagsP[ip] == -1) * dt*(pressure[ip+1]-pressure[ip]) / (0.5*dx[I+1]+0.5*dx[I]);
+	u[i] = uhat[i] - dt*(pressure[ip+1]-pressure[ip]) / (0.5*dx[I+1]+0.5*dx[I]);
 }
 
 __global__
-void project_velocity_luo_Y(double *u, double *uhat, double *uold, double *pressure, int *ghostTagsP, int *ghostTagsUV, double *dy, double dt, int nx, int ny)
+void project_velocity_luo_Y(double *u, double *uhat, double *uold, double *pressure, double *dy, double dt, int nx, int ny)
 {
 	int numU= (nx-1)*ny,
 		i	= threadIdx.x + (blockDim.x * blockIdx.x),
@@ -44,7 +44,7 @@ void project_velocity_luo_Y(double *u, double *uhat, double *uold, double *press
 
 	uold[i] = u[i];
 	
-	u[i] = uhat[i] - (ghostTagsP[ip+nx] == -1 && ghostTagsP[ip] == -1) * dt*(pressure[ip+nx]-pressure[ip]) / (0.5*dy[J+1]+0.5*dy[J]);
+	u[i] = uhat[i] - dt*(pressure[ip+nx]-pressure[ip]) / (0.5*dy[J+1]+0.5*dy[J]);
 }
 
 }//end namespace kernels

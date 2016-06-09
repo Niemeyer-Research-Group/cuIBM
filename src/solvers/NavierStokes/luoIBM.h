@@ -78,7 +78,6 @@ protected:
 		a2,
 		a3;
 
-
 	bodies 	B;		///< bodies in the flow
 
 	std::ofstream forceFile;
@@ -87,6 +86,7 @@ protected:
 	//calculateForce.inl
 	//////////////////////////
 	void calculateForce();
+	void luoForce();
 
 	//////////////////////////
 	//intermediateVelocity.inl

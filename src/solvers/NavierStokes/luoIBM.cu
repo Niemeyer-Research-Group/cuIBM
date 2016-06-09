@@ -153,7 +153,7 @@ void luoIBM::writeData()
 
 	writeCommon();
 	calculateForce();
-	if (NavierStokesSolver::timeStep == 0)
+	if (NavierStokesSolver::timeStep == 1)
 		forceFile<<"timestep\tFx\tFxX\tFxY\tFxU\tFy\n";
 	forceFile << timeStep*dt << '\t' << B.forceX[0] << '\t'<<fxx<<"\t"<<fxy<<"\t"<<fxu<<"\t" << B.forceY[0] << std::endl;
 
@@ -189,17 +189,14 @@ void luoIBM::stepTime()
 	generateRHS1();
 	solveIntermediateVelocity();
 	weightUhat();
-	//arrayprint(uhat,"uhat final","x");
 
 	generateRHS2();
 	solvePoisson();
-	arrayprint(pressure,"pressure before","p");
 	weightPressure();
-	arrayprint(pressure,"pressure after","p");
 
 	velocityProjection();
-
 	std::cout<<timeStep<<std::endl;
+	//luoForce();
 	timeStep++;
 	if (timeStep == 1000)
 		arrayprint(u,"u","x");

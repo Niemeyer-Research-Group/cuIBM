@@ -77,7 +77,28 @@ public:
 		converged;
 
 	cusp::array1d<double, cusp::device_memory>
-		test;
+		test,
+		x1,
+		x2,
+		x3,
+		x4,
+		y1,
+		y2,
+		y3,
+		y4,
+		q1,
+		q2,
+		q3,
+		q4,
+		point_x,
+		point_y,
+		point2_x,
+		point2_y,
+		point3_x,
+		point3_y;
+
+	cusp::array1d<double, cusp::device_memory>
+		force_pressure;
 
 	double	centerVelocityU,
 			centerVelocityV, // need to initialise these fools

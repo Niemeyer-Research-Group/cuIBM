@@ -88,8 +88,29 @@ void bodies::initialise(parameterDB &db, domain &D)
 	vBk.resize(totalPoints);
 	I.resize(totalPoints);
 	J.resize(totalPoints);
+
+	force_pressure.resize(totalPoints);
+	x1.resize(totalPoints);
+	x2.resize(totalPoints);
+	x3.resize(totalPoints);
+	x4.resize(totalPoints);
+	y1.resize(totalPoints);
+	y2.resize(totalPoints);
+	y3.resize(totalPoints);
+	y4.resize(totalPoints);
+	q1.resize(totalPoints);
+	q2.resize(totalPoints);
+	q3.resize(totalPoints);
+	q4.resize(totalPoints);
+	point_y.resize(totalPoints);
+	point_x.resize(totalPoints);
+	point2_y.resize(totalPoints);
+	point2_x.resize(totalPoints);
+	point3_y.resize(totalPoints);
+	point3_x.resize(totalPoints);
 	centerVelocityU = 0;
 	centerVelocityV = 0;
+
 	cusp::blas::fill(vB, 0);
 	cusp::blas::fill(uB, 0);
 	cusp::blas::fill(vBk, 0);

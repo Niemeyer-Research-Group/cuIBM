@@ -31,7 +31,7 @@ void liftBottomTop(double *FyY, double *q, double *lambda, double nu, double *dx
                    int nx, int ny, int I, int J, int ncx, int ncy);
 
 __global__
-void liftUnsteady(double *FyU, double *q, double *qOld, double *dx, double *dy, double dt,
+void liftUnsteady(double *FyU, double *q, double *qOld, int *tagsIn, double *dx, double *dy, double dt,
                   int nx, int ny, int I, int J, int ncx, int ncy);
 
 

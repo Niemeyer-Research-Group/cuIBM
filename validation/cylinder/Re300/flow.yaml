@@ -1,11 +1,5 @@
 - type: flow
-#  nu: 0.025 #40
-#  nu: 0.013333333333 #75
-#  nu: 0.01 #100
-#  nu: 0.0066666666666 #150
-#  nu: 0.005 #200
   nu: 0.003333333
-#  nu: 0.00181818181818 #550
   initialVelocity: [1.0, 0.0]
   initialPerturbation: [0.1, 0.0]
   boundaryConditions:

@@ -51,7 +51,6 @@ void luoIBM::generateRHS1()
 
 	//update right boundary of the domain for the convective boundary condition
 	updateRobinBoundary();
-
 	//set Nold to N
 	Nold = N;
 	
@@ -157,7 +156,7 @@ void luoIBM::weightUhat()
 	kernels::weightX<<<grid,block>>>(uhat_r, ustar_r, ghostTagsUV_r, hybridTagsUV_r, yu_r, xu_r,
 									body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
 									i_start, j_start, i_end, j_end, nx, ny);
-	kernels::weightX<<<grid,block>>>(uhat_r, ustar_r, ghostTagsUV_r, hybridTagsUV_r, yv_r, xv_r,
+	kernels::weightY<<<grid,block>>>(uhat_r, ustar_r, ghostTagsUV_r, hybridTagsUV_r, yv_r, xv_r,
 									body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
 									i_start, j_start, i_end, j_end, nx, ny);
 }
@@ -285,8 +284,8 @@ void luoIBM::testInterpX()
 		for (int I=i_start;  I<i_end;  I++)
 		{
 			iu = J*(nx-1) + I;
-			//if (ghostTagsUV[iu] >0)//for inside
-			if (hybridTagsUV[iu] >0)//for outside
+			if (ghostTagsUV[iu] >0)//for inside
+			//if (hybridTagsUV[iu] >0)//for outside
 			{
 				body_nodes << x1_ip[iu]<<"\t";
 				body_nodes << y1_ip[iu]<<"\t";
@@ -310,8 +309,8 @@ void luoIBM::testInterpX()
 				body_nodes << q2[iu] <<"\t";
 				body_nodes << q3[iu] <<"\t";
 				body_nodes << q4[iu] <<"\t";
-				//body_nodes << u[iu] <<"\t";//inside
-				body_nodes << ustar[iu] <<"\t";//outside
+				body_nodes << u[iu] <<"\t";//inside
+				//body_nodes << ustar[iu] <<"\t";//outside
 				body_nodes << ip_u[iu]<<"\n";
 			}
 		}
@@ -366,8 +365,8 @@ void luoIBM::testInterpY()
 		for (int I=i_start;  I<i_end;  I++)
 		{
 			iv = J*nx + I  +  ny*(nx-1);
-			//if (ghostTagsUV[iv] >0)//for inside
-			if (hybridTagsUV[iv] >0)//for outside
+			if (ghostTagsUV[iv] >0)//for inside
+			//if (hybridTagsUV[iv] >0)//for outside
 			{
 				//std::cout<<I<<"\t"<<J<<"\t"<<iv<<"\n";
 				body_nodes << x1_ip[iv]<<"\t";
@@ -392,8 +391,8 @@ void luoIBM::testInterpY()
 				body_nodes << q2[iv] <<"\t";
 				body_nodes << q3[iv] <<"\t";
 				body_nodes << q4[iv] <<"\t";
-				//body_nodes << u[iv]  <<"\t";//inside
-				body_nodes << ustar[iv] <<"\t";//outside
+				body_nodes << u[iv]  <<"\t";//inside
+				//body_nodes << ustar[iv] <<"\t";//outside
 				body_nodes << ip_u[iv]<<"\n";
 			}
 		}

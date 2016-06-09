@@ -96,22 +96,22 @@ def readGridData(folder):
 	x = np.array(struct.unpack('d'*(nx+1), fp.read(8*(nx+1))))
 	dx = x[1:] - x[:-1]
 	dx[nx-1] = dx[nx-2]
-	xu = x[1:-1]
-	xv = np.zeros(nx)
-	xv[0] = x[0]
-	for i in range(nx-1):
-		xv[i+1] = xv[i] + 0.5*(dx[i] + dx[i+1])
+	xv = x[0:-1]
+	xu = np.zeros(nx-1)
+	xu[0] = x[0] + 0.5*dx[0]
+	for i in range(nx-2):
+		xu[i+1] = xu[i] + 0.5*(dx[i] + dx[i+1])
 		
 	# y-direction
 	ny = struct.unpack('i', fp.read(4))[0]
 	y = np.array(struct.unpack('d'*(ny+1), fp.read(8*(ny+1))))
 	dy = y[1:] - y[:-1]
-	dy[ny-1] = dy[ny-2]
-	yv = y[1:-1]
-	yu = np.zeros(ny)
-	yu[0] =y[0]
-	for i in range (ny-1):
-		yu[i+1] = yu[i] + 0.5*(dy[i]+dy[i+1])
+	#dy[ny-1] = dy[ny-2]
+	yu = y[0:-1]
+	yv = np.zeros(ny-1)
+	yv[0] =y[0] + 0.5*dy[0]
+	for i in range (ny-2):
+		yv[i+1] = yv[i] + 0.5*(dy[i]+dy[i+1])
 
 	fp.close()
 

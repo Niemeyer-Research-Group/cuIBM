@@ -97,12 +97,17 @@ void luoIBM::weightPressure()
 									i_start, j_start, i_end, j_end, nx, ny, totalPoints,
 									a0_r, a1_r, a2_r, a3_r,
 									x1_p_r, x2_p_r, x3_p_r, x4_p_r, y1_p_r, y2_p_r, y3_p_r, y4_p_r, q1_p_r, q2_p_r, q3_p_r, q4_p_r);
-	arrayprint(pressureStar,"pressure*","p");
 	kernels::weightP<<<grid,block>>>(pressure_r, pressureStar_r, ghostTagsP_r, hybridTagsP_r, yu_r, xv_r,
 									body_intercept_p_x_r, body_intercept_p_y_r, image_point_p_x_r, image_point_p_y_r,
 									i_start, j_start, i_end, j_end, nx, ny);
+	kernels::interpolatePressureToGhostNode<<<grid,block>>>(pressure_r, u_r, ghostTagsP_r, bx_r, by_r,
+									uB_r, uB0_r, vB_r, vB0_r, yu_r, xv_r,
+									body_intercept_p_x_r, body_intercept_p_y_r, image_point_p_x_r, image_point_p_y_r,
+									i_start, j_start, i_end, j_end, nx, ny, totalPoints,
+									a0_r, a1_r, a2_r, a3_r,
+									x1_p_r, x2_p_r, x3_p_r, x4_p_r, y1_p_r, y2_p_r, y3_p_r, y4_p_r, q1_p_r, q2_p_r, q3_p_r, q4_p_r);
 	
-	testInterpP();
+	//testInterpP();
 }
 
 void luoIBM::preRHS2Interpolation()
@@ -110,7 +115,7 @@ void luoIBM::preRHS2Interpolation()
 	double	*u_r 		= thrust::raw_pointer_cast ( &(u[0]) ),
 			*uhat_r 	= thrust::raw_pointer_cast ( &(uhat[0]) ),
 			*ustar_r	= thrust::raw_pointer_cast ( &(ustar[0]) ),
-			*bx_r		= thrust::raw_pointer_cast ( &(B.x[0]) ),//not sure if these are on the host or not
+			*bx_r		= thrust::raw_pointer_cast ( &(B.x[0]) ),
 			*by_r		= thrust::raw_pointer_cast ( &(B.y[0]) ),
 			*uB_r		= thrust::raw_pointer_cast ( &(B.uB[0]) ),
 			*vB_r		= thrust::raw_pointer_cast ( &(B.vB[0]) ),
@@ -244,8 +249,8 @@ void luoIBM::testInterpP()
 		for (int I=i_start;  I<i_end;  I++)
 		{
 			ip = J*nx + I;
-			//if (ghostTagsUV[iv] >0)//for inside
-			if (hybridTagsP[ip] >0)//for outside
+			if (ghostTagsP[ip] >0)//for inside
+			//if (hybridTagsP[ip] >0)//for outside
 			{
 				//std::cout<<I<<"\t"<<J<<"\t"<<iv<<"\n";
 				body_nodes << x1_ip_p[ip]<<"\t";
@@ -270,7 +275,7 @@ void luoIBM::testInterpP()
 				body_nodes << q2_p[ip] <<"\t";
 				body_nodes << q3_p[ip] <<"\t";
 				body_nodes << q4_p[ip] <<"\t";
-				body_nodes << pressureStar[ip] <<"\t";//outside
+				body_nodes << pressure[ip] <<"\t";//outside
 				body_nodes << a0[ip] <<"\t";
 				body_nodes << a1[ip] <<"\t";
 				body_nodes << a2[ip] <<"\t";

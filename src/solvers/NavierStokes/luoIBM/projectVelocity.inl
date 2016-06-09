@@ -16,8 +16,6 @@ void luoIBM::velocityProjection()
 			*dx_r	= thrust::raw_pointer_cast( &(NavierStokesSolver::domInfo-> dx[0]) ),
 			*dy_r	= thrust::raw_pointer_cast( &(NavierStokesSolver::domInfo-> dy[0]) );
 	
-	int *ghostTagsP_r = thrust::raw_pointer_cast( &(ghostTagsP[0]) ),
-		*ghostTagsUV_r = thrust::raw_pointer_cast( &(ghostTagsUV[0]) );
 	parameterDB  &db = *NavierStokesSolver::paramDB;
 	double	dt = db["simulation"]["dt"].get<double>();
 
@@ -30,8 +28,8 @@ void luoIBM::velocityProjection()
 	dim3 dimGridV( int( (nx*(ny-1)-0.5)/blocksize ) +1, 1);
 	dim3 dimBlockV(blocksize, 1);
 
-	kernels::project_velocity_luo_X<<<dimGridU,dimBlockU>>>(u_r, uhat_r, u_old, pressure_r, ghostTagsP_r, ghostTagsUV_r, dx_r, dt, nx, ny);
-	kernels::project_velocity_luo_Y<<<dimGridV,dimBlockV>>>(u_r, uhat_r, u_old, pressure_r, ghostTagsP_r, ghostTagsUV_r, dy_r, dt, nx, ny);
+	kernels::project_velocity_luo_X<<<dimGridU,dimBlockU>>>(u_r, uhat_r, u_old, pressure_r, dx_r, dt, nx, ny);
+	kernels::project_velocity_luo_Y<<<dimGridV,dimBlockV>>>(u_r, uhat_r, u_old, pressure_r, dy_r, dt, nx, ny);
 
 	logger.stopTimer("Velocity Projection");
 }

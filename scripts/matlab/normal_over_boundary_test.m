@@ -11,7 +11,7 @@ clc
 
 %read data from cuIBM output, format is as follows
 %x1,y1,x2,y2,x3,y3,x4,y4,x5,y5
-M = dlmread('/scratch/src/cuIBM/validation/luo/test/body_nodesY.csv','\t',1,0); %start on second row to avoid headers %change Y and X for different tests
+M = dlmread('/scratch/src/cuIBM/validation/luo/test/body_nodesX.csv','\t',1,0); %start on second row to avoid headers %change Y and X for different tests
 %% compare the cuibm output data to an easier to manipulate version in matlab
 for i =1:length(M)
 index = i;

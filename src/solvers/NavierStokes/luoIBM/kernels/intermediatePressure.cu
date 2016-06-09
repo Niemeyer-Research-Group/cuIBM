@@ -27,28 +27,28 @@ void intermediatePressure_luo(double *rhs2, double *uhat, double *ym, double *yp
 	double temp = 0;
 
 	//EAST
-	//if not on the east wall and east is outside the body, add east term
+	//if not on the east wall, add east term
 	if (I != nx-1)//not at east boundry
 		temp -= uhat[iu]/dx[I];
 	else if (I == nx-1)//at east boundry
 		temp -= xp[J]/dx[I];
 
 	//WEST
-	//if not on west wall and west is outside the body, add west term
+	//if not on west wall, add west term
 	if (I != 0)//not at west boundary
 		temp += uhat[iu - 1]/dx[I];
 	else if (I == 0)//at the west boundary
 		temp += xm[J]/dx[I];
 
 	//NORTH
-	//if not on north wall and north is outside the body, add north term
+	//if not on north wall, add north term
 	if (J != ny-1)//not at north boundry
 		temp -= uhat[iv]/dy[J];
 	else if (J == ny-1)//at north boundry
 		temp -= yp[(nx-1)+I]/dy[J];
 
 	//SOUTH
-	//if not on south wall and south is outside the body, add south term
+	//if not on south wall, add south term
 	if (J != 0)//not at south boundry
 		temp += uhat[iv-nx]/dy[J];
 	else if (J == 0)//at south boundry

@@ -281,7 +281,7 @@ void liftBottomTop(double *FyY, double *u, double *p, double nu, double *dx, dou
  * \param nyc number of cells in the y-direction in the control volume
  */
 __global__
-void liftUnsteady(double *FyU, double *u, double *uold, double *dx, double *dy, double dt,
+void liftUnsteady(double *FyU, double *u, double *uold, int *tagsIn, double *dx, double *dy, double dt,
                   int nx, int ny, int I, int J, int ncx, int ncy)
 {
 	int  idx = threadIdx.x + blockIdx.x*blockDim.x;
@@ -294,7 +294,7 @@ void liftUnsteady(double *FyU, double *u, double *uold, double *dx, double *dy, 
 
 	int Iv = (J-1+j)*nx + (I+i) + (nx-1)*ny;
 
-	FyU[idx] = - (u[Iv]*dx[I+i] - uold[Iv]*dx[I+i])/dt * 0.5*(dy[J+j]+dy[J-1+j]);
+	FyU[idx] = -(tagsIn[Iv] == -1) * ((u[Iv]*dx[I+i] - uold[Iv]*dx[I+i])/dt * 0.5*(dy[J+j]+dy[J-1+j]));
 }
 
 /**
