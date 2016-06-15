@@ -350,7 +350,6 @@ void NavierStokesSolver::arrayprint(cusp::array1d<double, cusp::device_memory> v
 		}
 		myfile<<"\n";
 	}
-	myfile<<name<<"\n\n";
 	myfile.close();
 	std::cout<<"printed "<<name <<"\n";
 	logger.stopTimer("output");

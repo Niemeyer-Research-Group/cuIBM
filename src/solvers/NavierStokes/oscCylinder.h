@@ -8,9 +8,9 @@
 #pragma once
 
 #include "NavierStokesSolver.h"
-#include "fadlunModified.h"
+#include "luoIBM.h"
 
-class oscCylinder : public fadlunModified
+class oscCylinder : public luoIBM
 {
 protected:
 	std::ofstream midPositionFile;

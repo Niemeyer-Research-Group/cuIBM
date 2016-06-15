@@ -8,6 +8,7 @@
 #include <solvers/NavierStokes/luoIBM/kernels/LHS2.h>
 #include <solvers/NavierStokes/NavierStokes/kernels/LHS2.h>
 #include <solvers/NavierStokes/luoIBM/kernels/weight.h>//weighting function
+#include <solvers/NavierStokes/luoIBM/kernels/intermediateVelocity.h>
 
 void luoIBM::generateRHS2()
 {
@@ -33,8 +34,32 @@ void luoIBM::generateRHS2()
 	preRHS2Interpolation();
 	
 	kernels::intermediatePressure_luo<<<grid,block>>>(rhs2_r, uhat_r, ym_r, yp_r, xm_r, xp_r, dx_r, dy_r, nx, ny);
-	NavierStokesSolver::pressure_old = NavierStokesSolver::pressure;
+	NavierStokesSolver::pressure_old = NavierStokesSolver::pressure;//flag not used anywhere
 	NavierStokesSolver::logger.stopTimer("RHS2");
+}
+
+void luoIBM::generateLHS2()
+{
+	NavierStokesSolver::logger.startTimer("LHS2");
+	int nx = domInfo ->nx,
+		ny = domInfo ->ny;
+	parameterDB  &db = *NavierStokesSolver::paramDB;
+	
+	double	dt 		= db["simulation"]["dt"].get<double>(),
+			*dx_r	= thrust::raw_pointer_cast( &(NavierStokesSolver::domInfo->dx[0]) ),
+			*dy_r	= thrust::raw_pointer_cast( &(NavierStokesSolver::domInfo->dy[0]) ),
+			*val_r	= thrust::raw_pointer_cast( &(NavierStokesSolver::LHS2.values[0]) );
+
+	int		*row_r	= thrust::raw_pointer_cast( &(NavierStokesSolver::LHS2.row_indices[0]) ),
+			*col_r	= thrust::raw_pointer_cast( &(NavierStokesSolver::LHS2.column_indices[0]) );
+
+	const int blocksize = 256;
+	dim3 grid( int( (nx*ny-0.5)/blocksize ) +1, 1);
+	dim3 block(blocksize, 1);
+	cusp::blas::fill(LHS2.values,0);
+	kernels::LHS2_mid_luo<<<grid,block>>>(row_r, col_r, val_r, dx_r, dy_r, nx, ny, dt);
+	kernels::LHS2_BC<<<grid,block>>>(row_r, col_r, val_r, dx_r, dy_r, nx,ny,dt);
+	logger.stopTimer("LHS2");
 }
 
 void luoIBM::weightPressure()
@@ -106,7 +131,6 @@ void luoIBM::weightPressure()
 									i_start, j_start, i_end, j_end, nx, ny, totalPoints,
 									a0_r, a1_r, a2_r, a3_r,
 									x1_p_r, x2_p_r, x3_p_r, x4_p_r, y1_p_r, y2_p_r, y3_p_r, y4_p_r, q1_p_r, q2_p_r, q3_p_r, q4_p_r);
-	
 	//testInterpP();
 }
 
@@ -119,7 +143,6 @@ void luoIBM::preRHS2Interpolation()
 			*by_r		= thrust::raw_pointer_cast ( &(B.y[0]) ),
 			*uB_r		= thrust::raw_pointer_cast ( &(B.uB[0]) ),
 			*vB_r		= thrust::raw_pointer_cast ( &(B.vB[0]) ),
-			
 			*yu_r		= thrust::raw_pointer_cast ( &(domInfo->yu[0]) ),
 			*xu_r		= thrust::raw_pointer_cast ( &(domInfo->xu[0]) ),
 			*yv_r		= thrust::raw_pointer_cast ( &(domInfo->yv[0]) ),
@@ -128,7 +151,7 @@ void luoIBM::preRHS2Interpolation()
 			*body_intercept_y_r = thrust::raw_pointer_cast( &(body_intercept_y[0]) ),
 			*image_point_x_r = thrust::raw_pointer_cast( &(image_point_x[0]) ),
 			*image_point_y_r = thrust::raw_pointer_cast( &(image_point_y[0]) );
-	
+
 	double	*x1_r = thrust::raw_pointer_cast ( &(x1[0]) ),
 			*x2_r = thrust::raw_pointer_cast ( &(x2[0]) ),
 			*x3_r = thrust::raw_pointer_cast ( &(x3[0]) ),
@@ -142,10 +165,10 @@ void luoIBM::preRHS2Interpolation()
 			*q3_r = thrust::raw_pointer_cast ( &(q3[0]) ),
 			*q4_r = thrust::raw_pointer_cast ( &(q4[0]) ),
 			*ip_u_r = thrust::raw_pointer_cast( &(ip_u[0]) );
-	
+
 	int 	*ghostTagsUV_r		= thrust::raw_pointer_cast ( &(ghostTagsUV[0]) ),
 			*hybridTagsUV_r		= thrust::raw_pointer_cast ( &(hybridTagsUV[0]) );
-		
+
 	parameterDB  &db = *paramDB;
 	double	nu = db["flow"]["nu"].get<double>();
 	double	dt = db["simulation"]["dt"].get<double>();
@@ -159,12 +182,12 @@ void luoIBM::preRHS2Interpolation()
 		height_j = B.numCellsY[0],
 		i_end = i_start + width_i,
 		j_end = j_start + height_j;
-	
+
 	const int blocksize = 256;
 	dim3 grid( int( (width_i*height_j-0.5)/blocksize ) +1, 1);
 	dim3 block(blocksize, 1);
-	
-	//interpolate velocity to image point and ghost node
+
+	//interpolate uhat to image point and ghost node
 	kernels::interpolateVelocityToGhostNodeX<<<grid,block>>>(uhat_r, ghostTagsUV_r, bx_r, by_r, uB_r, yu_r, xu_r,
 													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
 													i_start, j_start, i_end, j_end, nx, ny, totalPoints,
@@ -173,116 +196,4 @@ void luoIBM::preRHS2Interpolation()
 													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
 													i_start, j_start, i_end, j_end, nx, ny, totalPoints,
 													x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r,ip_u_r);
-}
-
-void luoIBM::generateLHS2()
-{
-	NavierStokesSolver::logger.startTimer("LHS2");
-	int nx = domInfo ->nx,
-		ny = domInfo ->ny;
-	parameterDB  &db = *NavierStokesSolver::paramDB;
-	
-	double	dt 		= db["simulation"]["dt"].get<double>(),
-			*dx_r	= thrust::raw_pointer_cast( &(NavierStokesSolver::domInfo->dx[0]) ),
-			*dy_r	= thrust::raw_pointer_cast( &(NavierStokesSolver::domInfo->dy[0]) ),
-			*val_r	= thrust::raw_pointer_cast( &(NavierStokesSolver::LHS2.values[0]) );
-
-	int		*row_r	= thrust::raw_pointer_cast( &(NavierStokesSolver::LHS2.row_indices[0]) ),
-			*col_r	= thrust::raw_pointer_cast( &(NavierStokesSolver::LHS2.column_indices[0]) );
-
-	const int blocksize = 256;
-	dim3 grid( int( (nx*ny-0.5)/blocksize ) +1, 1);
-	dim3 block(blocksize, 1);
-	cusp::blas::fill(LHS2.values,0);
-	kernels::LHS2_mid_luo<<<grid,block>>>(row_r, col_r, val_r, dx_r, dy_r, nx, ny, dt);
-	kernels::LHS2_BC<<<grid,block>>>(row_r, col_r, val_r, dx_r, dy_r, nx,ny,dt);
-	logger.stopTimer("LHS2");
-}
-
-void luoIBM::testInterpP()
-{
-	std::cout<<"Outputing for interpolation of the p values\n";
-	int ip;
-	int nx = NavierStokesSolver::domInfo->nx,
-		i_start = B.startI[0],
-		j_start = B.startJ[0],
-		width_i = B.numCellsX[0],
-		height_j = B.numCellsY[0],
-		i_end = i_start + width_i,
-		j_end = j_start + height_j;
-	std::ofstream body_nodes;
-	parameterDB  &db = *NavierStokesSolver::paramDB;
-	std::string folder = db["inputs"]["caseFolder"].get<std::string>();
-	std::stringstream out;
-	out << folder << "/interp_testP.csv";
-	body_nodes.open(out.str().c_str());
-	body_nodes <<	"BN_X1\t"
-					"BN_Y1\t"
-					"BN_X2\t"
-					"BN_Y2\t"
-					"GN_X\t"
-					"GN_Y\t"
-					"BI_X\t"
-					"BI_Y\t"
-					"IP_X\t"
-					"IP_Y\t"
-					"x1\t"
-					"x2\t"
-					"x3\t"
-					"x4\t"
-					"y1\t"
-					"y2\t"
-					"y3\t"
-					"y4\t"
-					"q1\t"
-					"q2\t"
-					"q3\t"
-					"q4\t"
-					"p*\t"
-					"a0\t"
-					"a1\t"
-					"a2\t"
-					"a3\n"
-					;
-	for (int J=j_start;  J<j_end;  J++)
-	{
-		for (int I=i_start;  I<i_end;  I++)
-		{
-			ip = J*nx + I;
-			if (ghostTagsP[ip] >0)//for inside
-			//if (hybridTagsP[ip] >0)//for outside
-			{
-				//std::cout<<I<<"\t"<<J<<"\t"<<iv<<"\n";
-				body_nodes << x1_ip_p[ip]<<"\t";
-				body_nodes << y1_ip_p[ip]<<"\t";
-				body_nodes << x2_ip_p[ip]<<"\t";
-				body_nodes << y2_ip_p[ip]<<"\t";
-				body_nodes << domInfo->xv[I]<<"\t";
-				body_nodes << domInfo->yu[J]<<"\t";
-				body_nodes << body_intercept_p_x[ip] <<"\t";
-				body_nodes << body_intercept_p_y[ip] <<"\t";
-				body_nodes << image_point_p_x[ip] <<"\t";
-				body_nodes << image_point_p_y[ip] <<"\t";
-				body_nodes << x1_p[ip] <<"\t";
-				body_nodes << x2_p[ip] <<"\t";
-				body_nodes << x3_p[ip] <<"\t";
-				body_nodes << x4_p[ip] <<"\t";
-				body_nodes << y1_p[ip] <<"\t";
-				body_nodes << y2_p[ip] <<"\t";
-				body_nodes << y3_p[ip] <<"\t";
-				body_nodes << y4_p[ip] <<"\t";
-				body_nodes << q1_p[ip] <<"\t";
-				body_nodes << q2_p[ip] <<"\t";
-				body_nodes << q3_p[ip] <<"\t";
-				body_nodes << q4_p[ip] <<"\t";
-				body_nodes << pressure[ip] <<"\t";//outside
-				body_nodes << a0[ip] <<"\t";
-				body_nodes << a1[ip] <<"\t";
-				body_nodes << a2[ip] <<"\t";
-				body_nodes << a3[ip] <<"\n";
-				
-			}
-		}
-	}
-	body_nodes.close();
 }

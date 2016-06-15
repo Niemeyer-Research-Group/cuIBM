@@ -3,9 +3,7 @@
  * \author Christopher Minar (minarc@oregonstate.edu)
  * \brief functions to invoke the kernels that update the velocity
  */
-
 #include <solvers/NavierStokes/luoIBM/kernels/projectVelocity.h>
-
 void luoIBM::velocityProjection()
 {
 	logger.startTimer("Velocity Projection");

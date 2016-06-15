@@ -94,22 +94,30 @@ protected:
 	void updateRobinBoundary();
 	void weightUhat();
 	void preRHS1Interpolation();
-	void testInterpX();
-	void testInterpY();
+	void zeroVelocity();
 
 	//////////////////////////
 	//intermediatePressure.inl
 	//////////////////////////
 	void preRHS2Interpolation();
 	void weightPressure();
-	void testInterpP();
+
 
 	//////////////////////////
 	//tagpoints.inl
 	//////////////////////////
 	void tagPoints();
-	void testOutputX();
-	void testOutputY();
+
+	//////////////////////////
+	//tagpoints.inl
+	//////////////////////////
+	void divergence();
+	void testInterpX(); //x
+	void testInterpY(); //y
+	void testInterpP(); //for pressure
+	void testOutputX(); //for tagpoipnts
+	void testOutputY(); //for tagpoints
+
 
 public:
 	//constructor -- copy the database and information about the computational grid
@@ -122,6 +130,7 @@ public:
 	virtual void initialiseLHS();
 	virtual void writeData();
 	virtual void writeCommon();
+	void outputPressure();
 	virtual void stepTime();
 	virtual void shutDown();
 

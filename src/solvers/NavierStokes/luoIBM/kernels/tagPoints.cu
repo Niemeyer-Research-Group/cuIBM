@@ -15,7 +15,7 @@ void tag_u_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *
 			double *body_intercept_x, double *body_intercept_y, double *image_point_x, double *image_point_y,
 			double *x1, double *y1, double *x2, double *y2, //testing
 			double *distance_from_intersection_to_node, double *distance_between_nodes_at_IB, double *distance_from_u_to_body, double *distance_from_v_to_body, double *uv,
-			int i_start, int j_start, int i_end, int j_end, int nx, int ny, int totalPoints, double midX, double midY)
+			int i_start, int j_start, int i_end, int j_end, int nx, int ny, int totalPoints, double midX, double midY) //flag, distance from u to body not used for luo
 {
 	// calculate indices
 	int idx	= threadIdx.x + blockDim.x * blockIdx.x,

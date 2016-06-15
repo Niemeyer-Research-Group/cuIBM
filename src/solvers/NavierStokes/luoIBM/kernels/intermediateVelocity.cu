@@ -22,7 +22,7 @@ void zeroInside(int *ghostTags, double *value, int points)
 	int 	i 	= threadIdx.x + (blockDim.x * blockIdx.x);
 
 	//		  if not inside
-	value[i] = (ghostTags[i] == -1) * value[i];
+	value[i] = (ghostTags[i] != 0) * value[i];
 }
 
 __global__//note dx and dy must be equal and uniform at the point the boundary atm for the second line (forcing for the inside) to work

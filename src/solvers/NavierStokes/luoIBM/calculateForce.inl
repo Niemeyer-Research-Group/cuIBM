@@ -55,7 +55,7 @@ void luoIBM::calculateForce()
 
 	dim3 dimGridX( int( ( (B.numCellsX[0]+1)*B.numCellsY[0]-0.5 )/blockSize )+1, 1 );
 	kernels::dragUnsteady <<<dimGridX, dimBlock>>> (FxU_r, u_r, uold_r, ghostTagsUV_r, dx, dy, dt, \
-	                                                nx, ny, B.startI[0], B.startJ[0], B.numCellsX[0], B.numCellsY[0]);//flag why does drag need tags and lift doesn't?
+	                                                nx, ny, B.startI[0], B.startJ[0], B.numCellsX[0], B.numCellsY[0]);
 
 	fxx = thrust::reduce(FxX.begin(), FxX.end());
 	fxy = thrust::reduce(FxY.begin(), FxY.end());
@@ -68,9 +68,9 @@ void luoIBM::calculateForce()
 		FyY(B.numCellsX[0]),
 		FyU((B.numCellsX[0]+1)*B.numCellsY[0]);
 
-	double *FyX_r = thrust::raw_pointer_cast(&FyX[0]),
-	     *FyY_r = thrust::raw_pointer_cast(&FyY[0]),
-	     *FyU_r = thrust::raw_pointer_cast(&FyU[0]);
+	double	*FyX_r = thrust::raw_pointer_cast(&FyX[0]),
+			*FyY_r = thrust::raw_pointer_cast(&FyY[0]),
+			*FyU_r = thrust::raw_pointer_cast(&FyU[0]);
 
 	kernels::liftLeftRight <<<dimGrid, dimBlock>>> (FyX_r, u_r, nu, dx, dy, \
 	                                                nx, ny, B.startI[0], B.startJ[0], B.numCellsX[0], B.numCellsY[0]);

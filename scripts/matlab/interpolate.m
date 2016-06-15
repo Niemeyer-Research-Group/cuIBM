@@ -1,3 +1,4 @@
+%testing the bilinear interpolation method
 function f = interpolate(x, y, q)
 a11 = 1;  a12 = x(1);  a13 = y(1); a14 = x(1)*y(1);
 a21 = 1;  a22 = x(2);  a23 = y(2); a24 = x(2)*y(2);

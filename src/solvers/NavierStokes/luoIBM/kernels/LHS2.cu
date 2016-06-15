@@ -57,7 +57,7 @@ void LHS2_mid_luo(int *row, int *col, double *val, double *dx, double *dy, int n
 	//do some jank so the solver works, although this modifies the matricies it doesn't really change the results //flag
 	if(row[numE]==col[numE] && col[numE]==(ny/2)*nx+nx/2)
 	{
-		val[numE] += val[numE];
+		//val[numE] += val[numE];
 	}
 }
 }

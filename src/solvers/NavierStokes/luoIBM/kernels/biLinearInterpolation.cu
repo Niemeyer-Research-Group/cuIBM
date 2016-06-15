@@ -790,6 +790,8 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 	 pressureStar[ip] = a0[ip] + a1[ip]*xv[I] + a2[ip]*yu[J] + a3[ip]*xv[I]*yu[J];
 }
 
+//YOU ARE HERE
+//SOMETHING IN THIS FUNCTION IS CAUSING THE PRESSURE VALUES to be wrong
 __global__
 void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP, double *bx, double *by,
 									double *uB, double *uB0, double *vB, double  *vB0, double *yu, double *xv,
@@ -1041,23 +1043,68 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 	 * interpolate for a value using the newly formed function
 	 * p= @(X,Y) a(1) + a(2)*X + a(3)*Y + a(4)*X*Y;
 	 */
-	 a0[ip] = b11/detA*q1[ip]  +  b12/detA*q2[ip]  +  b13/detA*q3[ip]  +  b14/detA*q4[ip];
-	 a1[ip] = b21/detA*q1[ip]  +  b22/detA*q2[ip]  +  b23/detA*q3[ip]  +  b24/detA*q4[ip];
-	 a2[ip] = b31/detA*q1[ip]  +  b32/detA*q2[ip]  +  b33/detA*q3[ip]  +  b34/detA*q4[ip];
-	 a3[ip] = b41/detA*q1[ip]  +  b42/detA*q2[ip]  +  b43/detA*q3[ip]  +  b44/detA*q4[ip];
-	 //pressure at the image point
-	 double image_point_pressure = a0[ip] + a1[ip]*image_point_p_x[ip] + a2[ip]*image_point_p_y[ip] + a3[ip]*image_point_p_y[ip]*image_point_p_x[ip];
-	 //interpolate pressure to the ghost node
-	 double matD = 0;
-	 if (close_index == index1)
-		 matD = -q1[ip];
-	 if (close_index == index2)
-		 matD = -q2[ip];
-	 if (close_index == index3)
-		 matD = -q3[ip];
-	 if (close_index == index4)
-		 matD = -q4[ip];
-	 pressure[ip] = image_point_pressure + sqrt(pow(image_point_p_x[ip]-xv[I],2)+pow(image_point_p_y[ip]-yu[ip],2))*matD;
+	a0[ip] = b11/detA*q1[ip]  +  b12/detA*q2[ip]  +  b13/detA*q3[ip]  +  b14/detA*q4[ip];
+	a1[ip] = b21/detA*q1[ip]  +  b22/detA*q2[ip]  +  b23/detA*q3[ip]  +  b24/detA*q4[ip];
+	a2[ip] = b31/detA*q1[ip]  +  b32/detA*q2[ip]  +  b33/detA*q3[ip]  +  b34/detA*q4[ip];
+	a3[ip] = b41/detA*q1[ip]  +  b42/detA*q2[ip]  +  b43/detA*q3[ip]  +  b44/detA*q4[ip];
+	//pressure at the image point
+	double image_point_pressure = a0[ip] + a1[ip]*image_point_p_x[ip] + a2[ip]*image_point_p_y[ip] + a3[ip]*image_point_p_y[ip]*image_point_p_x[ip];
+	//interpolate pressure to the ghost node
+	double matD = 0;
+	if (close_index == index1)
+	{
+		n_x = image_point_p_x[index1] - body_intercept_p_x[index1];
+		n_y = image_point_p_y[index1] - body_intercept_p_y[index1];
+		nl = sqrt(n_x*n_x+n_y*n_y);
+		du_dt = uB[0] - uB0[0];
+		u_du_dx = uB[0]*((u[iu]+u[iu-1]+u[iu-(nx-1)]+u[iu-(nx-1)-1])/4 - uB[0])/(xv[I]-body_intercept_p_x[index1]); //flag the indexing for xv, yu for this is all wrong if were not at the closest BI
+		v_du_dy = vB[0]*(u[iu-1]-uB[0])/(yu[J]-body_intercept_p_y[index1]);
+		dv_dt = vB[0] - vB0[0];
+		u_dv_dx = uB[0]*(u[iv-nx]-vB[0])/(xv[I]-body_intercept_p_x[index1]);
+		v_dv_dy = vB[0]*((u[iv]+u[iv-nx]+u[iv-1]+u[iv-nx-1])/4 - vB[0])/(yu[J]-body_intercept_p_y[index1]);
+		q1[ip] = -(n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt + u_dv_dx + v_dv_dy));
+		matD = (n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt + u_dv_dx + v_dv_dy));
+	}
+	else if (close_index == index2)
+	{
+		n_x = image_point_p_x[index2] - body_intercept_p_x[index2];
+		n_y = image_point_p_y[index2] - body_intercept_p_y[index2];
+		nl = sqrt(n_x*n_x+n_y*n_y);
+		du_dt = uB[0] - uB0[0];//flag doesn't work for rotating bodies
+		u_du_dx = uB[0]*(uB[0] - (u[iu]+u[iu-1]+u[iu-(nx-1)]+u[iu-(nx-1)-1])/4)/(body_intercept_p_x[index2]-xv[I]); //flag this approximation of du/dx might be too rough as we are calculating our u values at different heights. One point is the body intercept and the second point is the v node between poitns 1 and 2
+		v_du_dy = vB[0]*(u[iu] -uB[0])/(yu[J]-body_intercept_p_y[index2]);
+		dv_dt = vB[0] - vB0[0];
+		u_dv_dx = uB[0]*(vB[0]-u[iv-nx])/(body_intercept_p_x[index2]-xv[I]);
+		v_dv_dy = vB[0]*((u[iv]+u[iv-nx]+u[iv+1]+u[iv-nx+1])/4 - vB[0])/(yu[J]-body_intercept_p_y[index2]);
+		matD = (n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt+u_dv_dx + v_dv_dy));
+	}
+	else if (close_index == index3)
+	{
+		n_x = image_point_p_x[index3] - body_intercept_p_x[index3];
+		n_y = image_point_p_y[index3] - body_intercept_p_y[index3];
+		nl = sqrt(n_x*n_x+n_y*n_y);
+		du_dt = uB[0] - uB0[0];//flag doesn't work for rotating bodies
+		u_du_dx = uB[0]*((u[iu]+u[iu-1]+u[iu+(nx-1)]+u[iu+(nx-1)-1])/4 - uB[0])/(xv[I]-body_intercept_p_x[index3]); //flag this approximation of du/dx might be too rough as we are calculating our u values at different heights. One point is the body intercept and the second point is the v node between poitns 1 and 2
+		v_du_dy = vB[0]*(uB[0] - u[iu-1])/(body_intercept_p_y[index3] - yu[J]);
+		dv_dt = vB[0] - vB0[0];
+		u_dv_dx = uB[0]*(u[iv]-vB[0])/(xv[I]-body_intercept_p_x[index3]);
+		v_dv_dy = vB[0]*(vB[0]- (u[iv]+u[iv-nx]+u[iv-1]+u[iv-nx-1])/4)/(body_intercept_p_y[index3]-yu[J]);
+		matD = (n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt+u_dv_dx + v_dv_dy));
+	}
+	else if (close_index == index4)
+	{
+		n_x = image_point_p_x[index4] - body_intercept_p_x[index4];
+		n_y = image_point_p_y[index4] - body_intercept_p_y[index4];
+		nl = sqrt(n_x*n_x+n_y*n_y);
+		du_dt = uB[0] - uB0[0];//flag doesn't work for rotating bodies
+		u_du_dx = uB[0]*(uB[0] - (u[iu]+u[iu-1]+u[iu+(nx-1)]+u[iu+(nx-1)-1])/4)/(body_intercept_p_x[index4]-xv[I]); //flag this approximation of du/dx might be too rough as we are calculating our u values at different heights. One point is the body intercept and the second point is the v node between poitns 1 and 2
+		v_du_dy = vB[0]*(uB[0] - u[iu])/(body_intercept_p_y[index4]-yu[J]);
+		dv_dt = vB[0] - vB0[0];
+		u_dv_dx = uB[0]*(vB[0]-u[iv])/(body_intercept_p_x[index4]-xv[I]);
+		v_dv_dy = vB[0]*(vB[0]- (u[iv]+u[iv-nx]+u[iv+1]+u[iv-nx+1])/4)/(body_intercept_p_y[index4]-yu[J]);
+		matD = (n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt+u_dv_dx + v_dv_dy));
+	}
+	pressure[ip] = image_point_pressure + sqrt(pow(image_point_p_x[ip]-xv[I],2)+pow(image_point_p_y[ip]-yu[ip],2))*matD;
 }
 
 }

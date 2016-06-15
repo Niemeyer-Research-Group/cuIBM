@@ -26,14 +26,15 @@ oscCylinder::oscCylinder(parameterDB *pDB, domain *dInfo)
  */
 void oscCylinder::writeData()
 {
-	parameterDB  &db = *NavierStokesSolver::paramDB;
+	luoIBM::writeData();
+	/*parameterDB  &db = *paramDB;
 	double dt  = db["simulation"]["dt"].get<double>();
-	NavierStokesSolver::logger.startTimer("output");
+	logger.startTimer("output");
 	writeCommon();
-	if (NavierStokesSolver::timeStep == 0)
+	if (timeStep == 0)
 		forceFile<<"timestep\tFx\tFxX\tFxY\tFxU\tFy\n";
 	forceFile << timeStep*dt << '\t' << B.forceX[0] << '\t'<<fxx<<"\t"<<fxy<<"\t"<<fxu<<"\t" << B.forceY[0] << std::endl;
-	logger.stopTimer("output");
+	logger.stopTimer("output");*/
 }
 
 /**
@@ -44,8 +45,8 @@ void oscCylinder::writeData()
  */
 void oscCylinder::writeCommon()
 {
-	fadlunModified::writeCommon();
-	midPositionFile << timeStep << '\t' << B.midX << '\t' << B.midY <<std::endl;
+	/*luoIBM::writeCommon();
+	midPositionFile << timeStep << '\t' << B.midX << '\t' << B.midY <<std::endl;*/
 }
 
 /*
@@ -57,18 +58,18 @@ void oscCylinder::writeCommon()
  */
 void oscCylinder::updateSolver()
 {
-	fadlunModified::B.calculateCellIndices(*NavierStokesSolver::domInfo);
-	fadlunModified::B.calculateBoundingBoxes(*NavierStokesSolver::paramDB, *NavierStokesSolver::domInfo);
-	fadlunModified::tagPoints();
-	fadlunModified::generateLHS1();//is this needed?
-	fadlunModified::generateLHS2();
+	/*B.calculateCellIndices(*domInfo);
+	B.calculateBoundingBoxes(*paramDB, *domInfo);
+	tagPoints();
+	generateLHS1();//is this needed?
+	generateLHS2();
 
-	NavierStokesSolver::logger.startTimer("Preconditioner");
-	if (NavierStokesSolver::iterationCount2 > 100)
+	logger.startTimer("Preconditioner");
+	if (iterationCount2 > 100)
 	{
-		NavierStokesSolver::PC.update(NavierStokesSolver::LHS1, NavierStokesSolver::LHS2);
+		PC.update(LHS1, LHS2);
 	}
-	NavierStokesSolver::logger.stopTimer("Preconditioner");
+	logger.stopTimer("Preconditioner");*/
 }
 
 /*
@@ -77,34 +78,34 @@ void oscCylinder::updateSolver()
  */
 void oscCylinder::moveBody()
 {
-	parameterDB  &db = *NavierStokesSolver::paramDB;
-	fadlunModified::calculateForce();
+	/*parameterDB  &db = *paramDB;
+	luoIBM::calculateForce();
 
-	double *x_r	= thrust::raw_pointer_cast( &(fadlunModified::B.x[0]) ),
-		   *uB_r= thrust::raw_pointer_cast( &(fadlunModified::B.uB[0]) );
+	double *x_r	= thrust::raw_pointer_cast( &(B.x[0]) ),
+		   *uB_r= thrust::raw_pointer_cast( &(B.uB[0]) );
 	double	dt	= db["simulation"]["dt"].get<double>(),
 			nu	= db["flow"]["nu"].get<double>(),
-			t = dt*NavierStokesSolver::timeStep,
+			t = dt*timeStep,
 			D = 1.0,
 			uMax = 100*nu/D, //Re
 			f = uMax*D/5.0, //KC
 			A = uMax/(M_PI*2.0*f), //umax
-			totalPoints=fadlunModified::B.totalPoints,
-			xold= fadlunModified::B.midX,
+			totalPoints=B.totalPoints,
+			xold= B.midX,
 			unew,
 			xnew;
 
 	//calc new velocity and position
 	xnew = A*cos(2*M_PI*f*t);
 	unew = -A*2*M_PI*f*sin(2*M_PI*f*t);
-	fadlunModified::B.centerVelocityU = unew;
-	fadlunModified::B.midX = xnew;
+	B.centerVelocityU = unew;
+	B.midX = xnew;
 
 	const int blocksize = 256;
 	dim3 grid( int( (totalPoints)/blocksize ) +1, 1);
 	dim3 block(blocksize, 1);
 	kernels::update_body_viv<<<grid,block>>>(x_r, uB_r, xnew-xold, unew, totalPoints);
-
+	 */
 }
 
 /*
@@ -112,39 +113,39 @@ void oscCylinder::moveBody()
  */
 void oscCylinder::initialise()
 {
-	fadlunModified::initialise();
+	/*luoIBM::initialise();
 
 	//output
-	parameterDB  &db = *NavierStokesSolver::paramDB;
+	parameterDB  &db = *paramDB;
 	std::string folder = db["inputs"]["caseFolder"].get<std::string>();
 	std::stringstream outPosition;
 	outPosition << folder <<"/midPosition";
 	midPositionFile.open(outPosition.str().c_str());
 
-	double *x_r	= thrust::raw_pointer_cast( &(fadlunModified::B.x[0]) ),
-		   *uB_r= thrust::raw_pointer_cast( &(fadlunModified::B.uB[0]) );
+	double *x_r	= thrust::raw_pointer_cast( &(B.x[0]) ),
+		   *uB_r= thrust::raw_pointer_cast( &(B.uB[0]) );
 	double	dt	= db["simulation"]["dt"].get<double>(),
 			nu	= db["flow"]["nu"].get<double>(),
-			t = dt*NavierStokesSolver::timeStep,
+			t = dt*timeStep,
 			D = 1.0,
 			uMax = 100*nu/D, //Re
 			f = uMax*D/5.0, //KC
 			A = uMax/(M_PI*2.0*f), //umax
-			totalPoints=fadlunModified::B.totalPoints,
-			xold= fadlunModified::B.midX,
+			totalPoints=B.totalPoints,
+			xold= B.midX,
 			unew,
 			xnew;
 
 	//calc new velocity and position
 	xnew = A*cos(2*M_PI*f*t);
 	unew = -A*2*M_PI*f*sin(2*M_PI*f*t);
-	fadlunModified::B.centerVelocityU = unew;
-	fadlunModified::B.midX = xnew;
+	B.centerVelocityU = unew;
+	B.midX = xnew;
 
 	const int blocksize = 256;
 	dim3 grid( int( (totalPoints)/blocksize ) +1, 1);
 	dim3 block(blocksize, 1);
-	kernels::update_body_viv<<<grid,block>>>(x_r, uB_r, xnew-xold, unew, totalPoints);
+	kernels::update_body_viv<<<grid,block>>>(x_r, uB_r, xnew-xold, unew, totalPoints);*/
 }
 
 /**
@@ -152,33 +153,34 @@ void oscCylinder::initialise()
  */
 void oscCylinder::stepTime()
 {
-	fadlunModified::generateRHS1();
+	luoIBM::stepTime();
+	/*generateRHS1();
 	//arrayprint(tags,"tags","x");
 	//arrayprint(tagsP,"tagsP","p");
 	//arrayprint(distance_from_u_to_body,"dub","p");
 	//arrayprint(distance_from_v_to_body,"dvb","p");
-	NavierStokesSolver::solveIntermediateVelocity();
+	solveIntermediateVelocity();
 	//arrayprint(uhat,"uhat","x");
 
-	fadlunModified::generateRHS2();
+	generateRHS2();
 	//arrayprint(rhs2,"rhs2","p");
-	NavierStokesSolver::solvePoisson();
+	solvePoisson();
 
-	fadlunModified::velocityProjection();
+	velocityProjection();
 	//arrayprint(u,"u","x");
 
 	//Release the body after a certain timestep
-	if (NavierStokesSolver::timeStep >= (*NavierStokesSolver::paramDB)["simulation"]["startStep"].get<int>())
+	if (timeStep >= (*paramDB)["simulation"]["startStep"].get<int>())
 	{
 		moveBody();
 		updateSolver();
 	}
 	std::cout<<timeStep<<std::endl;
-	NavierStokesSolver::timeStep++;
+	timeStep++;
 	if (timeStep%(*paramDB)["simulation"]["nsave"].get<int>() == 0)
 	{
 		//arrayprint(u,"u","x");
-	}
+	}*/
 }
 
 /**
@@ -186,6 +188,6 @@ void oscCylinder::stepTime()
  */
 void oscCylinder::shutDown()
 {
-	fadlunModified::shutDown();
-	midPositionFile.close();
+	luoIBM::shutDown();
+	//midPositionFile.close();
 }

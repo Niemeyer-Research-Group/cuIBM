@@ -8,8 +8,6 @@
 #include <solvers/NavierStokes/luoIBM/kernels/intermediateVelocity.h>//updaterhs1_luo, zeroInside
 #include <solvers/NavierStokes/luoIBM/kernels/LHS1.h> //generatelhs_luo _mid
 #include <solvers/NavierStokes/NavierStokes/kernels/LHS1.h> //lhs_bc
-#include <solvers/NavierStokes/NavierStokes/kernels/N.h> //genN
-#include <solvers/NavierStokes/NavierStokes/kernels/L.h> //genL
 #include <solvers/NavierStokes/FadlunModified/kernels/intermediateVelocity.h> //updateboundary
 #include <solvers/NavierStokes/luoIBM/kernels/biLinearInterpolation.h> //interpolate
 #include <solvers/NavierStokes/luoIBM/kernels/weight.h>//weighting function
@@ -212,7 +210,6 @@ void luoIBM::preRHS1Interpolation()
 	const int blocksize = 256;
 	dim3 grid( int( (width_i*height_j-0.5)/blocksize ) +1, 1);
 	dim3 block(blocksize, 1);
-	
 	//interpolate velocity to image point and ghost node
 	kernels::interpolateVelocityToGhostNodeX<<<grid,block>>>(u_r, ghostTagsUV_r, bx_r, by_r, uB_r, yu_r, xu_r,
 													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
@@ -222,6 +219,7 @@ void luoIBM::preRHS1Interpolation()
 													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
 													i_start, j_start, i_end, j_end, nx, ny, totalPoints,
 													x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r,ip_u_r);
+	zeroVelocity();
 	//interpolate velocity to hybrid node
 	kernels::interpolateVelocityToHybridNodeX<<<grid,block>>>(u_r, ustar_r, hybridTagsUV_r, bx_r, by_r, uB_r, yu_r, xu_r,
 													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
@@ -231,171 +229,18 @@ void luoIBM::preRHS1Interpolation()
 													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
 													i_start, j_start, i_end, j_end, nx, ny, totalPoints,
 													x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r);
-
 	//testInterpX();
 	//testInterpY();
-	
 }
 
-void luoIBM::testInterpX()
+void luoIBM::zeroVelocity()
 {
-	std::cout<<"Outputing for interpolation of the u values\n";
-	int iu;
-	int nx = NavierStokesSolver::domInfo->nx,
-		i_start = B.startI[0],
-		j_start = B.startJ[0],
-		width_i = B.numCellsX[0],
-		height_j = B.numCellsY[0],
-		i_end = i_start + width_i,
-		j_end = j_start + height_j;
-	std::ofstream body_nodes;
-	parameterDB  &db = *NavierStokesSolver::paramDB;
-	std::string folder = db["inputs"]["caseFolder"].get<std::string>();
-	std::stringstream out;
-	out << folder << "/interp_testX.csv";
-	body_nodes.open(out.str().c_str());
-	body_nodes << "BN_X1\t"
-					"BN_Y1\t"
-					"BN_X2\t"
-					"BN_Y2\t"
-					"GN_X\t"
-					"GN_Y\t"
-					"BI_X\t"
-					"BI_Y\t"
-					"IP_X\t"
-					"IP_Y\t"
-					"x1\t"
-					"x2\t"
-					"x3\t"
-					"x4\t"
-					"y1\t"
-					"y2\t"
-					"y3\t"
-					"y4\t"
-					"q1\t"
-					"q2\t"
-					"q3\t"
-					"q4\t"
-					"GN_U\t"
-					"ip_u\n"
-			;
-	for (int J=j_start;  J<j_end;  J++)
-	{
-		for (int I=i_start;  I<i_end;  I++)
-		{
-			iu = J*(nx-1) + I;
-			if (ghostTagsUV[iu] >0)//for inside
-			//if (hybridTagsUV[iu] >0)//for outside
-			{
-				body_nodes << x1_ip[iu]<<"\t";
-				body_nodes << y1_ip[iu]<<"\t";
-				body_nodes << x2_ip[iu]<<"\t";
-				body_nodes << y2_ip[iu]<<"\t";
-				body_nodes << domInfo->xu[I]<<"\t";
-				body_nodes << domInfo->yu[J]<<"\t";
-				body_nodes << body_intercept_x[iu] <<"\t";
-				body_nodes << body_intercept_y[iu] <<"\t";
-				body_nodes << image_point_x[iu] <<"\t";
-				body_nodes << image_point_y[iu] <<"\t";
-				body_nodes << x1[iu] <<"\t";
-				body_nodes << x2[iu] <<"\t";
-				body_nodes << x3[iu] <<"\t";
-				body_nodes << x4[iu] <<"\t";
-				body_nodes << y1[iu] <<"\t";
-				body_nodes << y2[iu] <<"\t";
-				body_nodes << y3[iu] <<"\t";
-				body_nodes << y4[iu] <<"\t";
-				body_nodes << q1[iu] <<"\t";
-				body_nodes << q2[iu] <<"\t";
-				body_nodes << q3[iu] <<"\t";
-				body_nodes << q4[iu] <<"\t";
-				body_nodes << u[iu] <<"\t";//inside
-				//body_nodes << ustar[iu] <<"\t";//outside
-				body_nodes << ip_u[iu]<<"\n";
-			}
-		}
-	}
-	body_nodes.close();
-}
-
-void luoIBM::testInterpY()
-{
-	std::cout<<"Outputing for interpolation of the v values\n";
-	int iv;
-	int nx = NavierStokesSolver::domInfo->nx,
-		ny = domInfo->ny,
-		i_start = B.startI[0],
-		j_start = B.startJ[0],
-		width_i = B.numCellsX[0],
-		height_j = B.numCellsY[0],
-		i_end = i_start + width_i,
-		j_end = j_start + height_j;
-	std::ofstream body_nodes;
-	parameterDB  &db = *NavierStokesSolver::paramDB;
-	std::string folder = db["inputs"]["caseFolder"].get<std::string>();
-	std::stringstream out;
-	out << folder << "/interp_testY.csv";
-	body_nodes.open(out.str().c_str());
-	body_nodes <<	"BN_X1\t"
-					"BN_Y1\t"
-					"BN_X2\t"
-					"BN_Y2\t"
-					"GN_X\t"
-					"GN_Y\t"
-					"BI_X\t"
-					"BI_Y\t"
-					"IP_X\t"
-					"IP_Y\t"
-					"x1\t"
-					"x2\t"
-					"x3\t"
-					"x4\t"
-					"y1\t"
-					"y2\t"
-					"y3\t"
-					"y4\t"
-					"q1\t"
-					"q2\t"
-					"q3\t"
-					"q4\t"
-					"GN_U\t"
-					"ip_u\n";
-	for (int J=j_start;  J<j_end;  J++)
-	{
-		for (int I=i_start;  I<i_end;  I++)
-		{
-			iv = J*nx + I  +  ny*(nx-1);
-			if (ghostTagsUV[iv] >0)//for inside
-			//if (hybridTagsUV[iv] >0)//for outside
-			{
-				//std::cout<<I<<"\t"<<J<<"\t"<<iv<<"\n";
-				body_nodes << x1_ip[iv]<<"\t";
-				body_nodes << y1_ip[iv]<<"\t";
-				body_nodes << x2_ip[iv]<<"\t";
-				body_nodes << y2_ip[iv]<<"\t";
-				body_nodes << domInfo->xv[I]<<"\t";
-				body_nodes << domInfo->yv[J]<<"\t";
-				body_nodes << body_intercept_x[iv] <<"\t";
-				body_nodes << body_intercept_y[iv] <<"\t";
-				body_nodes << image_point_x[iv] <<"\t";
-				body_nodes << image_point_y[iv] <<"\t";
-				body_nodes << x1[iv] <<"\t";
-				body_nodes << x2[iv] <<"\t";
-				body_nodes << x3[iv] <<"\t";
-				body_nodes << x4[iv] <<"\t";
-				body_nodes << y1[iv] <<"\t";
-				body_nodes << y2[iv] <<"\t";
-				body_nodes << y3[iv] <<"\t";
-				body_nodes << y4[iv] <<"\t";
-				body_nodes << q1[iv] <<"\t";
-				body_nodes << q2[iv] <<"\t";
-				body_nodes << q3[iv] <<"\t";
-				body_nodes << q4[iv] <<"\t";
-				body_nodes << u[iv]  <<"\t";//inside
-				//body_nodes << ustar[iv] <<"\t";//outside
-				body_nodes << ip_u[iv]<<"\n";
-			}
-		}
-	}
-	body_nodes.close();
+	double	*u_r 				= thrust::raw_pointer_cast ( &(u[0]) );
+	int 	*ghostTagsUV_r		= thrust::raw_pointer_cast ( &(ghostTagsUV[0]) );
+	int nx = domInfo ->nx,
+		ny = domInfo ->ny;
+	const int blocksize = 256;
+	dim3 grid( int( (nx*(ny-1) + (nx-1)*ny-0.5)/blocksize ) +1, 1);
+	dim3 block(blocksize, 1);
+	kernels::zeroInside<<<grid,block>>>(ghostTagsUV_r, u_r, nx*(ny-1) + (nx-1)*ny);
 }

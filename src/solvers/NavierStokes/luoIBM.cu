@@ -105,6 +105,11 @@ void luoIBM::initialise()
 	B.initialise((*paramDB), *domInfo);
 	std::cout << "Initialised bodies!" << std::endl;
 
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	//Initialize Velocity
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	zeroVelocity();
+
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	//TAG POINTS
 	/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -195,11 +200,17 @@ void luoIBM::stepTime()
 	weightPressure();
 
 	velocityProjection();
+
 	std::cout<<timeStep<<std::endl;
 	//luoForce();
 	timeStep++;
 	if (timeStep == 1000)
+	{
 		arrayprint(u,"u","x");
+		arrayprint(u,"v","y");
+		arrayprint(pressure,"pressure","p");
+		divergence();
+	}
 }
 
 /**
@@ -216,3 +227,4 @@ void luoIBM::shutDown()
 #include "luoIBM/projectVelocity.inl"
 #include "luoIBM/tagpoints.inl"
 #include "luoIBM/calculateForce.inl"
+#include "luoIBM/testing.inl"

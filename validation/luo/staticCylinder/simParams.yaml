@@ -4,7 +4,7 @@
   nt: 1000
   nsave: 1000
   startStep: 0
-  SolverType: OSC
+  SolverType: LUO
   linearSolvers:
     - system: velocity
       solver: CG

@@ -109,6 +109,9 @@ cleanall: clean cleanexternal cleandoc
 # commands to run cuIBM simulations
 luotest:
 	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/luo/test
+	
+luoStatic:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/luo/staticCylinder
 
 oscKC5:
 	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/Re100
