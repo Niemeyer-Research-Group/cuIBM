@@ -30,7 +30,7 @@ else:
 	sys.exit()
 
 execPath       = cuibmFolder + '/bin/cuIBM'
-caseFolder     = cuibmFolder + '/validation/luo/test'
+caseFolder     = cuibmFolder + '/validation/luo/staticCylinder'
 validationData = cuibmFolder + '/validation-data' + validationData
 
 print "\n"+"-"*120

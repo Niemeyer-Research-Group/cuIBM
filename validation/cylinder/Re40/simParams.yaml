@@ -1,7 +1,7 @@
 - type: simulation
   dt: 0.005
-  nt: 10000
-  nsave: 10000
+  nt: 1000
+  nsave: 1000
   SolverType: FADLUN
   linearSolvers:
     - system: velocity

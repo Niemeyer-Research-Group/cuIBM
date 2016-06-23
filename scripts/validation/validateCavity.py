@@ -85,9 +85,6 @@ print "-"*80
 print "Plotting the centerline velocities for flow in a lid-driven cavity at Reynolds number %s" % Re
 print "-"*80
 
-uOutFile       = caseFolder + '/uRe' + Re + '.pdf'
-vOutFile       = caseFolder + '/vRe' + Re + '.pdf'
-
 plt.plot(validation_x, validation_u, 'o', color = 'red', markersize = 8, label = 'Ghia et al, 1982')
 plt.plot(x2,u2, '-', color='blue', linewidth=2, label='Present Work')
 plt.title('Velocity along the vertical centerline Re = {0}'.format(Re))

@@ -2,8 +2,8 @@
 clc
 clear all
 close all
-number = '1000';
-type = 'v';
+number = '100';
+type = 'p';
 path = strcat('/scratch/src/cuIBM/validation/luo/test/output/',number,type,'.csv');
 delim = '\t';
 M = dlmread(path,delim,1,0);

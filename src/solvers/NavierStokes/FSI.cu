@@ -28,7 +28,7 @@ void FSI::writeData()
 	double dt  = db["simulation"]["dt"].get<double>();
 	NavierStokesSolver::logger.startTimer("output");
 	NavierStokesSolver::writeCommon();
-	forceFile << timeStep*dt << '\t' << B.forceX[0] << '\t' << B.forceY[0] << std::endl;
+	forceFile << timeStep*dt << '\t' << B.forceX << '\t' << B.forceY << std::endl;
 	logger.stopTimer("output");
 }
 
@@ -57,7 +57,7 @@ void FSI::moveBody()
 
 	double *y_r	= thrust::raw_pointer_cast( &(NavierStokesSolver::B.y[0]) ),
 		   *vB_r= thrust::raw_pointer_cast( &(NavierStokesSolver::B.vB[0]) );
-	double	Cy	= NavierStokesSolver::B.forceY[0]*2.0,
+	double	Cy	= NavierStokesSolver::B.forceY*2.0,
 			U	= NavierStokesSolver::bc[XMINUS][0],
 			Mred= 2.0,
 			Ured= db["flow"]["Ured"].get<double>(),
@@ -90,7 +90,7 @@ void FSI::moveBodySC()
 
 	double *y_r	= thrust::raw_pointer_cast( &(NavierStokesSolver::B.y[0]) ),
 		   *vB_r= thrust::raw_pointer_cast( &(NavierStokesSolver::B.vB[0]) );
-	double	Cy	= NavierStokesSolver::B.forceY[0]*2.0,
+	double	Cy	= NavierStokesSolver::B.forceY*2.0,
 			U	= NavierStokesSolver::bc[XMINUS][0],
 			Mred= 2.0,
 			Ured= db["simulation"]["Ured"].get<double>(),
@@ -164,7 +164,7 @@ void FSI::SC()
 	int count = 0;
 	do
 	{
-		NavierStokesSolver::B.forceYk[0] = NavierStokesSolver::B.forceY[0];
+		NavierStokesSolver::B.forceYk[0] = NavierStokesSolver::B.forceY;
 		NavierStokesSolver::generateRHS1();
 		NavierStokesSolver::solveIntermediateVelocity();
 
@@ -180,7 +180,7 @@ void FSI::SC()
 		}
 		count += 1;
 	}
-	while (fabs(NavierStokesSolver::B.forceY[0]- NavierStokesSolver::B.forceYk[0]) > 0.0001);
+	while (fabs(NavierStokesSolver::B.forceY- NavierStokesSolver::B.forceYk[0]) > 0.0001);
 	if (count > 1)
 		std::cout<<count<<"\n";
 	std::cout<<NavierStokesSolver::timeStep<<"\n";

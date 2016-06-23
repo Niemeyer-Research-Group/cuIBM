@@ -1,10 +1,10 @@
 - type: simulation
   dt: 0.005
   scaleCV: 5.0
-  nt: 1000
+  nt: 200
   nsave: 1000
   startStep: 0
-  SolverType: OSC
+  SolverType: OSC_CYLINDER
   linearSolvers:
     - system: velocity
       solver: CG

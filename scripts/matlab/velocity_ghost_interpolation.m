@@ -1,32 +1,4 @@
-clc
-clear
-close all
-
-% base test
-xtest = [10 11 10 10.5];
-ytest = [10 10 11 10.5];
-q = [0 1 2 1];
-
-Q = interpolate( xtest, ytest, q);
-n = 10;
-
-x = linspace(xtest(1),xtest(2),n);
-y = linspace(ytest(1),ytest(3),n);
-for i=1:length(x)
-    for j = 1:length(y)
-        z = Q(x(i),y(j));
-        if (z >max([q(1),q(2),q(3),q(4)]) || z < min([q(1),q(2),q(3),q(4)]))
-            fprintf('error q out of bounds\n');
-        end
-        scatter3(x(i),y(j),z,'ro'), hold on
-    end
-end
-scatter3(xtest,ytest,q,'kx')
-xlabel('x')
-ylabel('y')
-
-
-%% ghost node velocity interpolation X 3D
+%% hybrid node velocity interpolation X 3D
 clc
 clear
 close all
@@ -37,14 +9,13 @@ X = zeros(1,7);
 Y = zeros(1,7);
 Z = zeros(1,7);
 for i =1:length(M)
-    close
+%     close
     X(1) = M(i,5); %ghost node
     X(2) = M(i,7); %body intercept
     X(3) = M(i,11); %corner1
     X(4) = M(i,12); %corner2
     X(5) = M(i,13); %corner3
     X(6) = M(i,14); %corner4
-    X(7) = M(i,9); %image piont
     x1 = [M(i,1),M(i,3)]; %body
     Y(1) = M(i,6);
     Y(2) = M(i,8);
@@ -52,7 +23,6 @@ for i =1:length(M)
     Y(4) = M(i,16);
     Y(5) = M(i,17);
     Y(6) = M(i,18);
-    Y(7) = M(i,10);
     y1 = [M(i,2),M(i,4)];
     Z(1) = M(i,23);
     Z(2) = 0.1;
@@ -60,7 +30,6 @@ for i =1:length(M)
     Z(4) = M(i,20);
     Z(5) = M(i,21);
     Z(6) = M(i,22);
-    Z(7) = M(i,24);
     z1 = [0,0];
 
     Q = interpolate([X(3) X(4) X(5) X(6)], [Y(3) Y(4) Y(5) Y(6)], [Z(3) Z(4) Z(5) Z(6)]);
@@ -68,17 +37,13 @@ for i =1:length(M)
     
     scatter3(X(1),Y(1),Z(1),'ks'), hold on %ghost node
     scatter3(X(2),Y(2),Z(2),'ko') %body intercept
-    scatter3(X(7),Y(7),Z(7),'kd') %image point
-    scatter3(X(7),Y(7),ip_u,'kx') %ml image point
-    %plot3([X(3:4) X(6) X(5) X(3)], [Y(3:4) Y(6) Y(5) Y(3)], [Z(3:4) Z(6) Z(5) Z(3)],'kx-'); %interp corners
-    plot3([X(2) X(7)], [Y(2) Y(7)], [Z(2),Z(7)],'--') %line between gn and cpp ip
-    plot3([X(2) X(7)], [Y(2) Y(7)], [Z(2),ip_u],'-') %line between gn and ml ip
-%end
+    plot3([X(3:4) X(6) X(5) X(3)], [Y(3:4) Y(6) Y(5) Y(3)], [Z(3:4) Z(6) Z(5) Z(3)],'kx-'); %interp corners
+end
     
 axis square
-legend('Ghost node', 'Body Intercept', 'Image Point','Matlab Image Point','cpp','ml')
-end
-%% ghost node velocity interpolation X 2d
+legend('Ghost node', 'Body Intercept', 'Corners')
+% end
+%% hybrid node velocity interpolation X 2d
 clc
 clear
 close all

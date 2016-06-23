@@ -51,7 +51,6 @@ void luoIBM::divergence()
 	test_output.close();
 }
 
-
 void luoIBM::outputPressure()
 {
 	std::cout<<"Outputing pressure\n";
@@ -105,9 +104,7 @@ void luoIBM::outputPressure()
 	body.close();
 }
 
-
-
-void luoIBM::testInterpX()
+void luoIBM::testInterpX()//flag split this into ghost node and hybrid node function
 {
 	std::cout<<"Outputing for interpolation of the u values\n";
 	int iu;
@@ -154,8 +151,8 @@ void luoIBM::testInterpX()
 		for (int I=i_start;  I<i_end;  I++)
 		{
 			iu = J*(nx-1) + I;
-			if (ghostTagsUV[iu] >0)//for inside
-			//if (hybridTagsUV[iu] >0)//for outside
+			//if (ghostTagsUV[iu] >0)//for inside
+			if (hybridTagsUV[iu] >0)//for outside
 			{
 				body_nodes << x1_ip[iu]<<"\t";
 				body_nodes << y1_ip[iu]<<"\t";
@@ -179,8 +176,8 @@ void luoIBM::testInterpX()
 				body_nodes << q2[iu] <<"\t";
 				body_nodes << q3[iu] <<"\t";
 				body_nodes << q4[iu] <<"\t";
-				body_nodes << u[iu] <<"\t";//inside
-				//body_nodes << ustar[iu] <<"\t";//outside
+				//body_nodes << u[iu] <<"\t";//inside
+				body_nodes << ustar[iu] <<"\t";//outside
 				body_nodes << ip_u[iu]<<"\n";
 			}
 		}
@@ -346,6 +343,7 @@ void luoIBM::testInterpP()
 				body_nodes << q2_p[ip] <<"\t";
 				body_nodes << q3_p[ip] <<"\t";
 				body_nodes << q4_p[ip] <<"\t";
+				//body_nodes << pressureStar[ip] <<"\t";//inside
 				body_nodes << pressure[ip] <<"\t";//outside
 				body_nodes << a0[ip] <<"\t";
 				body_nodes << a1[ip] <<"\t";

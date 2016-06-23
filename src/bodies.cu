@@ -47,11 +47,6 @@ void bodies::initialise(parameterDB &db, domain &D)
 	ymin0.resize(numBodies);
 	ymax0.resize(numBodies);
 	
-	forceX.resize(numBodies);
-	forceY.resize(numBodies);
-	forceXk.resize(numBodies);
-	forceYk.resize(numBodies);
-	converged.resize(numBodies);
 
 	// calculate offsets, number of points in each body and the total number of points
 	totalPoints = 0;
@@ -65,10 +60,6 @@ void bodies::initialise(parameterDB &db, domain &D)
 	// fill up coordinates of body points
 	X.resize(totalPoints);
 	Y.resize(totalPoints);
-	xk.resize(totalPoints);
-	yk.resize(totalPoints);
-	xkp1.resize(totalPoints);
-	ykp1.resize(totalPoints);
 	ds.resize(totalPoints);
 	ones.resize(totalPoints);
 	cusp::blas::fill(ones, 1.0);

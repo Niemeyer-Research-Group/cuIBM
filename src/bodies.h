@@ -48,12 +48,6 @@ public:
 		ymax0;  ///< highest y-coordinate for the bounding box of a body (original size)
 
 	cusp::array1d<double, cusp::device_memory>
-		forceX,		///< force acting on a body in the x-direction
-		forceY,		///< force acting on a body in the y-direction
-		forceXk,
-		forceYk;
-
-	cusp::array1d<double, cusp::device_memory>
 		X,     ///< reference x-coordinates of the boundary points
 		Y,     ///< reference y-coordinates of the boundary points
 		ds,    ///< vector containing the lengths of all the boundary segments
@@ -63,18 +57,9 @@ public:
 		uB,    ///< x-velocity of the boundary points
 		vB;    ///< y-velocity of the boundary points
 
-    cusp::array1d<double, cusp::device_memory>
-		xk,	//x-coordinate of boundary points at substep k
-		yk,	//y-coordinate of boundary points at substep k
-	    xkp1,	//x-coordinate of boundary points at substep k+1
-	    ykp1;	//y-coordinate of boundary points at substep k+1
-
 	cusp::array1d<double, cusp::device_memory>
 		uBk,	//x-velocity of boundary points at substep k
 		vBk;	//y-velocity of boundary points at substep k
-
-	cusp::array1d<bool, cusp::device_memory>
-		converged;
 
 	cusp::array1d<double, cusp::device_memory>
 		test,
@@ -101,13 +86,15 @@ public:
 		force_pressure;
 
 	double	centerVelocityU,
-			centerVelocityV, // need to initialise these fools
+			centerVelocityV,
 			centerVelocityV0,
 			centerVelocityU0,
 			midY,
 			midY0,
 			midX0,
-			midX;
+			midX,
+			forceX,		///< force acting on a body in the x-direction
+			forceY;		///< force acting on a body in the y-direction
 
 	// set initial position and velocity of each body
 	void initialise(parameterDB &db, domain &D);

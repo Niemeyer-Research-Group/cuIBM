@@ -60,7 +60,7 @@ void luoIBM::calculateForce()
 	fxx = thrust::reduce(FxX.begin(), FxX.end());
 	fxy = thrust::reduce(FxY.begin(), FxY.end());
 	fxu = thrust::reduce(FxU.begin(), FxU.end());
-	B.forceX[0] =  fxx + fxy + fxu;
+	B.forceX =  fxx + fxy + fxu;
 
 	// Calculating lift
 	cusp::array1d<double, cusp::device_memory>
@@ -82,7 +82,7 @@ void luoIBM::calculateForce()
 	kernels::liftUnsteady <<<dimGridY, dimBlock>>> (FyU_r, u_r, uold_r, ghostTagsUV_r, dx, dy, dt, \
 	                                                nx, ny, B.startI[0], B.startJ[0], B.numCellsX[0], B.numCellsY[0]);
 
-	B.forceY[0] = thrust::reduce(FyX.begin(), FyX.end()) + thrust::reduce(FyY.begin(), FyY.end()) + thrust::reduce(FyU.begin(), FyU.end());
+	B.forceY = thrust::reduce(FyX.begin(), FyX.end()) + thrust::reduce(FyY.begin(), FyY.end()) + thrust::reduce(FyU.begin(), FyU.end());
 }
 
 void luoIBM::luoForce()

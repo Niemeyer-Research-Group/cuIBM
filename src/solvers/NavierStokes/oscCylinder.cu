@@ -26,15 +26,14 @@ oscCylinder::oscCylinder(parameterDB *pDB, domain *dInfo)
  */
 void oscCylinder::writeData()
 {
-	luoIBM::writeData();
-	/*parameterDB  &db = *paramDB;
+	parameterDB  &db = *paramDB;
 	double dt  = db["simulation"]["dt"].get<double>();
 	logger.startTimer("output");
 	writeCommon();
 	if (timeStep == 0)
 		forceFile<<"timestep\tFx\tFxX\tFxY\tFxU\tFy\n";
-	forceFile << timeStep*dt << '\t' << B.forceX[0] << '\t'<<fxx<<"\t"<<fxy<<"\t"<<fxu<<"\t" << B.forceY[0] << std::endl;
-	logger.stopTimer("output");*/
+	forceFile << timeStep*dt << '\t' << B.forceX << '\t'<<fxx<<"\t"<<fxy<<"\t"<<fxu<<"\t" << B.forceY << std::endl;//flag writing from b.forcex takes forever
+	logger.stopTimer("output");
 }
 
 /**
@@ -45,8 +44,8 @@ void oscCylinder::writeData()
  */
 void oscCylinder::writeCommon()
 {
-	/*luoIBM::writeCommon();
-	midPositionFile << timeStep << '\t' << B.midX << '\t' << B.midY <<std::endl;*/
+	luoIBM::writeCommon();
+	midPositionFile << timeStep << '\t' << B.midX << '\t' << B.midY <<std::endl;
 }
 
 /*
@@ -58,7 +57,7 @@ void oscCylinder::writeCommon()
  */
 void oscCylinder::updateSolver()
 {
-	/*B.calculateCellIndices(*domInfo);
+	B.calculateCellIndices(*domInfo);
 	B.calculateBoundingBoxes(*paramDB, *domInfo);
 	tagPoints();
 	generateLHS1();//is this needed?
@@ -69,7 +68,7 @@ void oscCylinder::updateSolver()
 	{
 		PC.update(LHS1, LHS2);
 	}
-	logger.stopTimer("Preconditioner");*/
+	logger.stopTimer("Preconditioner");
 }
 
 /*
@@ -78,26 +77,23 @@ void oscCylinder::updateSolver()
  */
 void oscCylinder::moveBody()
 {
-	/*parameterDB  &db = *paramDB;
-	luoIBM::calculateForce();
+	parameterDB  &db = *paramDB;
+	calculateForce();
 
 	double *x_r	= thrust::raw_pointer_cast( &(B.x[0]) ),
 		   *uB_r= thrust::raw_pointer_cast( &(B.uB[0]) );
 	double	dt	= db["simulation"]["dt"].get<double>(),
 			nu	= db["flow"]["nu"].get<double>(),
 			t = dt*timeStep,
-			D = 1.0,
-			uMax = 100*nu/D, //Re
-			f = uMax*D/5.0, //KC
-			A = uMax/(M_PI*2.0*f), //umax
+			f = 1,
 			totalPoints=B.totalPoints,
 			xold= B.midX,
 			unew,
 			xnew;
 
-	//calc new velocity and position
-	xnew = A*cos(2*M_PI*f*t);
-	unew = -A*2*M_PI*f*sin(2*M_PI*f*t);
+	xnew = -1/(2*M_PI)*sin(2*M_PI*f*t);
+	unew = -f*cos(2*M_PI*f*t);
+
 	B.centerVelocityU = unew;
 	B.midX = xnew;
 
@@ -105,7 +101,6 @@ void oscCylinder::moveBody()
 	dim3 grid( int( (totalPoints)/blocksize ) +1, 1);
 	dim3 block(blocksize, 1);
 	kernels::update_body_viv<<<grid,block>>>(x_r, uB_r, xnew-xold, unew, totalPoints);
-	 */
 }
 
 /*
@@ -113,7 +108,7 @@ void oscCylinder::moveBody()
  */
 void oscCylinder::initialise()
 {
-	/*luoIBM::initialise();
+	luoIBM::initialise();
 
 	//output
 	parameterDB  &db = *paramDB;
@@ -127,25 +122,27 @@ void oscCylinder::initialise()
 	double	dt	= db["simulation"]["dt"].get<double>(),
 			nu	= db["flow"]["nu"].get<double>(),
 			t = dt*timeStep,
-			D = 1.0,
-			uMax = 100*nu/D, //Re
-			f = uMax*D/5.0, //KC
-			A = uMax/(M_PI*2.0*f), //umax
+			D = 0.2,
+			uMax = 1,
+			f = 1,
+			KC = uMax/f/D,
+			Re = uMax*D/nu,
 			totalPoints=B.totalPoints,
 			xold= B.midX,
 			unew,
 			xnew;
 
-	//calc new velocity and position
-	xnew = A*cos(2*M_PI*f*t);
-	unew = -A*2*M_PI*f*sin(2*M_PI*f*t);
+	std::cout<<"dt\tf\tuMax\tD\tnu\tRe\tKC\n";
+	std::cout<<dt<<"\t"<<f<<"\t"<<uMax<<"\t"<<D<<"\t"<<nu<<"\t"<<Re<<"\t"<<KC<<"\n";
+	xnew = -1/(2*M_PI)*sin(2*M_PI*f*t);
+	unew = -f*cos(2*M_PI*f*t);
 	B.centerVelocityU = unew;
 	B.midX = xnew;
 
 	const int blocksize = 256;
 	dim3 grid( int( (totalPoints)/blocksize ) +1, 1);
 	dim3 block(blocksize, 1);
-	kernels::update_body_viv<<<grid,block>>>(x_r, uB_r, xnew-xold, unew, totalPoints);*/
+	kernels::update_body_viv<<<grid,block>>>(x_r, uB_r, xnew-xold, unew, totalPoints);
 }
 
 /**
@@ -153,34 +150,30 @@ void oscCylinder::initialise()
  */
 void oscCylinder::stepTime()
 {
-	luoIBM::stepTime();
-	/*generateRHS1();
-	//arrayprint(tags,"tags","x");
-	//arrayprint(tagsP,"tagsP","p");
-	//arrayprint(distance_from_u_to_body,"dub","p");
-	//arrayprint(distance_from_v_to_body,"dvb","p");
+	generateRHS1();
 	solveIntermediateVelocity();
-	//arrayprint(uhat,"uhat","x");
+	weightUhat();
 
 	generateRHS2();
-	//arrayprint(rhs2,"rhs2","p");
 	solvePoisson();
+	weightPressure();
 
 	velocityProjection();
-	//arrayprint(u,"u","x");
-
 	//Release the body after a certain timestep
 	if (timeStep >= (*paramDB)["simulation"]["startStep"].get<int>())
 	{
 		moveBody();
 		updateSolver();
 	}
+
 	std::cout<<timeStep<<std::endl;
 	timeStep++;
+
 	if (timeStep%(*paramDB)["simulation"]["nsave"].get<int>() == 0)
 	{
+		//arrayprint(pressure,"p","p");
 		//arrayprint(u,"u","x");
-	}*/
+	}
 }
 
 /**
@@ -189,5 +182,7 @@ void oscCylinder::stepTime()
 void oscCylinder::shutDown()
 {
 	luoIBM::shutDown();
-	//midPositionFile.close();
+	midPositionFile.close();
 }
+
+#include "oscCylinder/intermediateVelocity.inl"

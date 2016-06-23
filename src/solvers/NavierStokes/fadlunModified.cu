@@ -25,7 +25,6 @@ fadlunModified::fadlunModified(parameterDB *pDB, domain *dInfo)
  */
 void fadlunModified::initialise()
 {
-
 	NavierStokesSolver::initialiseNoBody();
 	NavierStokesSolver::logger.startTimer("initialise");
 
@@ -110,13 +109,15 @@ void fadlunModified::writeData()
 	double dt  = db["simulation"]["dt"].get<double>();
 
 	logger.startTimer("output");
-
 	writeCommon();
+	logger.stopTimer("output");
+
 	calculateForce();
+
+	logger.startTimer("output");
 	if (NavierStokesSolver::timeStep == 0)
 		forceFile<<"timestep\tFx\tFxX\tFxY\tFxU\tFy\n";
-	forceFile << timeStep*dt << '\t' << B.forceX[0] << '\t'<<fxx<<"\t"<<fxy<<"\t"<<fxu<<"\t" << B.forceY[0] << std::endl;
-
+	forceFile << timeStep*dt << '\t' << B.forceX << '\t'<<fxx<<"\t"<<fxy<<"\t"<<fxu<<"\t" << B.forceY << std::endl;
 	logger.stopTimer("output");
 }
 

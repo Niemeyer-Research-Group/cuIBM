@@ -25,7 +25,6 @@ luoIBM::luoIBM(parameterDB *pDB, domain *dInfo)
  */
 void luoIBM::initialise()
 {
-
 	NavierStokesSolver::initialiseNoBody();
 	NavierStokesSolver::logger.startTimer("initialise");
 
@@ -160,7 +159,7 @@ void luoIBM::writeData()
 	calculateForce();
 	if (NavierStokesSolver::timeStep == 1)
 		forceFile<<"timestep\tFx\tFxX\tFxY\tFxU\tFy\n";
-	forceFile << timeStep*dt << '\t' << B.forceX[0] << '\t'<<fxx<<"\t"<<fxy<<"\t"<<fxu<<"\t" << B.forceY[0] << std::endl;
+	forceFile << timeStep*dt << '\t' << B.forceX << '\t'<<fxx<<"\t"<<fxy<<"\t"<<fxu<<"\t" << B.forceY << std::endl;
 
 	logger.stopTimer("output");
 }
@@ -206,10 +205,9 @@ void luoIBM::stepTime()
 	timeStep++;
 	if (timeStep == 1000)
 	{
-		arrayprint(u,"u","x");
-		arrayprint(u,"v","y");
-		arrayprint(pressure,"pressure","p");
-		divergence();
+		//arrayprint(u,"u","x");
+		//arrayprint(u,"v","y");
+		//arrayprint(pressure,"pressure","p");
 	}
 }
 
