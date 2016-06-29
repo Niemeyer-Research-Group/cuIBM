@@ -17,15 +17,15 @@ class bodies
 {
 public:
 	int  numBodies,   ///< number of bodies
-	     totalPoints; ///< total number of boundary points (all bodies)
+	     totalPoints, ///< total number of boundary points (all bodies)
+	     numCellsXHost,	///< number of cells in the x-direction in the bounding box of a body on the host
+	     numCellsYHost;
 
 	bool bodiesMove;  ///< tells whether the body is moving or not
 
 	cusp::array1d<int, cusp::device_memory>
 		numPoints,    ///< number of points for each body
-		offsets,      ///< array index of the first point of each body
-		I,            ///< x-index of the cell in which a body point is located
-		J;            ///< y-index of the cell in which a body point is located
+		offsets;      ///< array index of the first point of each body
 
 	cusp::array1d<int, cusp::device_memory>
 		startI,       ///< starting cell index of the bounding box of a body
@@ -60,6 +60,12 @@ public:
 	cusp::array1d<double, cusp::device_memory>
 		uBk,	//x-velocity of boundary points at substep k
 		vBk;	//y-velocity of boundary points at substep k
+
+	cusp::array1d<double, cusp::device_memory>
+		xleft,	///< min and max values for the body nodes
+		xright,
+		ybot,
+		ytop;
 
 	cusp::array1d<double, cusp::device_memory>
 		test,
@@ -99,9 +105,6 @@ public:
 	// set initial position and velocity of each body
 	void initialise(parameterDB &db, domain &D);
 
-	// store index of each cell that contains a boundary point
-	void calculateCellIndices(domain &D);
-
 	// store indices of the bounding box of each body
 	void calculateBoundingBoxes(parameterDB &db, domain &D);
 
@@ -117,3 +120,9 @@ public:
 	// write body coordinates into a file called \a bodies
 	void writeToFile(double *bx, double *by, std::string &caseFolder, int timeStep);
 };
+
+__global__
+void boundingBox(double *x, double *y,
+				 thrust::device_vector<double>::iterator xmax_in, thrust::device_vector<double>::iterator xmin_in, thrust::device_vector<double>::iterator ymax_in, thrust::device_vector<double>::iterator ymin_in,
+				 int *startI, int *startJ, int *numCellsX, int *numCellsY,
+				 double *xmax, double *xmin, double *ymax, double *ymin, double scale);

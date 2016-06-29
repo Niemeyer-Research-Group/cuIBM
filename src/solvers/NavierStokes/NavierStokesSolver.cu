@@ -253,7 +253,8 @@ void NavierStokesSolver::solveIntermediateVelocity()
 	logger.startTimer("solveIntermediateVel");
 	int  maxIters = (*paramDB)["velocitySolve"]["maxIterations"].get<int>();
 	double relTol = (*paramDB)["velocitySolve"]["tolerance"].get<double>();
-	cusp::monitor<double> sys1Mon(rhs1,maxIters,relTol);
+
+	cusp::monitor<double> sys1Mon(rhs1,maxIters,relTol);//flag currently this takes much more time than it should.
 	cusp::krylov::bicgstab(LHS1, uhat, rhs1, sys1Mon, *PC.PC1);
 
 	iterationCount1 = sys1Mon.iteration_count();
@@ -307,8 +308,10 @@ void NavierStokesSolver::solvePoisson()
  * param type type of array, p, x, y
  */
 
-void NavierStokesSolver::arrayprint(cusp::array1d<double, cusp::device_memory> value, std::string name, std::string type)
+void NavierStokesSolver::arrayprint(cusp::array1d<double, cusp::device_memory> value, std::string name, std::string type, int time)
 {
+	if (timeStep != time && time > 0) //set time to a negative number to always print
+		return;
 	logger.startTimer("output");
 	int nx = domInfo->nx;
 	int ny = domInfo->ny;

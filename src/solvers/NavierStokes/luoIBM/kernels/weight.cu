@@ -10,13 +10,13 @@ namespace kernels
 __global__
 void weightX(double *uhat, double *ustar, int *ghostTagsUV, int *hybridTagsUV, double *yu, double *xu,
 				double *body_intercept_x, double *body_intercept_y, double *image_point_x, double *image_point_y,
-				int i_start, int j_start, int i_end, int j_end, int nx, int ny)
+				int *i_start, int *j_start, int width, int nx, int ny)
 {
 	int idx	= threadIdx.x + blockDim.x * blockIdx.x,
-		i	= idx % (i_end-i_start),
-		j	= idx / (i_end-i_start),
-		I	= i_start + i,
-		J	= j_start + j,
+		i	= idx % (width),
+		j	= idx / (width),
+		I	= i_start[0] + i,
+		J	= j_start[0] + j,
 		iu = J*(nx-1) + I;
 	if (iu > J*(nx-1) + I) //return if we're out of bounds
 		return;
@@ -51,13 +51,13 @@ void weightX(double *uhat, double *ustar, int *ghostTagsUV, int *hybridTagsUV, d
 __global__
 void weightY(double *uhat, double *ustar, int *ghostTagsUV, int *hybridTagsUV, double *yv, double *xv,
 				double *body_intercept_x, double *body_intercept_y, double *image_point_x, double *image_point_y,
-				int i_start, int j_start, int i_end, int j_end, int nx, int ny)
+				int *i_start, int *j_start, int width, int nx, int ny)
 {
 	int idx	= threadIdx.x + blockDim.x * blockIdx.x,
-		i	= idx % (i_end-i_start),
-		j	= idx / (i_end-i_start),
-		I	= i_start + i,
-		J	= j_start + j,
+		i	= idx % (width),
+		j	= idx / (width),
+		I	= i_start[0] + i,
+		J	= j_start[0] + j,
 		iv = J*nx + I + (nx-1)*ny;
 	if (J*nx + I > nx*(ny-1)) //return if we're out of bound
 		return;
@@ -92,13 +92,13 @@ void weightY(double *uhat, double *ustar, int *ghostTagsUV, int *hybridTagsUV, d
 __global__
 void weightP(double *pressure, double *pressureStar, int *ghostTagsP, int *hybridTagsP, double *yu, double *xv,
 				double *body_intercept_x, double *body_intercept_y, double *image_point_x, double *image_point_y,
-				int i_start, int j_start, int i_end, int j_end, int nx, int ny)
+				int *i_start, int *j_start, int width, int nx, int ny)
 {
 	int idx	= threadIdx.x + blockDim.x * blockIdx.x,
-		i	= idx % (i_end-i_start),
-		j	= idx / (i_end-i_start),
-		I	= i_start + i,
-		J	= j_start + j,
+		i	= idx % (width),
+		j	= idx / (width),
+		I	= i_start[0] + i,
+		J	= j_start[0] + j,
 		ip = J*nx + I;
 	if (J*nx + I > nx*ny) //return if we're out of bound
 		return;

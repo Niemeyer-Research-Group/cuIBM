@@ -76,7 +76,13 @@ protected:
 		a0,
 		a1,
 		a2,
-		a3;
+		a3,
+		dudt,
+		ududx,
+		vdudy,
+		dvdt,
+		udvdx,
+		vdvdy;
 
 	bodies 	B;		///< bodies in the flow
 
@@ -108,7 +114,7 @@ protected:
 	void tagPoints();
 
 	//////////////////////////
-	//tagpoints.inl
+	//testing.inl
 	//////////////////////////
 	void divergence();
 	void testInterpX(); //x
@@ -116,6 +122,7 @@ protected:
 	void testInterpP(); //for pressure
 	void testOutputX(); //for tagpoipnts
 	void testOutputY(); //for tagpoints
+	void testForce();
 
 
 public:

@@ -47,6 +47,11 @@ void bodies::initialise(parameterDB &db, domain &D)
 	ymin0.resize(numBodies);
 	ymax0.resize(numBodies);
 	
+	xleft.resize(numBodies);
+	xright.resize(numBodies);
+	ytop.resize(numBodies);
+	ybot.resize(numBodies);
+
 
 	// calculate offsets, number of points in each body and the total number of points
 	totalPoints = 0;
@@ -77,8 +82,6 @@ void bodies::initialise(parameterDB &db, domain &D)
 	vB.resize(totalPoints);
 	uBk.resize(totalPoints);
 	vBk.resize(totalPoints);
-	I.resize(totalPoints);
-	J.resize(totalPoints);
 
 	force_pressure.resize(totalPoints);
 	x1.resize(totalPoints);
@@ -127,9 +130,10 @@ void bodies::initialise(parameterDB &db, domain &D)
 
 	if(numBodies)
 	{
-		calculateCellIndices(D);
 		calculateTightBoundingBoxes(db, D);
 		calculateBoundingBoxes(db, D);
+		numCellsXHost = numCellsX[0];
+		numCellsYHost = numCellsY[0];
 	}
 
 	midX=0;
@@ -151,58 +155,44 @@ void bodies::initialise(parameterDB &db, domain &D)
 	centerVelocityV0= 0;
 }
 
-/**
- * \brief Stores index of each cell that contains a boundary point.
- *
- * It calculates the index of the x-coordinate and the index of the y-coordinate
- * of the bottom-left node of each cell that contains a boundary point.
- * This information is useful when transferring data between the boundary points
- * and the computational grid.
- *
- * \param D information about the computational grid
- */
-
-void bodies::calculateCellIndices(domain &D)
+//flag this isn't setup to work with multiple bodies
+//flag this kernel is setup to be called recursivly to handle body sizes larger than than
+//flag this kernel isn't working for smaller body node spacing (0.005 works, 0.004 does not), disabling for now
+//the maximum number of points allowable in a block
+__global__
+void boundingBox(double *x, double *y,
+				 thrust::device_vector<double>::iterator xmax_in, thrust::device_vector<double>::iterator xmin_in, thrust::device_vector<double>::iterator ymax_in, thrust::device_vector<double>::iterator ymin_in,
+				 int *startI, int *startJ, int *numCellsX, int *numCellsY,
+				 double *xmax, double *xmin, double *ymax, double *ymin, double scale)
 {
-	int	i=0, j=0;
+	if (threadIdx.x > 0)
+		return;
 
-	// find the cell for the zeroth point
-	while(D.x[i+1] < x[0])
+	xmax[0] = *xmax_in;
+	xmin[0] = *xmin_in;
+	ymax[0] = *ymax_in;
+	ymin[0] = *ymin_in;
+	double	dx = xmax[0]-xmin[0],
+			dy = ymax[0]-ymin[0];
+	xmax[0] += 0.5*dx*(scale-1.0);
+	xmin[0] -= 0.5*dx*(scale-1.0);
+	ymax[0] += 0.5*dy*(scale-1.0);
+	ymin[0] -= 0.5*dy*(scale-1.0);
+	int i=0,
+		j=0;
+	while(x[i+1] < xmin[0])
 		i++;
-	while(D.y[j+1] < y[0])
+	while(y[j+1] < ymin[0])
 		j++;
-	I[0] = i;
-	J[0] = j;
+	startI[0] = i;
+	startJ[0] = j;
 
-	for(int k=1; k<totalPoints; k++)
-	{
-		// if the next boundary point is to the left of the current boundary point
-		if(x[k] < x[k-1])
-		{
-			while(D.x[i] > x[k])
-				i--;
-		}
-		// if the next boundary point is to the right of the current boundary point
-		else
-		{
-			while(D.x[i+1] < x[k])
-				i++;
-		}
-		// if the next boundary point is below the current boundary point
-		if(y[k] < y[k-1])
-		{
-			while(D.y[j] > y[k])
-				j--;
-		}
-		// if the next boundary point is above the current boundary point
-		else
-		{
-			while(D.y[j+1] < y[k])
-				j++;
-		}
-		I[k] = i;
-		J[k] = j;
-	}
+	while(x[i] < xmax[0])
+		i++;
+	while(y[j] < ymax[0])
+		j++;
+	numCellsX[0] = i - startI[0];
+	numCellsY[0] = j - startJ[0];
 }
 
 /**
@@ -219,46 +209,39 @@ void bodies::calculateCellIndices(domain &D)
 void bodies::calculateBoundingBoxes(parameterDB &db, domain &D)
 {
 	double scale = db["simulation"]["scaleCV"].get<double>(),
-	     dx, dy;
-	int  i, j;
-	for(int k=0; k<numBodies; k++)
-	{
-		xmin[k] = x[offsets[k]];
-		xmax[k] = xmin[k];
-		ymin[k] = y[offsets[k]];
-		ymax[k] = ymin[k];
-		for(int l=offsets[k]+1; l<offsets[k]+numPoints[k]; l++)
-		{
-			if(x[l] < xmin[k]) xmin[k] = x[l];
-			if(x[l] > xmax[k]) xmax[k] = x[l];
-			if(y[l] < ymin[k]) ymin[k] = y[l];
-			if(y[l] > ymax[k]) ymax[k] = y[l];
-		}
-		dx = xmax[k]-xmin[k];
-		dy = ymax[k]-ymin[k];
-		xmax[k] += 0.5*dx*(scale-1.0);
-		xmin[k] -= 0.5*dx*(scale-1.0);
-		ymax[k] += 0.5*dy*(scale-1.0);
-		ymin[k] -= 0.5*dy*(scale-1.0);
-		
-		i=0; j=0;
-		while(D.x[i+1] < xmin[k])
-			i++;
-		while(D.y[j+1] < ymin[k])
-			j++;
-		startI[k] = i;
-		startJ[k] = j;
-		
-		while(D.x[i] < xmax[k])
-			i++;
-		while(D.y[j] < ymax[k])
-			j++;
-		numCellsX[k] = i - startI[k];
-		numCellsY[k] = j - startJ[k];
-	}
+		     dx, dy;
+	double	*x_r = thrust::raw_pointer_cast( &(D.x[0]) ),
+			*y_r = thrust::raw_pointer_cast( &(D.y[0]) ),
+			*xmin_r = thrust::raw_pointer_cast( &(xleft[0]) ),
+			*xmax_r = thrust::raw_pointer_cast( &(xright[0]) ),
+			*ymin_r = thrust::raw_pointer_cast( &(ybot[0]) ),
+			*ymax_r = thrust::raw_pointer_cast( &(ytop[0]) );
+	int *startI_r = thrust::raw_pointer_cast( &(startI[0]) ),
+		*startJ_r = thrust::raw_pointer_cast( &(startJ[0]) ),
+		*numCellsX_r = thrust::raw_pointer_cast( &(numCellsX[0]) ),
+		*numCellsY_r = thrust::raw_pointer_cast( &(numCellsY[0]) );
+
+	thrust::device_vector<double>::iterator iter_xmax,
+											iter_xmin,
+											iter_ymax,
+											iter_ymin;
+
+	iter_xmax = thrust::max_element(x.begin(),x.end());
+	iter_xmin = thrust::min_element(x.begin(),x.end());
+	iter_ymax = thrust::max_element(y.begin(),y.end());
+	iter_ymin = thrust::min_element(y.begin(),y.end());
+
+
+	const int blocksize = 1;
+	dim3 grid(1, 1);
+	dim3 block(blocksize, 1);
+	boundingBox<<<grid,block>>>(x_r,y_r,
+								iter_xmax, iter_xmin, iter_ymax, iter_ymin,
+								startI_r, startJ_r, numCellsX_r, numCellsY_r,
+								xmax_r,xmin_r,ymax_r,ymin_r, scale);
 }
 
-void bodies::calculateTightBoundingBoxes(parameterDB &db, domain &D)
+void bodies::calculateTightBoundingBoxes(parameterDB &db, domain &D) //flag this should be merged into the normal calculate bounding box function
 {
 	double scale = db["simulation"]["scaleCV"].get<double>();
 	int  i, j;
@@ -362,9 +345,6 @@ void bodies::update(parameterDB &db, domain &D, double Time)
 		// y-velocities
 		cusp::blas::axpbypcz(onesView, xView, onesView, vBView, (*B)[l].vel[1],  (*B)[l].angVel, -(*B)[l].angVel*(*B)[l].Xc[0]);
 	}
-
-	if(numBodies)
-		calculateCellIndices(D);
 }
 
 

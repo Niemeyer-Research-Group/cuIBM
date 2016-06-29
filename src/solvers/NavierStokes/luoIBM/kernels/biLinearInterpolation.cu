@@ -13,14 +13,14 @@ namespace kernels
 __global__
 void interpolateVelocityToGhostNodeX(double *u, int *ghostTagsUV, double *bx, double *by, double *uB, double *yu, double *xu,
 							double *body_intercept_x, double *body_intercept_y, double *image_point_x, double *image_point_y,
-							int i_start, int j_start, int i_end, int j_end, int nx, int ny, int totalPoints,//flag vB needed?
+							int *i_start, int *j_start, int width, int nx, int ny,
 							double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4, double *ip_u)//testing variables
 {
 	int idx	= threadIdx.x + blockDim.x * blockIdx.x,
-		i	= idx % (i_end-i_start),
-		j	= idx / (i_end-i_start),
-		I	= i_start + i,
-		J	= j_start + j,
+		i	= idx % (width),
+		j	= idx / (width),
+		I	= i_start[0] + i,
+		J	= j_start[0] + j,
 		iu = J*(nx-1) + I,
 		ii= I-5,
 		jj = J-5;
@@ -152,14 +152,14 @@ void interpolateVelocityToGhostNodeX(double *u, int *ghostTagsUV, double *bx, do
 __global__
 void interpolateVelocityToGhostNodeY(double *u, int *ghostTagsUV, double *bx, double *by, double *vB, double *yv, double *xv,
 							double *body_intercept_x, double *body_intercept_y, double *image_point_x, double *image_point_y,
-							int i_start, int j_start, int i_end, int j_end, int nx, int ny, int totalPoints,
+							int *i_start, int *j_start, int width, int nx, int ny,
 							double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4, double *ip_u)//testing variables
 {
 	int idx	= threadIdx.x + blockDim.x * blockIdx.x,
-		i	= idx % (i_end-i_start),
-		j	= idx / (i_end-i_start),
-		I	= i_start + i,
-		J	= j_start + j,
+		i	= idx % (width),
+		j	= idx / (width),
+		I	= i_start[0] + i,
+		J	= j_start[0] + j,
 		iv = J*nx + I + (nx-1)*ny,
 		ii= I-5,
 		jj = J-5;
@@ -291,14 +291,14 @@ void interpolateVelocityToGhostNodeY(double *u, int *ghostTagsUV, double *bx, do
 __global__
 void interpolateVelocityToHybridNodeX(double *u, double *ustar, int *hybridTagsUV, double *bx, double *by, double *uB, double *yu, double *xu,
 									double *body_intercept_x, double *body_intercept_y, double *image_point_x, double *image_point_y,
-									int i_start, int j_start, int i_end, int j_end, int nx, int ny, int totalPoints,
+									int *i_start, int *j_start, int width, int nx, int ny,
 									double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4)//test
 {
 	int idx	= threadIdx.x + blockDim.x * blockIdx.x,
-		i	= idx % (i_end-i_start),
-		j	= idx / (i_end-i_start),
-		I	= i_start + i,
-		J	= j_start + j,
+		i	= idx % (width),
+		j	= idx / (width),
+		I	= i_start[0] + i,
+		J	= j_start[0] + j,
 		iu = J*(nx-1) + I,
 		ii= I-5,
 		jj = J-5;
@@ -435,14 +435,14 @@ void interpolateVelocityToHybridNodeX(double *u, double *ustar, int *hybridTagsU
 __global__
 void interpolateVelocityToHybridNodeY(double *u, double *ustar, int *hybridTagsUV, double *bx, double *by, double *vB, double *yv, double *xv,
 									double *body_intercept_x, double *body_intercept_y, double *image_point_x, double *image_point_y,
-									int i_start, int j_start, int i_end, int j_end, int nx, int ny, int totalPoints,
+									int *i_start, int *j_start, int width, int nx, int ny,
 									double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4)//test
 {
 	int idx	= threadIdx.x + blockDim.x * blockIdx.x,
-		i	= idx % (i_end-i_start),
-		j	= idx / (i_end-i_start),
-		I	= i_start + i,
-		J	= j_start + j,
+		i	= idx % (width),
+		j	= idx / (width),
+		I	= i_start[0] + i,
+		J	= j_start[0] + j,
 		iv = J*nx + I + (nx-1)*ny,
 		ii= I-5,
 		jj = J-5;
@@ -579,18 +579,17 @@ __global__
 void interpolatePressureToHybridNode(double *pressure, double *pressureStar, double *u, int *hybridTagsP, double *bx, double *by,
 									double *uB, double *uB0, double *vB, double  *vB0, double *yu, double *yv, double *xu, double *xv,
 									double *body_intercept_p_x, double *body_intercept_p_y, double *image_point_p_x, double *image_point_p_y,
-									int i_start, int j_start, int i_end, int j_end, int nx, int ny, int totalPoints,
+									int *i_start, int *j_start, int width, int nx, int ny,
+									double *dudt, double *ududx, double *vdudy, double *dvdt, double *udvdx, double *vdvdy,
 									double *a0, double *a1, double *a2, double *a3,
 									double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4, int timeStep)//test
 {
 	int idx	= threadIdx.x + blockDim.x * blockIdx.x,
-		i	= idx % (i_end-i_start),
-		j	= idx / (i_end-i_start),
-		I	= i_start + i,
-		J	= j_start + j,
+		i	= idx % (width),
+		j	= idx / (width),
+		I	= i_start[0] + i,
+		J	= j_start[0] + j,
 		ip = J*nx + I,
-		iu = J*(nx-1) + I,
-		iv = J*nx + I + ny*(nx-1),
 		ii= I-5,
 		jj = J-5;
 	if (ip > J*nx + I) //return if we're out of bound
@@ -640,6 +639,7 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 		index2 = (jj-1)*nx+ii,
 		index3 = jj*nx+ii-1,
 		index4 = jj*nx+ii;
+
 	q1[ip] = pressure[index1];
 	q2[ip] = pressure[index2];
 	q3[ip] = pressure[index3];
@@ -661,7 +661,7 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 		//setup
 		x1[ip] = body_intercept_p_x[ip];
 		y1[ip] = body_intercept_p_y[ip];
-		n_x = body_intercept_p_x[ip] - x1[ip];
+		n_x = image_point_p_x[ip] - x1[ip]; //flag this seems questionable
 		n_y = image_point_p_y[ip] - y1[ip];
 		nl = sqrt(n_x*n_x+n_y*n_y);
 
@@ -702,14 +702,14 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 		//find du/dx
 		//U_2 + (U_4-U_2)*(YBI-Y2)/(Y4-Y2)
 		//check if were too close to the u node in x direction to get good values, if we are: interpolate from u nodes farther away
-		if ( abs( X2u-body_intercept_p_x[ip] ) < (X2u-X1u)*0.1 )
+		if ( abs( X2u-body_intercept_p_x[ip] ) < (X2u-X1u)*0.75 )
 		{
 			velTemp = u[i2u+1] + (u[i4u+1] - u[i2u+1])*(y1[ip]-Y2u)/(Y4u-Y2u);
 			lTemp = X2u + X2u - X1u;
 		}
 		else
 		{
-			velTemp = u[i2u] + (u[i4u] - u[i2u])*(y1[ip]-Y2u)/(Y4u-Y2u);
+			velTemp = u[i2u] + (u[i4u] - u[i2u])*(y1[ip]-Y2u)/(Y4u-Y2u);					//flag which order do the subtractions go in
 			lTemp = X2u;
 		}
 		u_du_dx = uB[0]  *  (velTemp - uB[0])/(lTemp-x1[ip]);
@@ -717,7 +717,7 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 		//find du/dy
 		//U_3 + (U_4-U_3)*(XBI-X3)/(X4-X3)
 		//check if were too close to u node in y direction
-		if ( abs( Y3u-body_intercept_p_y[ip] ) < (Y3u-Y1u)*0.1 )
+		if ( abs( Y3u-body_intercept_p_y[ip] ) < (Y3u-Y1u)*0.75 )
 		{
 			velTemp = u[i3u + (nx-1)] + (u[i4u + (nx-1)] - u[i3u + (nx-1)])*(x1[ip]-X3u)/(X4u-X3u);
 			lTemp = Y3u + Y3u - Y1u;
@@ -732,7 +732,7 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 		//find dv/dx
 		//V_2 + (V_4-V_2)(YBI-Y2)/(Y4-Y2)
 		//check if were too close to the v node in the x direction
-		if ( abs( X2v-body_intercept_p_x[ip] ) < (X2v-X1v)*0.1 )
+		if ( abs( X2v-body_intercept_p_x[ip] ) < (X2v-X1v)*0.75 )
 		{
 			velTemp = u[i2v+1] + (u[i4v+1] - u[i2v+1])*(y1[ip]-Y2v)/(Y4v-Y2v);
 			lTemp = X2v+X2v-X1v;
@@ -746,7 +746,7 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 
 		//find dv/dy
 		//U_3 + (U_4-U_3)*(XBI-X3)/(X4-X3)
-		if ( abs( Y3v-body_intercept_p_y[ip] ) < (Y3v-Y1v)*0.1 )
+		if ( abs( Y3v-body_intercept_p_y[ip] ) < (Y3v-Y1v)*0.75 )
 		{
 			velTemp = u[i3v+nx] + (u[i4v+nx] - u[i3v+nx])*(x1[ip]-X3v)/(X4v-X3v);
 			lTemp = Y3v+Y3v-Y1v;
@@ -759,6 +759,7 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 		v_dv_dy = vB[0]  *  (velTemp - vB[0])/(lTemp-y1[ip]);
 
 		q1[ip] = -(n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt + u_dv_dx + v_dv_dy));
+
 		a11 = 0;
 		a12 = n_x/nl;
 		a13 = n_y/nl;
@@ -808,7 +809,7 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 		//find du/dx
 		//U_1 + (U_3-U_1)*(YBI-Y1)/(Y3-Y1)
 		//check if were too close to the u node in x direction to get good values, if we are: interpolate from u nodes farther away
-		if ( abs( X1u-body_intercept_p_x[ip] ) < (X2u-X1u)*0.1 )
+		if ( abs( X1u-body_intercept_p_x[ip] ) < (X2u-X1u)*0.75 )
 		{
 			velTemp = u[i1u-1] + (u[i3u-1] - u[i1u-1])*(y2[ip]-Y1u)/(Y3u-Y1u);
 			lTemp = X1u + X1u - X2u;
@@ -818,12 +819,12 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 			velTemp = u[i1u] + (u[i3u] - u[i1u])*(y2[ip]-Y1u)/(Y3u-Y1u);
 			lTemp = X1u;
 		}
-		u_du_dx = uB[0]  *  (velTemp - uB[0])/(lTemp-x2[ip]);
+		u_du_dx = -uB[0]  *  (velTemp - uB[0])/(lTemp-x2[ip]); //flag were using - uB here because the slope is wrong, there should be many deriviatives that are not dudx that have the wrong slope as well, fix them
 
 		//find du/dy
 		//U_3 + (U_4-U_3)*(XBI-X3)/(X4-X3)
 		//check if were too close to u node in y direction
-		if ( abs( Y3u-body_intercept_p_y[ip] ) < (Y3u-Y1u)*0.1 )
+		if ( abs( Y3u-body_intercept_p_y[ip] ) < (Y3u-Y1u)*0.75 )
 		{
 			velTemp = u[i3u+(nx-1)] + (u[i4u+(nx-1)] - u[i3u+(nx-1)])*(x2[ip]-X3u)/(X4u-X3u);
 			lTemp = Y3u + Y3u - Y1u;
@@ -838,7 +839,7 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 		//find dv/dx
 		//V_1 + (V_3-V_1)(YBI-Y1)/(Y3-Y1)
 		//check if were too close to the v node in the x direction
-		if ( abs( X1v-body_intercept_p_x[ip] ) < (X2v-X1v)*0.1 )
+		if ( abs( X1v-body_intercept_p_x[ip] ) < (X2v-X1v)*0.75 )
 		{
 			velTemp =u[i1v-1] + (u[i3v-1] - u[i1v-1])*(y2[ip]-Y1v)/(Y3v-Y1v);
 			lTemp = X1v+X1v-X2v;
@@ -852,7 +853,7 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 
 		//find dv/dy
 		//U_3 + (U_4-U_3)*(XBI-X3)/(X4-X3)
-		if ( abs( Y3v-body_intercept_p_y[ip] ) < (Y3v-Y1v)*0.1 )
+		if ( abs( Y3v-body_intercept_p_y[ip] ) < (Y3v-Y1v)*0.75 )
 		{
 			velTemp = u[i3v+nx] + (u[i4v+nx] - u[i3v+nx])*(x2[ip]-X3v)/(X4v-X3v);
 			lTemp = Y3v+Y3v-Y1v;
@@ -916,7 +917,7 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 		//find du/dx
 		//U_2 + (U_4-U_2)*(YBI-Y2)/(Y4-Y2)
 		//check if were too close to the u node in x direction to get good values, if we are: interpolate from u nodes farther away
-		if ( abs( X2u-body_intercept_p_x[ip] ) < (X2u-X1u)*0.1 )
+		if ( abs( X2u-body_intercept_p_x[ip] ) < (X2u-X1u)*0.75 )
 		{
 			velTemp = u[i2u+1] + (u[i4u+1] - u[i2u+1])*(y3[ip]-Y2u)/(Y4u-Y2u);
 			lTemp = X2u + X2u - X1u;
@@ -931,7 +932,7 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 		//find du/dy
 		//U_1 + (U_2-U_1)*(XBI-X1)/(X2-X1)
 		//check if were too close to u node in y direction
-		if ( abs( Y1u-body_intercept_p_y[ip] ) < (Y3u-Y1u)*0.1 )
+		if ( abs( Y1u-body_intercept_p_y[ip] ) < (Y3u-Y1u)*0.75 )
 		{
 			velTemp = u[i1u-(nx-1)] + (u[i2u-(nx-1)] - u[i2u-(nx-1)])*(x3[ip]-X1u)/(X2u-X1u);
 			lTemp = Y1u + Y1u - Y3u;
@@ -946,7 +947,7 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 		//find dv/dx
 		//V_2 + (V_4-V_2)(YBI-Y2)/(Y4-Y2)
 		//check if were too close to the v node in the x direction
-		if ( abs( X2v-body_intercept_p_x[ip] ) < (X2v-X1v)*0.1 )
+		if ( abs( X2v-body_intercept_p_x[ip] ) < (X2v-X1v)*0.75 )
 		{
 			velTemp = u[i2v+1] + (u[i4v+1] - u[i2v+1])*(y3[ip]-Y2v)/(Y4v-Y2v);
 			lTemp = X2v+X2v-X1v;
@@ -960,7 +961,7 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 
 		//find dv/dy
 		//U_1 + (U_2-U_1)*(XBI-X1)/(X2-X1)
-		if ( abs( Y1v-body_intercept_p_y[ip] ) < (Y3v-Y1v)*0.1 )
+		if ( abs( Y1v-body_intercept_p_y[ip] ) < (Y3v-Y1v)*0.75 )
 		{
 			velTemp = u[i1v-nx] + (u[i2v-nx] - u[i1v-nx])*(x3[ip]-X1v)/(X2v-X1v);
 			lTemp = Y1v+Y1v-Y3v;
@@ -973,6 +974,7 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 		v_dv_dy = vB[0]  *  (velTemp - vB[0])/(lTemp-y3[ip]);
 
 		q3[ip] = -(n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt+u_dv_dx + v_dv_dy));
+
 		a31 = 0;
 		a32 = n_x/nl;
 		a33 = n_y/nl;
@@ -1022,7 +1024,7 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 		//find du/dx
 		//U_1 + (U_3-U_1)*(YBI-Y1)/(Y3-Y1)
 		//check if were too close to the u node in x direction to get good values, if we are: interpolate from u nodes farther away
-		if ( abs( X1u-body_intercept_p_x[ip] ) < (X2u-X1u)*0.1 )
+		if ( abs( X1u-body_intercept_p_x[ip] ) < (X2u-X1u)*0.75 )
 		{
 			velTemp = u[i1u-1] + (u[i3u-1] - u[i1u-1])*(y4[ip]-Y1u)/(Y3u-Y1u);
 			lTemp = X1u + X1u - X2u;
@@ -1032,12 +1034,12 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 			velTemp = u[i1u] + (u[i3u] - u[i1u])*(y4[ip]-Y1u)/(Y3u-Y1u);
 			lTemp = X1u;
 		}
-		u_du_dx = uB[0]  *  (velTemp - uB[0])/(lTemp-x4[ip]);
+		u_du_dx = -uB[0]  *  (velTemp - uB[0])/(lTemp-x4[ip]);
 
 		//find du/dy
 		//U_1 + (U_2-U_1)*(XBI-X1)/(X2-X1)
 		//check if were too close to u node in y direction
-		if ( abs( Y3u-body_intercept_p_y[ip] ) < (Y3u-Y1u)*0.1 )
+		if ( abs( Y3u-body_intercept_p_y[ip] ) < (Y3u-Y1u)*0.75 )
 		{
 			velTemp = u[i1u-(nx-1)] + (u[i2u-(nx-1)] - u[i2u-(nx-1)])*(x4[ip]-X1u)/(X2u-X1u);
 			lTemp = Y1u + Y1u - Y3u;
@@ -1052,7 +1054,7 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 		//find dv/dx
 		//V_1 + (V_3-V_1)(YBI-Y1)/(Y3-Y1)
 		//check if were too close to the v node in the x direction
-		if ( abs( X1v-body_intercept_p_x[ip] ) < (X2v-X1v)*0.1 )
+		if ( abs( X1v-body_intercept_p_x[ip] ) < (X2v-X1v)*0.75 )
 		{
 			velTemp = u[i1v-1] + (u[i3v-1] - u[i1v-1])*(y4[ip]-Y1v)/(Y3v-Y1v);
 			lTemp = X1v+X1v-X2v;
@@ -1063,10 +1065,12 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 			lTemp = X1v;
 		}
 		u_dv_dx = uB[0]  *  (velTemp-vB[0])/(lTemp-x4[ip]);
+		//if (timeStep == 1)
+		//	q4[ip] = u_dv_dx;
 
 		//find dv/dy
 		//U_1 + (U_2-U_1)*(XBI-X1)/(X2-X1)
-		if ( abs( Y1v-body_intercept_p_y[ip] ) < (Y3v-Y1v)*0.1 )
+		if ( abs( Y1v-body_intercept_p_y[ip] ) < (Y3v-Y1v)*0.75 )
 		{
 			velTemp = u[i1v-nx] + (u[i2v-nx] - u[i1v-nx])*(x4[ip]-X1v)/(X2v-X1v);
 			lTemp = Y1v+Y1v-Y3v;
@@ -1079,6 +1083,7 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 		v_dv_dy = vB[0]  *  (velTemp - vB[0])/(lTemp-y4[ip]);
 
 		q4[ip] = -(n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt+u_dv_dx + v_dv_dy));
+
 		a41 = 0;
 		a42 = n_x/nl;
 		a43 = n_y/nl;
@@ -1143,6 +1148,12 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 	 a2[ip] = b31/detA*q1[ip]  +  b32/detA*q2[ip]  +  b33/detA*q3[ip]  +  b34/detA*q4[ip];
 	 a3[ip] = b41/detA*q1[ip]  +  b42/detA*q2[ip]  +  b43/detA*q3[ip]  +  b44/detA*q4[ip];
 
+	 dudt[ip] = du_dt;
+	ududx[ip] = u_du_dx;
+	vdudy[ip] = v_du_dy;
+	dvdt[ip] = dv_dt;
+	udvdx[ip] = u_dv_dx;
+	vdvdy[ip] = v_dv_dy;
 	 pressureStar[ip] = a0[ip] + a1[ip]*xv[I] + a2[ip]*yu[J] + a3[ip]*xv[I]*yu[J];
 }
 
@@ -1151,15 +1162,16 @@ __global__
 void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP, double *bx, double *by,
 									double *uB, double *uB0, double *vB, double  *vB0, double *yu, double *yv, double *xu, double *xv,
 									double *body_intercept_p_x, double *body_intercept_p_y, double *image_point_p_x, double *image_point_p_y,
-									int i_start, int j_start, int i_end, int j_end, int nx, int ny, int totalPoints,
+									int *i_start, int *j_start, int width, int nx, int ny,
+									double *dudt, double *ududx, double *vdudy, double *dvdt, double *udvdx, double *vdvdy,
 									double *a0, double *a1, double *a2, double *a3,
 									double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4)//test
 {
 	int idx	= threadIdx.x + blockDim.x * blockIdx.x,
-		i	= idx % (i_end-i_start),
-		j	= idx / (i_end-i_start),
-		I	= i_start + i,
-		J	= j_start + j,
+		i	= idx % (width),
+		j	= idx / (width),
+		I	= i_start[0] + i,
+		J	= j_start[0] + j,
 		ip = J*nx + I,
 		ii= I-5,
 		jj = J-5;
@@ -1315,7 +1327,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		//find du/dx
 		//U_2 + (U_4-U_2)*(YBI-Y2)/(Y4-Y2)
 		//check if were too close to the u node in x direction to get good values, if we are: interpolate from u nodes farther away
-		if ( abs( X2u-body_intercept_p_x[index1] ) < (X2u-X1u)*0.1 )
+		if ( abs( X2u-body_intercept_p_x[index1] ) < (X2u-X1u)*0.75 )
 		{
 			velTemp = u[i2u+1] + (u[i4u+1] - u[i2u+1])*(y1[ip]-Y2u)/(Y4u-Y2u);
 			lTemp = X2u + X2u - X1u;
@@ -1330,7 +1342,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		//find du/dy
 		//U_3 + (U_4-U_3)*(XBI-X3)/(X4-X3)
 		//check if were too close to u node in y direction
-		if ( abs( Y3u-body_intercept_p_y[index1] ) < (Y3u-Y1u)*0.1 )
+		if ( abs( Y3u-body_intercept_p_y[index1] ) < (Y3u-Y1u)*0.75 )
 		{
 			velTemp = u[i3u + (nx-1)] + (u[i4u + (nx-1)] - u[i3u + (nx-1)])*(x1[ip]-X3u)/(X4u-X3u);
 			lTemp = Y3u + Y3u - Y1u;
@@ -1345,7 +1357,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		//find dv/dx
 		//V_2 + (V_4-V_2)(YBI-Y2)/(Y4-Y2)
 		//check if were too close to the v node in the x direction
-		if ( abs( X2v-body_intercept_p_x[index1] ) < (X2v-X1v)*0.1 )
+		if ( abs( X2v-body_intercept_p_x[index1] ) < (X2v-X1v)*0.75 )
 		{
 			velTemp = u[i2v+1] + (u[i4v+1] - u[i2v+1])*(y1[ip]-Y2v)/(Y4v-Y2v);
 			lTemp = X2v+X2v-X1v;
@@ -1359,7 +1371,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 
 		//find dv/dy
 		//U_3 + (U_4-U_3)*(XBI-X3)/(X4-X3)
-		if ( abs( Y3v-body_intercept_p_y[index1] ) < (Y3v-Y1v)*0.1 )
+		if ( abs( Y3v-body_intercept_p_y[index1] ) < (Y3v-Y1v)*0.75 )
 		{
 			velTemp = u[i3v+nx] + (u[i4v+nx] - u[i3v+nx])*(x1[ip]-X3v)/(X4v-X3v);
 			lTemp = Y3v+Y3v-Y1v;
@@ -1421,7 +1433,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		//find du/dx
 		//U_1 + (U_3-U_1)*(YBI-Y1)/(Y3-Y1)
 		//check if were too close to the u node in x direction to get good values, if we are: interpolate from u nodes farther away
-		if ( abs( X1u-body_intercept_p_x[index2] ) < (X2u-X1u)*0.1 )
+		if ( abs( X1u-body_intercept_p_x[index2] ) < (X2u-X1u)*0.75 )
 		{
 			velTemp = u[i1u-1] + (u[i3u-1] - u[i1u-1])*(y2[ip]-Y1u)/(Y3u-Y1u);
 			lTemp = X1u + X1u - X2u;
@@ -1431,12 +1443,12 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 			velTemp = u[i1u] + (u[i3u] - u[i1u])*(y2[ip]-Y1u)/(Y3u-Y1u);
 			lTemp = X1u;
 		}
-		u_du_dx = uB[0]  *  (velTemp - uB[0])/(lTemp-x2[ip]);
+		u_du_dx = -uB[0]  *  (velTemp - uB[0])/(lTemp-x2[ip]);
 
 		//find du/dy
 		//U_3 + (U_4-U_3)*(XBI-X3)/(X4-X3)
 		//check if were too close to u node in y direction
-		if ( abs( Y3u-body_intercept_p_y[index2] ) < (Y3u-Y1u)*0.1 )
+		if ( abs( Y3u-body_intercept_p_y[index2] ) < (Y3u-Y1u)*0.75 )
 		{
 			velTemp = u[i3u+(nx-1)] + (u[i4u+(nx-1)] - u[i3u+(nx-1)])*(x2[ip]-X3u)/(X4u-X3u);
 			lTemp = Y3u + Y3u - Y1u;
@@ -1451,7 +1463,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		//find dv/dx
 		//V_1 + (V_3-V_1)(YBI-Y1)/(Y3-Y1)
 		//check if were too close to the v node in the x direction
-		if ( abs( X1v-body_intercept_p_x[index2] ) < (X2v-X1v)*0.1 )
+		if ( abs( X1v-body_intercept_p_x[index2] ) < (X2v-X1v)*0.75 )
 		{
 			velTemp =u[i1v-1] + (u[i3v-1] - u[i1v-1])*(y2[ip]-Y1v)/(Y3v-Y1v);
 			lTemp = X1v+X1v-X2v;
@@ -1465,7 +1477,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 
 		//find dv/dy
 		//U_3 + (U_4-U_3)*(XBI-X3)/(X4-X3)
-		if ( abs( Y3v-body_intercept_p_y[index2] ) < (Y3v-Y1v)*0.1 )
+		if ( abs( Y3v-body_intercept_p_y[index2] ) < (Y3v-Y1v)*0.75 )
 		{
 			velTemp = u[i3v+nx] + (u[i4v+nx] - u[i3v+nx])*(x2[ip]-X3v)/(X4v-X3v);
 			lTemp = Y3v+Y3v-Y1v;
@@ -1528,7 +1540,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		//find du/dx
 		//U_2 + (U_4-U_2)*(YBI-Y2)/(Y4-Y2)
 		//check if were too close to the u node in x direction to get good values, if we are: interpolate from u nodes farther away
-		if ( abs( X2u-body_intercept_p_x[index3] ) < (X2u-X1u)*0.1 )
+		if ( abs( X2u-body_intercept_p_x[index3] ) < (X2u-X1u)*0.75 )
 		{
 			velTemp = u[i2u+1] + (u[i4u+1] - u[i2u+1])*(y3[ip]-Y2u)/(Y4u-Y2u);
 			lTemp = X2u + X2u - X1u;
@@ -1543,7 +1555,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		//find du/dy
 		//U_1 + (U_2-U_1)*(XBI-X1)/(X2-X1)
 		//check if were too close to u node in y direction
-		if ( abs( Y1u-body_intercept_p_y[index3] ) < (Y3u-Y1u)*0.1 )
+		if ( abs( Y1u-body_intercept_p_y[index3] ) < (Y3u-Y1u)*0.75 )
 		{
 			velTemp = u[i1u-(nx-1)] + (u[i2u-(nx-1)] - u[i2u-(nx-1)])*(x3[ip]-X1u)/(X2u-X1u);
 			lTemp = Y1u + Y1u - Y3u;
@@ -1558,7 +1570,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		//find dv/dx
 		//V_2 + (V_4-V_2)(YBI-Y2)/(Y4-Y2)
 		//check if were too close to the v node in the x direction
-		if ( abs( X2v-body_intercept_p_x[index3] ) < (X2v-X1v)*0.1 )
+		if ( abs( X2v-body_intercept_p_x[index3] ) < (X2v-X1v)*0.75 )
 		{
 			velTemp = u[i2v+1] + (u[i4v+1] - u[i2v+1])*(y3[ip]-Y2v)/(Y4v-Y2v);
 			lTemp = X2v+X2v-X1v;
@@ -1572,7 +1584,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 
 		//find dv/dy
 		//U_1 + (U_2-U_1)*(XBI-X1)/(X2-X1)
-		if ( abs( Y1v-body_intercept_p_y[index3] ) < (Y3v-Y1v)*0.1 )
+		if ( abs( Y1v-body_intercept_p_y[index3] ) < (Y3v-Y1v)*0.75 )
 		{
 			velTemp = u[i1v-nx] + (u[i2v-nx] - u[i1v-nx])*(x3[ip]-X1v)/(X2v-X1v);
 			lTemp = Y1v+Y1v-Y3v;
@@ -1634,7 +1646,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		//find du/dx
 		//U_1 + (U_3-U_1)*(YBI-Y1)/(Y3-Y1)
 		//check if were too close to the u node in x direction to get good values, if we are: interpolate from u nodes farther away
-		if ( abs( X1u-body_intercept_p_x[index4] ) < (X2u-X1u)*0.1 )
+		if ( abs( X1u-body_intercept_p_x[index4] ) < (X2u-X1u)*0.75 )
 		{
 			velTemp = u[i1u-1] + (u[i3u-1] - u[i1u-1])*(y4[ip]-Y1u)/(Y3u-Y1u);
 			lTemp = X1u + X1u - X2u;
@@ -1644,12 +1656,12 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 			velTemp = u[i1u] + (u[i3u] - u[i1u])*(y4[ip]-Y1u)/(Y3u-Y1u);
 			lTemp = X1u;
 		}
-		u_du_dx = uB[0]  *  (velTemp - uB[0])/(lTemp-x4[ip]);
+		u_du_dx = -uB[0]  *  (velTemp - uB[0])/(lTemp-x4[ip]);
 
 		//find du/dy
 		//U_1 + (U_2-U_1)*(XBI-X1)/(X2-X1)
 		//check if were too close to u node in y direction
-		if ( abs( Y3u-body_intercept_p_y[index4] ) < (Y3u-Y1u)*0.1 )
+		if ( abs( Y3u-body_intercept_p_y[index4] ) < (Y3u-Y1u)*0.75 )
 		{
 			velTemp = u[i1u-(nx-1)] + (u[i2u-(nx-1)] - u[i2u-(nx-1)])*(x4[ip]-X1u)/(X2u-X1u);
 			lTemp = Y1u + Y1u - Y3u;
@@ -1664,7 +1676,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		//find dv/dx
 		//V_1 + (V_3-V_1)(YBI-Y1)/(Y3-Y1)
 		//check if were too close to the v node in the x direction
-		if ( abs( X1v-body_intercept_p_x[index4] ) < (X2v-X1v)*0.1 )
+		if ( abs( X1v-body_intercept_p_x[index4] ) < (X2v-X1v)*0.75 )
 		{
 			velTemp = u[i1v-1] + (u[i3v-1] - u[i1v-1])*(y4[ip]-Y1v)/(Y3v-Y1v);
 			lTemp = X1v+X1v-X2v;
@@ -1678,7 +1690,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 
 		//find dv/dy
 		//U_1 + (U_2-U_1)*(XBI-X1)/(X2-X1)
-		if ( abs( Y1v-body_intercept_p_y[index4] ) < (Y3v-Y1v)*0.1 )
+		if ( abs( Y1v-body_intercept_p_y[index4] ) < (Y3v-Y1v)*0.75 )
 		{
 			velTemp = u[i1v-nx] + (u[i2v-nx] - u[i1v-nx])*(x4[ip]-X1v)/(X2v-X1v);
 			lTemp = Y1v+Y1v-Y3v;
@@ -1761,6 +1773,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 	a1[ip] = b21/detA*q1[ip]  +  b22/detA*q2[ip]  +  b23/detA*q3[ip]  +  b24/detA*q4[ip];
 	a2[ip] = b31/detA*q1[ip]  +  b32/detA*q2[ip]  +  b33/detA*q3[ip]  +  b34/detA*q4[ip];
 	a3[ip] = b41/detA*q1[ip]  +  b42/detA*q2[ip]  +  b43/detA*q3[ip]  +  b44/detA*q4[ip];
+
 	//pressure at the image point
 	double image_point_pressure = a0[ip] + a1[ip]*image_point_p_x[ip] + a2[ip]*image_point_p_y[ip] + a3[ip]*image_point_p_y[ip]*image_point_p_x[ip];
 	//interpolate pressure to the ghost node
@@ -1808,7 +1821,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		//find du/dx
 		//U_2 + (U_4-U_2)*(YBI-Y2)/(Y4-Y2)
 		//check if were too close to the u node in x direction to get good values, if we are: interpolate from u nodes farther away
-		if ( abs( X2u-body_intercept_p_x[index1] ) < (X2u-X1u)*0.1 )
+		if ( abs( X2u-body_intercept_p_x[index1] ) < (X2u-X1u)*0.75 )
 		{
 			velTemp = u[i2u+1] + (u[i4u+1] - u[i2u+1])*(body_intercept_p_y[index1]-Y2u)/(Y4u-Y2u);
 			lTemp = X2u + X2u - X1u;
@@ -1823,7 +1836,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		//find du/dy
 		//U_3 + (U_4-U_3)*(XBI-X3)/(X4-X3)
 		//check if were too close to u node in y direction
-		if ( abs( Y3u-body_intercept_p_y[index1] ) < (Y3u-Y1u)*0.1 )
+		if ( abs( Y3u-body_intercept_p_y[index1] ) < (Y3u-Y1u)*0.75 )
 		{
 			velTemp = u[i3u + (nx-1)] + (u[i4u + (nx-1)] - u[i3u + (nx-1)])*(body_intercept_p_x[index1]-X3u)/(X4u-X3u);
 			lTemp = Y3u + Y3u - Y1u;
@@ -1838,7 +1851,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		//find dv/dx
 		//V_2 + (V_4-V_2)(YBI-Y2)/(Y4-Y2)
 		//check if were too close to the v node in the x direction
-		if ( abs( X2v-body_intercept_p_x[index1] ) < (X2v-X1v)*0.1 )
+		if ( abs( X2v-body_intercept_p_x[index1] ) < (X2v-X1v)*0.75 )
 		{
 			velTemp = u[i2v+1] + (u[i4v+1] - u[i2v+1])*(body_intercept_p_y[index1]-Y2v)/(Y4v-Y2v);
 			lTemp = X2v+X2v-X1v;
@@ -1848,11 +1861,11 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 			velTemp = u[i2v] + (u[i4v] - u[i2v])*(body_intercept_p_y[index1]-Y2v)/(Y4v-Y2v);
 			lTemp = X2v;
 		}
-		u_dv_dx = uB[0]  *  (velTemp-vB[0])/(X2v-body_intercept_p_x[index1]);
+		u_dv_dx = uB[0]  *  (velTemp-vB[0])/(lTemp-body_intercept_p_x[index1]);
 
 		//find dv/dy
 		//U_3 + (U_4-U_3)*(XBI-X3)/(X4-X3)
-		if ( abs( Y3v-body_intercept_p_y[index1] ) < (Y3v-Y1v)*0.1 )
+		if ( abs( Y3v-body_intercept_p_y[index1] ) < (Y3v-Y1v)*0.75 )
 		{
 			velTemp = u[i3v+nx] + (u[i4v+nx] - u[i3v+nx])*(body_intercept_p_x[index1]-X3v)/(X4v-X3v);
 			lTemp = Y3v+Y3v-Y1v;
@@ -1908,7 +1921,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		//find du/dx
 		//U_1 + (U_3-U_1)*(YBI-Y1)/(Y3-Y1)
 		//check if were too close to the u node in x direction to get good values, if we are: interpolate from u nodes farther away
-		if ( abs( X1u-body_intercept_p_x[index2] ) < (X2u-X1u)*0.1 )
+		if ( abs( X1u-body_intercept_p_x[index2] ) < (X2u-X1u)*0.75 )
 		{
 			velTemp = u[i1u-1] + (u[i3u-1] - u[i1u-1])*(body_intercept_p_y[index2]-Y1u)/(Y3u-Y1u);
 			lTemp = X1u + X1u - X2u;
@@ -1918,12 +1931,12 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 			velTemp = u[i1u] + (u[i3u] - u[i1u])*(body_intercept_p_y[index2]-Y1u)/(Y3u-Y1u);
 			lTemp = X1u;
 		}
-		u_du_dx = uB[0]  *  (velTemp - uB[0])/(lTemp-body_intercept_p_x[index2]);
+		u_du_dx = -uB[0]  *  (velTemp - uB[0])/(lTemp-body_intercept_p_x[index2]);
 
 		//find du/dy
 		//U_3 + (U_4-U_3)*(XBI-X3)/(X4-X3)
 		//check if were too close to u node in y direction
-		if ( abs( Y3u-body_intercept_p_y[index2] ) < (Y3u-Y1u)*0.1 )
+		if ( abs( Y3u-body_intercept_p_y[index2] ) < (Y3u-Y1u)*0.75 )
 		{
 			velTemp = u[i3u+(nx-1)] + (u[i4u+(nx-1)] - u[i3u+(nx-1)])*(body_intercept_p_x[index2]-X3u)/(X4u-X3u);
 			lTemp = Y3u + Y3u - Y1u;
@@ -1938,7 +1951,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		//find dv/dx
 		//V_1 + (V_3-V_1)(YBI-Y1)/(Y3-Y1)
 		//check if were too close to the v node in the x direction
-		if ( abs( X1v-body_intercept_p_x[index2] ) < (X2v-X1v)*0.1 )
+		if ( abs( X1v-body_intercept_p_x[index2] ) < (X2v-X1v)*0.75 )
 		{
 			velTemp =u[i1v-1] + (u[i3v-1] - u[i1v-1])*(body_intercept_p_y[index2]-Y1v)/(Y3v-Y1v);
 			lTemp = X1v+X1v-X2v;
@@ -1952,7 +1965,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 
 		//find dv/dy
 		//U_3 + (U_4-U_3)*(XBI-X3)/(X4-X3)
-		if ( abs( Y3v-body_intercept_p_y[index2] ) < (Y3v-Y1v)*0.1 )
+		if ( abs( Y3v-body_intercept_p_y[index2] ) < (Y3v-Y1v)*0.75 )
 		{
 			velTemp = u[i3v+nx] + (u[i4v+nx] - u[i3v+nx])*(body_intercept_p_x[index2]-X3v)/(X4v-X3v);
 			lTemp = Y3v+Y3v-Y1v;
@@ -2008,7 +2021,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		//find du/dx
 		//U_2 + (U_4-U_2)*(YBI-Y2)/(Y4-Y2)
 		//check if were too close to the u node in x direction to get good values, if we are: interpolate from u nodes farther away
-		if ( abs( X2u-body_intercept_p_x[index3] ) < (X2u-X1u)*0.1 )
+		if ( abs( X2u-body_intercept_p_x[index3] ) < (X2u-X1u)*0.75 )
 		{
 			velTemp = u[i2u+1] + (u[i4u+1] - u[i2u+1])*(body_intercept_p_y[index3]-Y2u)/(Y4u-Y2u);
 			lTemp = X2u + X2u - X1u;
@@ -2023,7 +2036,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		//find du/dy
 		//U_1 + (U_2-U_1)*(XBI-X1)/(X2-X1)
 		//check if were too close to u node in y direction
-		if ( abs( Y1u-body_intercept_p_y[index3] ) < (Y3u-Y1u)*0.1 )
+		if ( abs( Y1u-body_intercept_p_y[index3] ) < (Y3u-Y1u)*0.75 )
 		{
 			velTemp = u[i1u-(nx-1)] + (u[i2u-(nx-1)] - u[i2u-(nx-1)])*(body_intercept_p_x[index3]-X1u)/(X2u-X1u);
 			lTemp = Y1u + Y1u - Y3u;
@@ -2038,7 +2051,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		//find dv/dx
 		//V_2 + (V_4-V_2)(YBI-Y2)/(Y4-Y2)
 		//check if were too close to the v node in the x direction
-		if ( abs( X2v-body_intercept_p_x[index3] ) < (X2v-X1v)*0.1 )
+		if ( abs( X2v-body_intercept_p_x[index3] ) < (X2v-X1v)*0.75 )
 		{
 			velTemp = u[i2v+1] + (u[i4v+1] - u[i2v+1])*(body_intercept_p_y[index3]-Y2v)/(Y4v-Y2v);
 			lTemp = X2v+X2v-X1v;
@@ -2052,7 +2065,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 
 		//find dv/dy
 		//U_1 + (U_2-U_1)*(XBI-X1)/(X2-X1)
-		if ( abs( Y1v-body_intercept_p_y[index3] ) < (Y3v-Y1v)*0.1 )
+		if ( abs( Y1v-body_intercept_p_y[index3] ) < (Y3v-Y1v)*0.75 )
 		{
 			velTemp = u[i1v-nx] + (u[i2v-nx] - u[i1v-nx])*(body_intercept_p_x[index3]-X1v)/(X2v-X1v);
 			lTemp = Y1v+Y1v-Y3v;
@@ -2108,7 +2121,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		//find du/dx
 		//U_1 + (U_3-U_1)*(YBI-Y1)/(Y3-Y1)
 		//check if were too close to the u node in x direction to get good values, if we are: interpolate from u nodes farther away
-		if ( abs( X1u-body_intercept_p_x[index4] ) < (X2u-X1u)*0.1 )
+		if ( abs( X1u-body_intercept_p_x[index4] ) < (X2u-X1u)*0.75 )
 		{
 			velTemp = u[i1u-1] + (u[i3u-1] - u[i1u-1])*(body_intercept_p_y[index4]-Y1u)/(Y3u-Y1u);
 			lTemp = X1u + X1u - X2u;
@@ -2118,12 +2131,12 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 			velTemp = u[i1u] + (u[i3u] - u[i1u])*(body_intercept_p_y[index4]-Y1u)/(Y3u-Y1u);
 			lTemp = X1u;
 		}
-		u_du_dx = uB[0]  *  (velTemp - uB[0])/(lTemp-body_intercept_p_x[index4]);
+		u_du_dx = -uB[0]  *  (velTemp - uB[0])/(lTemp-body_intercept_p_x[index4]);
 
 		//find du/dy
 		//U_1 + (U_2-U_1)*(XBI-X1)/(X2-X1)
 		//check if were too close to u node in y direction
-		if ( abs( Y3u-body_intercept_p_y[index4] ) < (Y3u-Y1u)*0.1 )
+		if ( abs( Y3u-body_intercept_p_y[index4] ) < (Y3u-Y1u)*0.75 )
 		{
 			velTemp = u[i1u-(nx-1)] + (u[i2u-(nx-1)] - u[i2u-(nx-1)])*(body_intercept_p_x[index4]-X1u)/(X2u-X1u);
 			lTemp = Y1u + Y1u - Y3u;
@@ -2138,7 +2151,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		//find dv/dx
 		//V_1 + (V_3-V_1)(YBI-Y1)/(Y3-Y1)
 		//check if were too close to the v node in the x direction
-		if ( abs( X1v-body_intercept_p_x[index4] ) < (X2v-X1v)*0.1 )
+		if ( abs( X1v-body_intercept_p_x[index4] ) < (X2v-X1v)*0.75 )
 		{
 			velTemp = u[i1v-1] + (u[i3v-1] - u[i1v-1])*(body_intercept_p_y[index4]-Y1v)/(Y3v-Y1v);
 			lTemp = X1v+X1v-X2v;
@@ -2152,7 +2165,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 
 		//find dv/dy
 		//U_1 + (U_2-U_1)*(XBI-X1)/(X2-X1)
-		if ( abs( Y1v-body_intercept_p_y[index4] ) < (Y3v-Y1v)*0.1 )
+		if ( abs( Y1v-body_intercept_p_y[index4] ) < (Y3v-Y1v)*0.75 )
 		{
 			velTemp = u[i1v-nx] + (u[i2v-nx] - u[i1v-nx])*(body_intercept_p_x[index4]-X1v)/(X2v-X1v);
 			lTemp = Y1v+Y1v-Y3v;
@@ -2166,6 +2179,12 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 
 		matD = (n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt+u_dv_dx + v_dv_dy));
 	}
+	dudt[ip] = du_dt;
+	ududx[ip] = u_du_dx;
+	vdudy[ip] = v_du_dy;
+	dvdt[ip] = dv_dt;
+	udvdx[ip] = u_dv_dx;
+	vdvdy[ip] = v_dv_dy;
 	pressure[ip] = image_point_pressure + sqrt(pow(image_point_p_x[ip]-xv[I],2)+pow(image_point_p_y[ip]-yu[J],2))*matD;
 }
 

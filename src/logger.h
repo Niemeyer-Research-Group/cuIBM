@@ -190,12 +190,12 @@ public:
 		for( E_iter E=timer.begin(); E!=timer.end(); ++E )
 		{
 			totalTime += E->second;
-			std::cout << std::setw(24) << E->first << std::setw(13) << std::fixed \
-			          << std::setprecision(4) << E->second << std::endl;
+			std::cout << std::setw(16) << std::setprecision(4) << std::fixed << E->second << "\t"  \
+						<< E->first << std::endl;
 		}
 		std::cout << "-------------------------------------" << std::endl;
-		std::cout << std::setw(24) << "TOTAL" << std::setw(13) << std::fixed \
-			          << std::setprecision(4) << totalTime << std::endl;
+		std::cout << std::setw(16) << std::setprecision(4) << totalTime << "\t"  \
+				<< "TOTAL" << std::endl;
 	}
 
 	/**

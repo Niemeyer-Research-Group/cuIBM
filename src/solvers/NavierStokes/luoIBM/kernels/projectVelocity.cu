@@ -43,7 +43,7 @@ void project_velocity_luo_Y(double *u, double *uhat, double *uold, double *press
 		return;
 
 	uold[i] = u[i];
-	
+
 	u[i] = uhat[i] - dt*(pressure[ip+nx]-pressure[ip]) / (0.5*dy[J+1]+0.5*dy[J]);
 }
 

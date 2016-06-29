@@ -99,7 +99,7 @@ void NavierStokesSolver::generateN()
  */
 void NavierStokesSolver::generateL()
 {
-	logger.startTimer("L");
+	logger.startTimer("Diffusion Terms");
 	double	*u_r    = thrust::raw_pointer_cast( &(u[0]) ),
 			*L_r    = thrust::raw_pointer_cast( &(L[0]) ),
 			*dx_r	= thrust::raw_pointer_cast( &(domInfo->dx[0]) ),
@@ -125,7 +125,7 @@ void NavierStokesSolver::generateL()
 	dim3 blockV(blocksize, 1);
 	kernels::Lmidy<<<gridV, blockV>>>(L_r,u_r,dx_r,dy_r,nx,ny,nu);
 	kernels::Lbcy<<<gridV, blockV>>>(L_r, u_r, dx_r, dy_r, ym_r, yp_r, xm_r, xp_r, nx, ny, nu);
-	logger.stopTimer("L");
+	logger.stopTimer("Diffusion Terms");
 }
 
 void NavierStokesSolver::generateLHS1()

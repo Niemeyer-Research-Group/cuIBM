@@ -91,6 +91,12 @@ void luoIBM::initialise()
 	a1.resize(numP);
 	a2.resize(numP);
 	a3.resize(numP);
+	dudt.resize(numP);
+	ududx.resize(numP);
+	vdudy.resize(numP);
+	dvdt.resize(numP);
+	udvdx.resize(numP);
+	vdvdy.resize(numP);
 
 	//tagpoints, size nump
 	ghostTagsP.resize(numP);

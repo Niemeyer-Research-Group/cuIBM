@@ -151,8 +151,8 @@ void luoIBM::testInterpX()//flag split this into ghost node and hybrid node func
 		for (int I=i_start;  I<i_end;  I++)
 		{
 			iu = J*(nx-1) + I;
-			//if (ghostTagsUV[iu] >0)//for inside
-			if (hybridTagsUV[iu] >0)//for outside
+			if (ghostTagsUV[iu] >0)//for inside
+			//if (hybridTagsUV[iu] >0)//for outside
 			{
 				body_nodes << x1_ip[iu]<<"\t";
 				body_nodes << y1_ip[iu]<<"\t";
@@ -176,8 +176,8 @@ void luoIBM::testInterpX()//flag split this into ghost node and hybrid node func
 				body_nodes << q2[iu] <<"\t";
 				body_nodes << q3[iu] <<"\t";
 				body_nodes << q4[iu] <<"\t";
-				//body_nodes << u[iu] <<"\t";//inside
-				body_nodes << ustar[iu] <<"\t";//outside
+				body_nodes << u[iu] <<"\t";//inside
+				//body_nodes << ustar[iu] <<"\t";//outside
 				body_nodes << ip_u[iu]<<"\n";
 			}
 		}
@@ -310,15 +310,21 @@ void luoIBM::testInterpP()
 					"a0\t"
 					"a1\t"
 					"a2\t"
-					"a3\n"
+					"a3\t"
+					"dudt\t"
+					"ududx\t"
+					"vdudy\t"
+					"dvdt\t"
+					"udvdx\t"
+					"vdvdy\n"
 					;
 	for (int J=j_start;  J<j_end;  J++)
 	{
 		for (int I=i_start;  I<i_end;  I++)
 		{
 			ip = J*nx + I;
-			if (ghostTagsP[ip] >0)//for inside
-			//if (hybridTagsP[ip] >0)//for outside
+			//if (ghostTagsP[ip] >0)//for inside
+			if (hybridTagsP[ip] >0)//for outside
 			{
 				//std::cout<<I<<"\t"<<J<<"\t"<<iv<<"\n";
 				body_nodes << x1_ip_p[ip]<<"\t";
@@ -343,13 +349,18 @@ void luoIBM::testInterpP()
 				body_nodes << q2_p[ip] <<"\t";
 				body_nodes << q3_p[ip] <<"\t";
 				body_nodes << q4_p[ip] <<"\t";
-				//body_nodes << pressureStar[ip] <<"\t";//inside
-				body_nodes << pressure[ip] <<"\t";//outside
+				body_nodes << pressureStar[ip] <<"\t";//outside
+				//body_nodes << pressure[ip] <<"\t";//inside
 				body_nodes << a0[ip] <<"\t";
 				body_nodes << a1[ip] <<"\t";
 				body_nodes << a2[ip] <<"\t";
-				body_nodes << a3[ip] <<"\n";
-				
+				body_nodes << a3[ip] <<"\t";
+				body_nodes << dudt[ip] <<"\t";
+				body_nodes << ududx[ip] <<"\t";
+				body_nodes << vdudy[ip] <<"\t";
+				body_nodes << dvdt[ip] <<"\t";
+				body_nodes << udvdx[ip] <<"\t";
+				body_nodes << vdvdy[ip] <<"\n";
 			}
 		}
 	}
@@ -417,8 +428,8 @@ void luoIBM::testOutputY()
 		out << folder << "/body_nodesY.csv";
 		body_nodes.open(out.str().c_str());
 		body_nodes << "x1\ty1\tx2\ty2\tg_x\tg_y\tbi_x\tbi_y\tip_x\tip_y\n";
-		arrayprint(ghostTagsUV,"gnuvY","y");
-		arrayprint(ghostTagsUV,"gnuvX","x");
+		arrayprint(ghostTagsUV,"gnuvY","y",-1);
+		arrayprint(ghostTagsUV,"gnuvX","x",-1);
 		for (int J=j_start;  J<j_end;  J++)
 		{
 			for (int I=i_start;  I<i_end;  I++)
@@ -441,6 +452,72 @@ void luoIBM::testOutputY()
 				}
 			}
 		}
-		
 		body_nodes.close();
+}
+
+luoIBM::testForce();
+{
+	std::cout<<"Outputing for interpolation of the pressure force values\n";
+	std::ofstream body_nodes;
+	parameterDB  &db = *NavierStokesSolver::paramDB;
+	std::string folder = db["inputs"]["caseFolder"].get<std::string>();
+	std::stringstream out;
+	out << folder << "/interp_test_force.csv";
+	body_nodes.open(out.str().c_str());
+	body_nodes <<	"x1\t"
+					"x2\t"
+					"x3\t"
+					"x4\t"
+					"y1\t"
+					"y2\t"
+					"y3\t"
+					"y4\t"
+					"q1\t"
+					"q2\t"
+					"q3\t"
+					"q4\t"
+					"p\t"
+					"body_node_1_x\t"
+					"body_node_1_y\t"
+					"body_node_2_x\t"
+					"body_node_2_y\t"
+					"px\t"
+					"py\n"
+					;
+	for (int i=0;  i<totalPoints;  i++)
+	{
+		//std::cout<<I<<"\t"<<J<<"\t"<<iv<<"\n";
+		body_nodes << B.x1[i] <<"\t";
+		body_nodes << B.x2[i] <<"\t";
+		body_nodes << B.x3[i] <<"\t";
+		body_nodes << B.x4[i] <<"\t";
+		body_nodes << B.y1[i] <<"\t";
+		body_nodes << B.y2[i] <<"\t";
+		body_nodes << B.y3[i] <<"\t";
+		body_nodes << B.y4[i] <<"\t";
+		body_nodes << B.q1[i] <<"\t";
+		body_nodes << B.q2[i] <<"\t";
+		body_nodes << B.q3[i] <<"\t";
+		body_nodes << B.q4[i] <<"\t";
+		body_nodes << B.force_pressure[i] <<"\t";
+		body_nodes << B.x[i]<<"\t";
+		body_nodes << B.y[i]<<"\t";
+		if (i == totalPoints-1)
+		{
+			body_nodes << B.x[0]<<"\t";
+			body_nodes <<B.y[0]<<"\t";
+		}
+		else
+		{
+			body_nodes << B.x[i+1]<<"\t";
+			body_nodes <<B.y[i+1] <<"\t";
+		}
+		body_nodes << B.point_x[i]<<"\t";
+		body_nodes << B.point_y[i]<<"\t";
+		body_nodes << B.point2_x[i]<<"\t";
+		body_nodes << B.point2_y[i]<<"\t";
+		body_nodes << B.point3_x[i]<<"\t";
+		body_nodes << B.point3_y[i]<<"\n";
+	}
+	body_nodes.close();
 }

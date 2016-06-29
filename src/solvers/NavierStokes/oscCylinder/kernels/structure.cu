@@ -26,5 +26,13 @@ void update_body_viv(double *y, double *vB, double dy, double vnew, int totalPoi
 	vB[i] = vnew;
 	y[i] = y[i] + dy;
 }
+__global__
+void initialise_old(double *uB0, double unew, int totalPoints)
+{
+	int i	= threadIdx.x + (blockDim.x * blockIdx.x);
+	if (i > totalPoints)
+		return;
+	uB0[i] = unew;
+}
 
 }

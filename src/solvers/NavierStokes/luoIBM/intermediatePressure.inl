@@ -64,6 +64,7 @@ void luoIBM::generateLHS2()
 
 void luoIBM::weightPressure()
 {
+	logger.startTimer("weightPressure");
 	double	*u_r 		= thrust::raw_pointer_cast ( &(u[0]) ),
 			*pressure_r 	= thrust::raw_pointer_cast ( &(pressure[0]) ),
 			*pressureStar_r	= thrust::raw_pointer_cast ( &(pressureStar[0]) ),
@@ -79,7 +80,7 @@ void luoIBM::weightPressure()
 			*vB0_r		= thrust::raw_pointer_cast ( &(B.vBk[0]) ),
 			*uB_r		= thrust::raw_pointer_cast ( &(B.uB[0]) ),
 			*vB_r		= thrust::raw_pointer_cast ( &(B.vB[0]) ),
-			*bx_r		= thrust::raw_pointer_cast ( &(B.x[0]) ),//not sure if these are on the host or not
+			*bx_r		= thrust::raw_pointer_cast ( &(B.x[0]) ),
 			*by_r		= thrust::raw_pointer_cast ( &(B.y[0]) );
 
 	double 	*x1_p_r = thrust::raw_pointer_cast ( &(x1_p[0]) ),
@@ -97,40 +98,47 @@ void luoIBM::weightPressure()
 			*a0_r	= thrust::raw_pointer_cast ( &(a0[0]) ),
 			*a1_r	= thrust::raw_pointer_cast ( &(a1[0]) ),
 			*a2_r	= thrust::raw_pointer_cast ( &(a2[0]) ),
-			*a3_r	= thrust::raw_pointer_cast ( &(a3[0]) );
+			*a3_r	= thrust::raw_pointer_cast ( &(a3[0]) ),
+			*dudt_r	= thrust::raw_pointer_cast ( &(dudt[0]) ),
+			*dvdt_r	= thrust::raw_pointer_cast ( &(dvdt[0]) ),
+			*ududx_r	= thrust::raw_pointer_cast ( &(ududx[0]) ),
+			*vdudy_r	= thrust::raw_pointer_cast ( &(vdudy[0]) ),
+			*udvdx_r	= thrust::raw_pointer_cast ( &(udvdx[0]) ),
+			*vdvdy_r	= thrust::raw_pointer_cast ( &(vdvdy[0]) );
 
 	int 	*ghostTagsP_r		= thrust::raw_pointer_cast ( &(ghostTagsP[0]) ),
 			*hybridTagsP_r		= thrust::raw_pointer_cast ( &(hybridTagsP[0]) );
 
 	int nx = domInfo ->nx,
 		ny = domInfo ->ny,
-		totalPoints = B.totalPoints,
-		i_start = B.startI[0],
-		j_start = B.startJ[0],
-		width_i = B.numCellsX[0],
-		height_j = B.numCellsY[0],
-		i_end = i_start + width_i,
-		j_end = j_start + height_j;
+		width_i = B.numCellsXHost, //flag this value is only moved to the host once (in B.initialise) if the body is moving too much this could break 
+		height_j=B.numCellsYHost;  //this is done because we need the value on the host to calculate the grid size, but copying it to the host every TS is expensive
+	int *i_start_r = thrust::raw_pointer_cast ( &(B.startI[0]) ),
+		*j_start_r = thrust::raw_pointer_cast ( &(B.startJ[0]) );
 
 	const int blocksize = 256;
 	dim3 grid( int( (width_i*height_j-0.5)/blocksize ) +1, 1);
 	dim3 block(blocksize, 1);
+	cusp::blas::fill(pressureStar,0);//flag not needed?
 	kernels::interpolatePressureToHybridNode<<<grid,block>>>(pressure_r, pressureStar_r, u_r, hybridTagsP_r, bx_r, by_r,
 									uB_r, uB0_r, vB_r, vB0_r, yu_r, yv_r, xu_r, xv_r,
 									body_intercept_p_x_r, body_intercept_p_y_r, image_point_p_x_r, image_point_p_y_r,
-									i_start, j_start, i_end, j_end, nx, ny, totalPoints,
+									i_start_r, j_start_r, width_i, nx, ny,
+									dudt_r,ududx_r,dvdt_r,vdudy_r,udvdx_r,vdvdy_r,
 									a0_r, a1_r, a2_r, a3_r,
 									x1_p_r, x2_p_r, x3_p_r, x4_p_r, y1_p_r, y2_p_r, y3_p_r, y4_p_r, q1_p_r, q2_p_r, q3_p_r, q4_p_r, timeStep);
 	kernels::weightP<<<grid,block>>>(pressure_r, pressureStar_r, ghostTagsP_r, hybridTagsP_r, yu_r, xv_r,
 									body_intercept_p_x_r, body_intercept_p_y_r, image_point_p_x_r, image_point_p_y_r,
-									i_start, j_start, i_end, j_end, nx, ny);
+									i_start_r, j_start_r, width_i, nx, ny);
 	kernels::interpolatePressureToGhostNode<<<grid,block>>>(pressure_r, u_r, ghostTagsP_r, bx_r, by_r,
 									uB_r, uB0_r, vB_r, vB0_r, yu_r, yv_r, xu_r, xv_r,
 									body_intercept_p_x_r, body_intercept_p_y_r, image_point_p_x_r, image_point_p_y_r,
-									i_start, j_start, i_end, j_end, nx, ny, totalPoints,
+									i_start_r, j_start_r, width_i, nx, ny,
+									dudt_r,ududx_r,dvdt_r,vdudy_r,udvdx_r,vdvdy_r,
 									a0_r, a1_r, a2_r, a3_r,
 									x1_p_r, x2_p_r, x3_p_r, x4_p_r, y1_p_r, y2_p_r, y3_p_r, y4_p_r, q1_p_r, q2_p_r, q3_p_r, q4_p_r);
 	//testInterpP();
+	logger.stopTimer("weightPressure");
 }
 
 void luoIBM::preRHS2Interpolation()
@@ -174,25 +182,21 @@ void luoIBM::preRHS2Interpolation()
 
 	int nx = domInfo ->nx,
 		ny = domInfo ->ny,
-		totalPoints = B.totalPoints,
-		i_start = B.startI[0],
-		j_start = B.startJ[0],
-		width_i = B.numCellsX[0],
-		height_j = B.numCellsY[0],
-		i_end = i_start + width_i,
-		j_end = j_start + height_j;
-
+		width_i = B.numCellsXHost, //flag this value is only moved to the host once (in B.initialise) if the body is moving too much this could break 
+		height_j=B.numCellsYHost;	//this is done because we need the value on the host to calculate the grid size, but copying it to the host every TS is expensive
+	int *i_start_r = thrust::raw_pointer_cast ( &(B.startI[0]) ),
+		*j_start_r = thrust::raw_pointer_cast ( &(B.startJ[0]) );
 	const int blocksize = 256;
 	dim3 grid( int( (width_i*height_j-0.5)/blocksize ) +1, 1);
 	dim3 block(blocksize, 1);
 
 	//interpolate uhat to image point and ghost node
 	kernels::interpolateVelocityToGhostNodeX<<<grid,block>>>(uhat_r, ghostTagsUV_r, bx_r, by_r, uB_r, yu_r, xu_r,
-													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
-													i_start, j_start, i_end, j_end, nx, ny, totalPoints,
-													x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r,ip_u_r);
+																body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
+																i_start_r, j_start_r, width_i, nx, ny,
+																x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r,ip_u_r);
 	kernels::interpolateVelocityToGhostNodeY<<<grid,block>>>(uhat_r, ghostTagsUV_r, bx_r, by_r, vB_r, yv_r, xv_r,
-													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
-													i_start, j_start, i_end, j_end, nx, ny, totalPoints,
-													x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r,ip_u_r);
+																body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
+																i_start_r, j_start_r, width_i, nx, ny,
+																x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r,ip_u_r);
 }

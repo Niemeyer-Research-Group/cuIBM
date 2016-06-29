@@ -13,5 +13,7 @@
 namespace kernels
 {
 __global__
-void update_body_viv(double *y, double *vB, double dy, double vnew, int totalPoints);
+void update_body_viv(double *x, double *uB, double dx, double unew, int totalPoints);
+__global__
+void initialise_old(double *uB0, double vnew, int totalPoints);
 }

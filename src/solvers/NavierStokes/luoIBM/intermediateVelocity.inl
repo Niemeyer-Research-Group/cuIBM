@@ -14,6 +14,7 @@
 
 void luoIBM::generateRHS1()
 {
+	logger.startTimer("RHS1 Setup");
 	double	*u_r    = thrust::raw_pointer_cast( &(u[0]) ),
 			*uold_r = thrust::raw_pointer_cast( &(uold[0]) ),
 			*N_r    = thrust::raw_pointer_cast( &(N[0]) ),
@@ -46,7 +47,7 @@ void luoIBM::generateRHS1()
 	dim3 dimBlockU(blocksize, 1);
 	dim3 dimGridV( int( (nx*(ny-1)-0.5)/blocksize ) +1, 1);
 	dim3 dimBlockV(blocksize, 1);
-
+	logger.stopTimer("RHS1 Setup");
 	//update right boundary of the domain for the convective boundary condition
 	updateRobinBoundary();
 	//set Nold to N
@@ -63,9 +64,11 @@ void luoIBM::generateRHS1()
 
 	//calculate boundary terms
 	generateBC1();
-
+	
+	logger.startTimer("RHS1 Setup");
 	//sum rhs components
 	kernels::generateRHS<<<dimGridUV,dimBlockUV>>>(rhs_r, L_r, Nold_r, N_r, u_r, bc1_r, dt, nx, ny);
+	logger.stopTimer("RHS1 Setup");
 }
 
 void luoIBM::updateRobinBoundary()
@@ -124,6 +127,7 @@ void luoIBM::generateLHS1()
 
 void luoIBM::weightUhat()
 {
+	logger.startTimer("weightUhat");
 	double	*uhat_r 	= thrust::raw_pointer_cast ( &(uhat[0]) ),
 			*ustar_r	= thrust::raw_pointer_cast ( &(ustar[0]) ),
 			*yu_r		= thrust::raw_pointer_cast ( &(domInfo->yu[0]) ),
@@ -140,12 +144,12 @@ void luoIBM::weightUhat()
 
 	int nx = domInfo ->nx,
 		ny = domInfo ->ny,
-		i_start = B.startI[0],
-		j_start = B.startJ[0],
-		width_i = B.numCellsX[0],
-		height_j = B.numCellsY[0],
-		i_end = i_start + width_i,
-		j_end = j_start + height_j;
+		width_i = B.numCellsXHost, //flag this value is only moved to the host once (in B.initialise) if the body is moving too much this could break 
+		height_j=B.numCellsYHost,  //this is done because we need the value on the host to calculate the grid size, but copying it to the host every TS is expensive
+		derp = B.numCellsX[0];
+
+	int *i_start_r = thrust::raw_pointer_cast ( &(B.startI[0]) ),
+		*j_start_r = thrust::raw_pointer_cast ( &(B.startJ[0]) );
 	
 	const int blocksize = 256;
 	dim3 grid( int( (width_i*height_j-0.5)/blocksize ) +1, 1);
@@ -153,14 +157,16 @@ void luoIBM::weightUhat()
 	
 	kernels::weightX<<<grid,block>>>(uhat_r, ustar_r, ghostTagsUV_r, hybridTagsUV_r, yu_r, xu_r,
 									body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
-									i_start, j_start, i_end, j_end, nx, ny);
+									i_start_r, j_start_r, width_i, nx, ny);
 	kernels::weightY<<<grid,block>>>(uhat_r, ustar_r, ghostTagsUV_r, hybridTagsUV_r, yv_r, xv_r,
 									body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
-									i_start, j_start, i_end, j_end, nx, ny);
+									i_start_r, j_start_r, width_i, nx, ny);
+	logger.stopTimer("weightUhat");
 }
 
 void luoIBM::preRHS1Interpolation()
 {
+	logger.startTimer("RHS1 Interpolation");
 	double	*u_r 		= thrust::raw_pointer_cast ( &(u[0]) ),
 			*ustar_r	= thrust::raw_pointer_cast ( &(ustar[0]) ),
 			*bx_r		= thrust::raw_pointer_cast ( &(B.x[0]) ),//not sure if these are on the host or not
@@ -199,13 +205,12 @@ void luoIBM::preRHS1Interpolation()
 
 	int nx = domInfo ->nx,
 		ny = domInfo ->ny,
-		totalPoints = B.totalPoints,
-		i_start = B.startI[0],
-		j_start = B.startJ[0],
-		width_i = B.numCellsX[0],
-		height_j = B.numCellsY[0],
-		i_end = i_start + width_i,
-		j_end = j_start + height_j;
+		//width_i = B.numCellsX[0],
+		//height_j = B.numCellsY[0];
+		width_i = B.numCellsXHost, //flag this value is only moved to the host once (in B.initialise) if the body is moving too much this could break 
+		height_j=B.numCellsYHost;		//this is done because we need the value on the host to calculate the grid size, but copying it to the host every TS is expensive
+	int *i_start_r = thrust::raw_pointer_cast ( &(B.startI[0]) ),
+		*j_start_r = thrust::raw_pointer_cast ( &(B.startJ[0]) );
 	
 	const int blocksize = 256;
 	dim3 grid( int( (width_i*height_j-0.5)/blocksize ) +1, 1);
@@ -213,24 +218,26 @@ void luoIBM::preRHS1Interpolation()
 	//interpolate velocity to image point and ghost node
 	kernels::interpolateVelocityToGhostNodeX<<<grid,block>>>(u_r, ghostTagsUV_r, bx_r, by_r, uB_r, yu_r, xu_r,
 													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
-													i_start, j_start, i_end, j_end, nx, ny, totalPoints,
+													i_start_r, j_start_r, width_i, nx, ny,
 													x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r,ip_u_r);
 	kernels::interpolateVelocityToGhostNodeY<<<grid,block>>>(u_r, ghostTagsUV_r, bx_r, by_r, vB_r, yv_r, xv_r,
 													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
-													i_start, j_start, i_end, j_end, nx, ny, totalPoints,
+													i_start_r, j_start_r, width_i, nx, ny,
 													x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r,ip_u_r);
 	zeroVelocity();
 	//interpolate velocity to hybrid node
+	//zero ustar
 	kernels::interpolateVelocityToHybridNodeX<<<grid,block>>>(u_r, ustar_r, hybridTagsUV_r, bx_r, by_r, uB_r, yu_r, xu_r,
 													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
-													i_start, j_start, i_end, j_end, nx, ny, totalPoints,
+													i_start_r, j_start_r, width_i, nx, ny,
 													x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r);
 	kernels::interpolateVelocityToHybridNodeY<<<grid,block>>>(u_r, ustar_r, hybridTagsUV_r, bx_r, by_r, vB_r, yv_r, xv_r,
 													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
-													i_start, j_start, i_end, j_end, nx, ny, totalPoints,
+													i_start_r, j_start_r, width_i, nx, ny,
 													x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r);
 	//testInterpX();
 	//testInterpY();
+	logger.stopTimer("RHS1 Interpolation");
 }
 
 void luoIBM::zeroVelocity()

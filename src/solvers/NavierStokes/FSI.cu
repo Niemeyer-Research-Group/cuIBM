@@ -34,7 +34,6 @@ void FSI::writeData()
 
 void FSI::updateSolver()
 {
-	NavierStokesSolver::B.calculateCellIndices(*NavierStokesSolver::domInfo);
 	NavierStokesSolver::B.calculateBoundingBoxes(*NavierStokesSolver::paramDB, *NavierStokesSolver::domInfo);
 	NavierStokesSolver::tagPoints();
 	NavierStokesSolver::generateLHS1();//is this needed?
