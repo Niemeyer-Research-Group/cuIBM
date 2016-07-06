@@ -47,6 +47,7 @@ void luoIBM::initialise()
 	image_point_y.resize(numUV);
 	body_intercept_p_x.resize(numP);
 	body_intercept_p_y.resize(numP);
+	body_intercept_p.resize(numP);
 	image_point_p_x.resize(numP);
 	image_point_p_y.resize(numP);
 	distance_from_intersection_to_node.resize(numUV);
@@ -62,7 +63,7 @@ void luoIBM::initialise()
 	x2_ip_p.resize(numP);
 	y1_ip_p.resize(numP);
 	y2_ip_p.resize(numP);
-	ip_u.resize(numUV);
+	image_point_u.resize(numUV);
 	x1.resize(numUV);
 	x2.resize(numUV);
 	x3.resize(numUV);
@@ -160,13 +161,18 @@ void luoIBM::writeData()
 	double dt  = db["simulation"]["dt"].get<double>();
 
 	logger.startTimer("output");
-
 	writeCommon();
-	calculateForce();
-	if (NavierStokesSolver::timeStep == 1)
-		forceFile<<"timestep\tFx\tFxX\tFxY\tFxU\tFy\n";
-	forceFile << timeStep*dt << '\t' << B.forceX << '\t'<<fxx<<"\t"<<fxy<<"\t"<<fxu<<"\t" << B.forceY << std::endl;
+	logger.stopTimer("output");
 
+	logger.startTimer("calculateForce");
+	calculateForce();
+	//luoForce();
+	logger.stopTimer("calculateForce");
+
+	logger.startTimer("output");
+	if (NavierStokesSolver::timeStep == 1)
+		forceFile<<"timestep\told\tPressure\tdudn\tnew\n";
+	forceFile << timeStep*dt << '\t' << B.forceX << '\t'<<fxx<<"\t"<<fxy<<"\t"<<fxu<<"\t" << B.forceY << std::endl;
 	logger.stopTimer("output");
 }
 
@@ -207,13 +213,12 @@ void luoIBM::stepTime()
 	velocityProjection();
 
 	std::cout<<timeStep<<std::endl;
-	//luoForce();
 	timeStep++;
 	if (timeStep == 1000)
 	{
-		//arrayprint(u,"u","x");
+		//arrayprint(u,"u","x",-1);
 		//arrayprint(u,"v","y");
-		//arrayprint(pressure,"pressure","p");
+		//arrayprint(pressure,"p","p",-1);
 	}
 }
 

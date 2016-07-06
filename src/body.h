@@ -48,6 +48,12 @@ class body
 	double xOscillation[3],     ///< amplitude, angular frequency and phase difference of oscillation in the x-direction
          yOscillation[3],     ///< amplitude, angular frequency and phase difference of oscillation in the y-direction
          pitchOscillation[3]; ///< amplitude, angular frequency and phase difference of pitch oscillation
+
+	double	xCoefficient, ///< used in oscillating cylinder movement
+			uCoefficient,
+			frequency,
+			xPhase,
+			uPhase;
 	// Note that the angular amplitude & phase difference are stored in radians, and angular frequncy is radians/time
 	// But the inputs in bodies.yaml are provided in degrees, and degrees/time.
     

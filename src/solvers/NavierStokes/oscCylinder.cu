@@ -31,8 +31,8 @@ void oscCylinder::writeData()
 	logger.startTimer("output");
 	writeCommon();
 	if (timeStep == 0)
-		forceFile<<"timestep\tFx\tFxX\tFxY\tFxU\tFy\n";
-	forceFile << timeStep*dt << '\t' << B.forceX << '\t'<<fxx<<"\t"<<fxy<<"\t"<<fxu<<"\t" << B.forceY << std::endl;//flag writing from b.forcex takes forever
+		forceFile<<"timestep\tFx\tFy\n";
+	forceFile << timeStep*dt << '\t' << B.forceX << '\t' << B.forceY << std::endl;
 	logger.stopTimer("output");
 }
 
@@ -95,6 +95,7 @@ void oscCylinder::moveBody()
 {
 	parameterDB  &db = *paramDB;
 	calculateForce();
+	//luoForce();
 
 	logger.startTimer("moveBody");
 	double *x_r	= thrust::raw_pointer_cast( &(B.x[0]) ),
@@ -102,14 +103,20 @@ void oscCylinder::moveBody()
 	double	dt	= db["simulation"]["dt"].get<double>(),
 			nu	= db["flow"]["nu"].get<double>(),
 			t = dt*timeStep,
-			f = 1,
+			f = B.frequency,
+			xCoeff = B.xCoeff,
+			uCoeff = B.uCoeff,
+			xPhase = B.xPhase,
+			uPhase = B.uPhase,
 			totalPoints=B.totalPoints,
 			xold= B.midX,
 			unew,
 			xnew;
 
-	xnew = -1/(2*M_PI)*sin(2*M_PI*f*t);
-	unew = -f*cos(2*M_PI*f*t);
+	//xnew = -1/(2*M_PI)*sin(2*M_PI*f*t);
+	//unew = -f*cos(2*M_PI*f*t);
+	xnew = xCoeff*sin(2*M_PI*f*t + xPhase);
+	unew = uCoeff*cos(2*M_PI*f*t + uPhase);
 
 	B.centerVelocityU = unew;
 	B.midX = xnew;
@@ -128,6 +135,8 @@ void oscCylinder::moveBody()
 void oscCylinder::initialise()
 {
 	luoIBM::initialise();
+	cfl.resize(domInfo->nx*domInfo->ny);
+	cfl_max = 0;
 
 	//output
 	parameterDB  &db = *paramDB;
@@ -144,7 +153,11 @@ void oscCylinder::initialise()
 			t = dt*timeStep,
 			//D = 0.2,
 			//uMax = 1,
-			f = 1,
+			f = B.frequency,
+			xCoeff = B.xCoeff,
+			uCoeff = B.uCoeff,
+			xPhase = B.xPhase,
+			uPhase = B.uPhase,
 			//KC = uMax/f/D,
 			//Re = uMax*D/nu,
 			totalPoints=B.totalPoints,
@@ -152,8 +165,10 @@ void oscCylinder::initialise()
 			unew,
 			xnew;
 
-	xnew = -1/(2*M_PI)*sin(2*M_PI*f*t);
-	unew = -f*cos(2*M_PI*f*t);
+	//xnew = -1/(2*M_PI)*sin(2*M_PI*f*t);
+	//unew = -f*cos(2*M_PI*f*t);
+	xnew = xCoeff*sin(2*M_PI*f*t + xPhase);
+	unew = uCoeff*cos(2*M_PI*f*t + uPhase);
 
 	B.centerVelocityU0 = unew;
 	B.midX0 = xnew;
@@ -178,39 +193,30 @@ void oscCylinder::stepTime()
 {
 	generateRHS1();
 	solveIntermediateVelocity();
-		//arrayprint(ghostTagsUV,"ghostu","x",(*paramDB)["simulation"]["nt"].get<int>()-1);
-		//arrayprint(ghostTagsP,"ghostp","p",(*paramDB)["simulation"]["nt"].get<int>()-1);
-		//arrayprint(hybridTagsUV,"hybridu","x",(*paramDB)["simulation"]["nt"].get<int>()-1);
-		//arrayprint(hybridTagsP,"hybridp","p",(*paramDB)["simulation"]["nt"].get<int>()-1);
-		//arrayprint(uhat,"uhat","x",(*paramDB)["simulation"]["nt"].get<int>()-1);
-		//arrayprint(ustar,"ustar","x",(*paramDB)["simulation"]["nt"].get<int>()-1);
 	weightUhat();
-		//arrayprint(uhat,"uhatfinal","x",(*paramDB)["simulation"]["nt"].get<int>()-1);
-		//arrayprint(u,"u0","x", (*paramDB)["simulation"]["nt"].get<int>()-1);
 
 	generateRHS2();
 	solvePoisson();
-		//arrayprint(pressure,"p0","p",(*paramDB)["simulation"]["nt"].get<int>()-1);
 	weightPressure();
-		//arrayprint(pressureStar,"pstar","p",(*paramDB)["simulation"]["nt"].get<int>()-1);
-		//arrayprint(pressure,"p","p",(*paramDB)["simulation"]["nt"].get<int>()-1);
+
 	velocityProjection();
-		//arrayprint(u,"u","x",(*paramDB)["simulation"]["nt"].get<int>()-1);
 
 	//Release the body after a certain timestep
 	if (timeStep >= (*paramDB)["simulation"]["startStep"].get<int>())
 	{
 		moveBody();
 		updateSolver();
+		CFL();
 	}
 
 	timeStep++;
 	//if (timeStep%100 == 0)
 		std::cout<<timeStep<<std::endl;
-	if (timeStep%(*paramDB)["simulation"]["nsave"].get<int>() == 0)
+	if (timeStep%(*paramDB)["simulation"]["nt"].get<int>() == 0)
 	{
 		//arrayprint(pressure,"p","p");
 		//arrayprint(u,"u","x");
+		std::cout<<"Maximun CFL: " << cfl_max << std::endl;
 	}
 }
 
@@ -224,3 +230,4 @@ void oscCylinder::shutDown()
 }
 
 #include "oscCylinder/intermediateVelocity.inl"
+#include "oscCylinder/CFL.inl"

@@ -194,7 +194,7 @@ void luoIBM::preRHS1Interpolation()
 			*q2_r = thrust::raw_pointer_cast ( &(q2[0]) ),
 			*q3_r = thrust::raw_pointer_cast ( &(q3[0]) ),
 			*q4_r = thrust::raw_pointer_cast ( &(q4[0]) ),
-			*ip_u_r = thrust::raw_pointer_cast( &(ip_u[0]) );
+			*image_point_u_r = thrust::raw_pointer_cast( &(image_point_u[0]) );
 	
 	int 	*ghostTagsUV_r		= thrust::raw_pointer_cast ( &(ghostTagsUV[0]) ),
 			*hybridTagsUV_r		= thrust::raw_pointer_cast ( &(hybridTagsUV[0]) );
@@ -219,22 +219,22 @@ void luoIBM::preRHS1Interpolation()
 	kernels::interpolateVelocityToGhostNodeX<<<grid,block>>>(u_r, ghostTagsUV_r, bx_r, by_r, uB_r, yu_r, xu_r,
 													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
 													i_start_r, j_start_r, width_i, nx, ny,
-													x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r,ip_u_r);
+													x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r,image_point_u_r);
 	kernels::interpolateVelocityToGhostNodeY<<<grid,block>>>(u_r, ghostTagsUV_r, bx_r, by_r, vB_r, yv_r, xv_r,
 													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
 													i_start_r, j_start_r, width_i, nx, ny,
-													x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r,ip_u_r);
+													x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r,image_point_u_r);
 	zeroVelocity();
 	//interpolate velocity to hybrid node
 	//zero ustar
 	kernels::interpolateVelocityToHybridNodeX<<<grid,block>>>(u_r, ustar_r, hybridTagsUV_r, bx_r, by_r, uB_r, yu_r, xu_r,
 													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
 													i_start_r, j_start_r, width_i, nx, ny,
-													x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r);
+													x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r, image_point_u_r);
 	kernels::interpolateVelocityToHybridNodeY<<<grid,block>>>(u_r, ustar_r, hybridTagsUV_r, bx_r, by_r, vB_r, yv_r, xv_r,
 													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
 													i_start_r, j_start_r, width_i, nx, ny,
-													x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r);
+													x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r, image_point_u_r);
 	//testInterpX();
 	//testInterpY();
 	logger.stopTimer("RHS1 Interpolation");

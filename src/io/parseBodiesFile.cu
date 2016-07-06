@@ -58,6 +58,33 @@ void operator >> (const YAML::Node &node, body &Body)
 	catch(...)
 	{
 	}
+
+	try
+	{
+		node["xCoefficient"] >> Body.xCoefficient;
+		node["xPhase"] >> Body.xPhase;
+	}
+	catch(...)
+	{
+		std::cout<<"x amplitude/phase not found\n\n";
+	}
+	try
+	{
+		node["uCoefficient"] >> Body.uCoefficient;
+		node["uPhase"] >> Body.uPhase;
+	}
+	catch(...)
+	{
+		std::cout<<"u amplitude/phase not found\n\n";
+	}
+	try
+	{
+		node["frequency"] >> Body.frequency;
+	}
+	catch(...)
+	{
+		std::cout<<"frequency not found\n\n";
+	}
 	// get the type of body and read in appropriate details
 	string type;
 	node["type"] >> type;

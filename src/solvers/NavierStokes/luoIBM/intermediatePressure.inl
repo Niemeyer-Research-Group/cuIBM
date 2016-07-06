@@ -74,6 +74,7 @@ void luoIBM::weightPressure()
 			*xv_r		= thrust::raw_pointer_cast ( &(domInfo->xv[0]) ),
 			*body_intercept_p_x_r = thrust::raw_pointer_cast( &(body_intercept_p_x[0]) ),
 			*body_intercept_p_y_r = thrust::raw_pointer_cast( &(body_intercept_p_y[0]) ),
+			*body_intercept_p_r = thrust::raw_pointer_cast( &(body_intercept_p[0]) ),
 			*image_point_p_x_r = thrust::raw_pointer_cast( &(image_point_p_x[0]) ),
 			*image_point_p_y_r = thrust::raw_pointer_cast( &(image_point_p_y[0]) ),
 			*uB0_r		= thrust::raw_pointer_cast ( &(B.uBk[0]) ),
@@ -115,6 +116,7 @@ void luoIBM::weightPressure()
 		height_j=B.numCellsYHost;  //this is done because we need the value on the host to calculate the grid size, but copying it to the host every TS is expensive
 	int *i_start_r = thrust::raw_pointer_cast ( &(B.startI[0]) ),
 		*j_start_r = thrust::raw_pointer_cast ( &(B.startJ[0]) );
+	double dt = (*paramDB)["simulation"]["dt"].get<double>();
 
 	const int blocksize = 256;
 	dim3 grid( int( (width_i*height_j-0.5)/blocksize ) +1, 1);
@@ -123,7 +125,7 @@ void luoIBM::weightPressure()
 	kernels::interpolatePressureToHybridNode<<<grid,block>>>(pressure_r, pressureStar_r, u_r, hybridTagsP_r, bx_r, by_r,
 									uB_r, uB0_r, vB_r, vB0_r, yu_r, yv_r, xu_r, xv_r,
 									body_intercept_p_x_r, body_intercept_p_y_r, image_point_p_x_r, image_point_p_y_r,
-									i_start_r, j_start_r, width_i, nx, ny,
+									i_start_r, j_start_r, width_i, nx, ny, dt,
 									dudt_r,ududx_r,dvdt_r,vdudy_r,udvdx_r,vdvdy_r,
 									a0_r, a1_r, a2_r, a3_r,
 									x1_p_r, x2_p_r, x3_p_r, x4_p_r, y1_p_r, y2_p_r, y3_p_r, y4_p_r, q1_p_r, q2_p_r, q3_p_r, q4_p_r, timeStep);
@@ -132,11 +134,12 @@ void luoIBM::weightPressure()
 									i_start_r, j_start_r, width_i, nx, ny);
 	kernels::interpolatePressureToGhostNode<<<grid,block>>>(pressure_r, u_r, ghostTagsP_r, bx_r, by_r,
 									uB_r, uB0_r, vB_r, vB0_r, yu_r, yv_r, xu_r, xv_r,
-									body_intercept_p_x_r, body_intercept_p_y_r, image_point_p_x_r, image_point_p_y_r,
-									i_start_r, j_start_r, width_i, nx, ny,
+									body_intercept_p_x_r, body_intercept_p_y_r, image_point_p_x_r, image_point_p_y_r,  body_intercept_p_r,
+									i_start_r, j_start_r, width_i, nx, ny, dt,
 									dudt_r,ududx_r,dvdt_r,vdudy_r,udvdx_r,vdvdy_r,
 									a0_r, a1_r, a2_r, a3_r,
 									x1_p_r, x2_p_r, x3_p_r, x4_p_r, y1_p_r, y2_p_r, y3_p_r, y4_p_r, q1_p_r, q2_p_r, q3_p_r, q4_p_r);
+	//arrayprint(body_intercept_p,"bip","p",-1);
 	//testInterpP();
 	logger.stopTimer("weightPressure");
 }
@@ -171,7 +174,7 @@ void luoIBM::preRHS2Interpolation()
 			*q2_r = thrust::raw_pointer_cast ( &(q2[0]) ),
 			*q3_r = thrust::raw_pointer_cast ( &(q3[0]) ),
 			*q4_r = thrust::raw_pointer_cast ( &(q4[0]) ),
-			*ip_u_r = thrust::raw_pointer_cast( &(ip_u[0]) );
+			*image_point_u_r = thrust::raw_pointer_cast( &(image_point_u[0]) );
 
 	int 	*ghostTagsUV_r		= thrust::raw_pointer_cast ( &(ghostTagsUV[0]) ),
 			*hybridTagsUV_r		= thrust::raw_pointer_cast ( &(hybridTagsUV[0]) );
@@ -194,9 +197,9 @@ void luoIBM::preRHS2Interpolation()
 	kernels::interpolateVelocityToGhostNodeX<<<grid,block>>>(uhat_r, ghostTagsUV_r, bx_r, by_r, uB_r, yu_r, xu_r,
 																body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
 																i_start_r, j_start_r, width_i, nx, ny,
-																x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r,ip_u_r);
+																x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r,image_point_u_r);
 	kernels::interpolateVelocityToGhostNodeY<<<grid,block>>>(uhat_r, ghostTagsUV_r, bx_r, by_r, vB_r, yv_r, xv_r,
 																body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
 																i_start_r, j_start_r, width_i, nx, ny,
-																x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r,ip_u_r);
+																x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r,image_point_u_r);
 }

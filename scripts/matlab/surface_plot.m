@@ -4,14 +4,16 @@ clear
 % close all
 figure
 %change these
-number = '199';
-type = 'u'; %p or u
-suffix = '0'; %u: 0, star, hat, hatfinal, empty. p: 0, star, empty
-view = 'outt';
+number = '1000';
+type = 'p'; %p or u
+suffix = ''; %u: 0, star, hat, hatfinal, empty. p: 0, star, empty
+view = 'out';
 
 %load data
-path = strcat('/scratch/src/cuIBM/validation/luo/test/output/',number,type,suffix,'.csv');
-tagspath = strcat('/scratch/src/cuIBM/validation/luo/test/output/',number,'ghost',type,'.csv');
+% caseFolder = '/scratch/src/cuIBM/validation/luo/test/output/'
+caseFolder = '/scratch/src/cuIBM/validation/cylinder/Re40/output/';
+path = strcat(caseFolder,number,type,suffix,'.csv');
+tagspath = strcat(caseFolder,number,'ghost',type,'.csv');
 delim = '\t';
 M = dlmread(path,delim,1,0);
 test = M;

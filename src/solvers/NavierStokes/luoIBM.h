@@ -30,6 +30,7 @@ protected:
 		image_point_y,
 		body_intercept_p_x,
 		body_intercept_p_y,
+		body_intercept_p,
 		image_point_p_x,
 		image_point_p_y,
 		distance_from_intersection_to_node,			///< distance between IB and tagged node on the device
@@ -48,7 +49,7 @@ protected:
 		x2_ip_p,
 		y1_ip_p,
 		y2_ip_p,
-		ip_u,
+		image_point_u,
 		x1,
 		x2,
 		x3,
@@ -122,7 +123,8 @@ protected:
 	void testInterpP(); //for pressure
 	void testOutputX(); //for tagpoipnts
 	void testOutputY(); //for tagpoints
-	void testForce();
+	void testForce_p();
+	void testForce_dudn();
 
 
 public:

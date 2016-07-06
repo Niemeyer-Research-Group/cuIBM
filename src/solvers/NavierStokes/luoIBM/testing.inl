@@ -144,15 +144,15 @@ void luoIBM::testInterpX()//flag split this into ghost node and hybrid node func
 					"q3\t"
 					"q4\t"
 					"GN_U\t"
-					"ip_u\n"
+					"image_point_u\n"
 			;
 	for (int J=j_start;  J<j_end;  J++)
 	{
 		for (int I=i_start;  I<i_end;  I++)
 		{
 			iu = J*(nx-1) + I;
-			if (ghostTagsUV[iu] >0)//for inside
-			//if (hybridTagsUV[iu] >0)//for outside
+			//if (ghostTagsUV[iu] >0)//for inside
+			if (hybridTagsUV[iu] >0)//for outside
 			{
 				body_nodes << x1_ip[iu]<<"\t";
 				body_nodes << y1_ip[iu]<<"\t";
@@ -176,9 +176,9 @@ void luoIBM::testInterpX()//flag split this into ghost node and hybrid node func
 				body_nodes << q2[iu] <<"\t";
 				body_nodes << q3[iu] <<"\t";
 				body_nodes << q4[iu] <<"\t";
-				body_nodes << u[iu] <<"\t";//inside
-				//body_nodes << ustar[iu] <<"\t";//outside
-				body_nodes << ip_u[iu]<<"\n";
+				//body_nodes << u[iu] <<"\t";//inside
+				body_nodes << ustar[iu] <<"\t";//outside
+				body_nodes << image_point_u[iu]<<"\n";
 			}
 		}
 	}
@@ -226,7 +226,7 @@ void luoIBM::testInterpY()
 					"q3\t"
 					"q4\t"
 					"GN_U\t"
-					"ip_u\n";
+					"image_point_u\n";
 	for (int J=j_start;  J<j_end;  J++)
 	{
 		for (int I=i_start;  I<i_end;  I++)
@@ -260,7 +260,7 @@ void luoIBM::testInterpY()
 				body_nodes << q4[iv] <<"\t";
 				body_nodes << u[iv]  <<"\t";//inside
 				//body_nodes << ustar[iv] <<"\t";//outside
-				body_nodes << ip_u[iv]<<"\n";
+				body_nodes << image_point_u[iv]<<"\n";
 			}
 		}
 	}
@@ -323,8 +323,8 @@ void luoIBM::testInterpP()
 		for (int I=i_start;  I<i_end;  I++)
 		{
 			ip = J*nx + I;
-			//if (ghostTagsP[ip] >0)//for inside
-			if (hybridTagsP[ip] >0)//for outside
+			if (ghostTagsP[ip] >0)//for inside
+			//if (hybridTagsP[ip] >0)//for outside
 			{
 				//std::cout<<I<<"\t"<<J<<"\t"<<iv<<"\n";
 				body_nodes << x1_ip_p[ip]<<"\t";
@@ -349,8 +349,8 @@ void luoIBM::testInterpP()
 				body_nodes << q2_p[ip] <<"\t";
 				body_nodes << q3_p[ip] <<"\t";
 				body_nodes << q4_p[ip] <<"\t";
-				body_nodes << pressureStar[ip] <<"\t";//outside
-				//body_nodes << pressure[ip] <<"\t";//inside
+				//body_nodes << pressureStar[ip] <<"\t";//outside
+				body_nodes << pressure[ip] <<"\t";//inside
 				body_nodes << a0[ip] <<"\t";
 				body_nodes << a1[ip] <<"\t";
 				body_nodes << a2[ip] <<"\t";
@@ -455,7 +455,7 @@ void luoIBM::testOutputY()
 		body_nodes.close();
 }
 
-luoIBM::testForce();
+void luoIBM::testForce_p()
 {
 	std::cout<<"Outputing for interpolation of the pressure force values\n";
 	std::ofstream body_nodes;
@@ -464,60 +464,43 @@ luoIBM::testForce();
 	std::stringstream out;
 	out << folder << "/interp_test_force.csv";
 	body_nodes.open(out.str().c_str());
-	body_nodes <<	"x1\t"
-					"x2\t"
-					"x3\t"
-					"x4\t"
-					"y1\t"
-					"y2\t"
-					"y3\t"
-					"y4\t"
-					"q1\t"
-					"q2\t"
-					"q3\t"
-					"q4\t"
-					"p\t"
-					"body_node_1_x\t"
-					"body_node_1_y\t"
-					"body_node_2_x\t"
-					"body_node_2_y\t"
-					"px\t"
-					"py\n"
+	body_nodes <<	"bx\t"
+					"by\t"
+					"body node p\t"
+					"close\t"
+					"close2\n"
 					;
-	for (int i=0;  i<totalPoints;  i++)
+	for (int i=0;  i<B.totalPoints;  i++)
 	{
-		//std::cout<<I<<"\t"<<J<<"\t"<<iv<<"\n";
-		body_nodes << B.x1[i] <<"\t";
-		body_nodes << B.x2[i] <<"\t";
-		body_nodes << B.x3[i] <<"\t";
-		body_nodes << B.x4[i] <<"\t";
-		body_nodes << B.y1[i] <<"\t";
-		body_nodes << B.y2[i] <<"\t";
-		body_nodes << B.y3[i] <<"\t";
-		body_nodes << B.y4[i] <<"\t";
-		body_nodes << B.q1[i] <<"\t";
-		body_nodes << B.q2[i] <<"\t";
-		body_nodes << B.q3[i] <<"\t";
-		body_nodes << B.q4[i] <<"\t";
-		body_nodes << B.force_pressure[i] <<"\t";
-		body_nodes << B.x[i]<<"\t";
-		body_nodes << B.y[i]<<"\t";
-		if (i == totalPoints-1)
-		{
-			body_nodes << B.x[0]<<"\t";
-			body_nodes <<B.y[0]<<"\t";
-		}
-		else
-		{
-			body_nodes << B.x[i+1]<<"\t";
-			body_nodes <<B.y[i+1] <<"\t";
-		}
-		body_nodes << B.point_x[i]<<"\t";
-		body_nodes << B.point_y[i]<<"\t";
-		body_nodes << B.point2_x[i]<<"\t";
-		body_nodes << B.point2_y[i]<<"\t";
-		body_nodes << B.point3_x[i]<<"\t";
-		body_nodes << B.point3_y[i]<<"\n";
+		body_nodes << B.x[i] <<"\t";
+		body_nodes << B.y[i] <<"\t";
+		body_nodes << B.force_pressure[i] <<"\n";
+	}
+	body_nodes.close();
+}
+
+void luoIBM::testForce_dudn()
+{
+	std::cout<<"Outputing for interpolation of the dudn force values\n";
+	std::ofstream body_nodes;
+	parameterDB  &db = *NavierStokesSolver::paramDB;
+	std::string folder = db["inputs"]["caseFolder"].get<std::string>();
+	std::stringstream out;
+	out << folder << "/interp_test_force_dudn.csv";
+	body_nodes.open(out.str().c_str());
+	body_nodes <<	"bx\t"
+					"by\t"
+					"body node dudn\t"
+					"pressure component\t"
+					"dudn component\n"
+					;
+	for (int i=0;  i<B.totalPoints;  i++)
+	{
+		body_nodes << B.x[i] <<"\t";
+		body_nodes << B.y[i] <<"\t";
+		body_nodes << B.force_dudn[i] <<"\t";
+		body_nodes << B.force_x[i] <<"\t";
+		body_nodes << B.force_y[i] <<"\n";
 	}
 	body_nodes.close();
 }

@@ -89,7 +89,11 @@ public:
 		point3_y;
 
 	cusp::array1d<double, cusp::device_memory>
-		force_pressure;
+		force_pressure,
+		force_dudn,
+		force_dvdn,
+		force_x,
+		force_y;
 
 	double	centerVelocityU,
 			centerVelocityV,
@@ -100,7 +104,12 @@ public:
 			midX0,
 			midX,
 			forceX,		///< force acting on a body in the x-direction
-			forceY;		///< force acting on a body in the y-direction
+			forceY,		///< force acting on a body in the y-direction
+			xCoeff,
+			uCoeff,
+			frequency,
+			xPhase,
+			uPhase;
 
 	// set initial position and velocity of each body
 	void initialise(parameterDB &db, domain &D);

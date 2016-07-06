@@ -14,6 +14,8 @@ class oscCylinder : public luoIBM
 {
 protected:
 	std::ofstream midPositionFile;
+	cusp::array1d<double, cusp::device_memory> cfl;
+	double cfl_max;
 
 	//////////////////////////
 	//oscCylinder.h
@@ -21,11 +23,15 @@ protected:
 	void updateSolver();
 	void moveBody();
 
-
 	//////////////////////////
 	//IntermediateVelocity.inl
 	//////////////////////////
 	void setVelocityInside();
+
+	//////////////////////////
+	//CFL.inl
+	//////////////////////////
+	void CFL();
 public:
 	//////////////////////////
 	//oscCylinder.cu

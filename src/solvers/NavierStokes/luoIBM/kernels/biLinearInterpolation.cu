@@ -14,7 +14,7 @@ __global__
 void interpolateVelocityToGhostNodeX(double *u, int *ghostTagsUV, double *bx, double *by, double *uB, double *yu, double *xu,
 							double *body_intercept_x, double *body_intercept_y, double *image_point_x, double *image_point_y,
 							int *i_start, int *j_start, int width, int nx, int ny,
-							double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4, double *ip_u)//testing variables
+							double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4, double *image_point_u)//testing variables
 {
 	int idx	= threadIdx.x + blockDim.x * blockIdx.x,
 		i	= idx % (width),
@@ -145,15 +145,15 @@ void interpolateVelocityToGhostNodeX(double *u, int *ghostTagsUV, double *bx, do
 	 double a1 = b21/detA*q1[iu]  +  b22/detA*q2[iu]  +  b23/detA*q3[iu]  +  b24/detA*q4[iu];
 	 double a2 = b31/detA*q1[iu]  +  b32/detA*q2[iu]  +  b33/detA*q3[iu]  +  b34/detA*q4[iu];
 	 double a3 = b41/detA*q1[iu]  +  b42/detA*q2[iu]  +  b43/detA*q3[iu]  +  b44/detA*q4[iu];
-	 ip_u[iu] = a0 + a1*image_point_x[iu] + a2*image_point_y[iu] + a3*image_point_x[iu]*image_point_y[iu];
-	 u[iu] =  2*uB[0] - ip_u[iu]; //u_gn = 2*u_BI  - u_IP //flag doesn't currently work with a rotating body because of uB[0], need to use the actual u at the body intercept
+	 image_point_u[iu] = a0 + a1*image_point_x[iu] + a2*image_point_y[iu] + a3*image_point_x[iu]*image_point_y[iu];
+	 u[iu] =  2*uB[0] - image_point_u[iu]; //u_gn = 2*u_BI  - u_IP //flag doesn't currently work with a rotating body because of uB[0], need to use the actual u at the body intercept
 }
 
 __global__
 void interpolateVelocityToGhostNodeY(double *u, int *ghostTagsUV, double *bx, double *by, double *vB, double *yv, double *xv,
 							double *body_intercept_x, double *body_intercept_y, double *image_point_x, double *image_point_y,
 							int *i_start, int *j_start, int width, int nx, int ny,
-							double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4, double *ip_u)//testing variables
+							double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4, double *image_point_u)//testing variables
 {
 	int idx	= threadIdx.x + blockDim.x * blockIdx.x,
 		i	= idx % (width),
@@ -284,15 +284,15 @@ void interpolateVelocityToGhostNodeY(double *u, int *ghostTagsUV, double *bx, do
 	 double a1 = b21/detA*q1[iv]  +  b22/detA*q2[iv]  +  b23/detA*q3[iv]  +  b24/detA*q4[iv];
 	 double a2 = b31/detA*q1[iv]  +  b32/detA*q2[iv]  +  b33/detA*q3[iv]  +  b34/detA*q4[iv];
 	 double a3 = b41/detA*q1[iv]  +  b42/detA*q2[iv]  +  b43/detA*q3[iv]  +  b44/detA*q4[iv];
-	 ip_u[iv] = a0 + a1*image_point_x[iv] + a2*image_point_y[iv] + a3*image_point_x[iv]*image_point_y[iv];
-	 u[iv] =  2*vB[0] - ip_u[iv]; //u_gn = 2*u_BI  - u_IP //flag doesn't currently work with a rotating body because of uB[0], need to use the actual u at the body intercept
+	 image_point_u[iv] = a0 + a1*image_point_x[iv] + a2*image_point_y[iv] + a3*image_point_x[iv]*image_point_y[iv];
+	 u[iv] =  2*vB[0] - image_point_u[iv]; //u_gn = 2*u_BI  - u_IP //flag doesn't currently work with a rotating body because of uB[0], need to use the actual u at the body intercept
 }
 
 __global__
 void interpolateVelocityToHybridNodeX(double *u, double *ustar, int *hybridTagsUV, double *bx, double *by, double *uB, double *yu, double *xu,
 									double *body_intercept_x, double *body_intercept_y, double *image_point_x, double *image_point_y,
 									int *i_start, int *j_start, int width, int nx, int ny,
-									double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4)//test
+									double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4, double *image_point_u)//test
 {
 	int idx	= threadIdx.x + blockDim.x * blockIdx.x,
 		i	= idx % (width),
@@ -430,13 +430,14 @@ void interpolateVelocityToHybridNodeX(double *u, double *ustar, int *hybridTagsU
 	 double a2 = b31/detA*q1[iu]  +  b32/detA*q2[iu]  +  b33/detA*q3[iu]  +  b34/detA*q4[iu];
 	 double a3 = b41/detA*q1[iu]  +  b42/detA*q2[iu]  +  b43/detA*q3[iu]  +  b44/detA*q4[iu];
 	 ustar[iu] = a0 + a1*xu[I] + a2*yu[J] + a3*yu[J]*xu[I];
+	 image_point_u[iu] = a0 + a1*image_point_x[iu] + a2*image_point_y[iu] + a3*image_point_x[iu]*image_point_y[iu];
 }
 
 __global__
 void interpolateVelocityToHybridNodeY(double *u, double *ustar, int *hybridTagsUV, double *bx, double *by, double *vB, double *yv, double *xv,
 									double *body_intercept_x, double *body_intercept_y, double *image_point_x, double *image_point_y,
 									int *i_start, int *j_start, int width, int nx, int ny,
-									double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4)//test
+									double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4, double *image_point_u)//test
 {
 	int idx	= threadIdx.x + blockDim.x * blockIdx.x,
 		i	= idx % (width),
@@ -573,13 +574,14 @@ void interpolateVelocityToHybridNodeY(double *u, double *ustar, int *hybridTagsU
 	 double a2 = b31/detA*q1[iv]  +  b32/detA*q2[iv]  +  b33/detA*q3[iv]  +  b34/detA*q4[iv];
 	 double a3 = b41/detA*q1[iv]  +  b42/detA*q2[iv]  +  b43/detA*q3[iv]  +  b44/detA*q4[iv];
 	 ustar[iv] = a0 + a1*xv[I] + a2*yv[J] + a3*yv[J]*xv[I];
+	 image_point_u[iv] = a0 + a1*image_point_x[iv] + a2*image_point_y[iv] + a3*image_point_x[iv]*image_point_y[iv];
 }
 
 __global__
 void interpolatePressureToHybridNode(double *pressure, double *pressureStar, double *u, int *hybridTagsP, double *bx, double *by,
 									double *uB, double *uB0, double *vB, double  *vB0, double *yu, double *yv, double *xu, double *xv,
 									double *body_intercept_p_x, double *body_intercept_p_y, double *image_point_p_x, double *image_point_p_y,
-									int *i_start, int *j_start, int width, int nx, int ny,
+									int *i_start, int *j_start, int width, int nx, int ny, double dt,
 									double *dudt, double *ududx, double *vdudy, double *dvdt, double *udvdx, double *vdvdy,
 									double *a0, double *a1, double *a2, double *a3,
 									double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4, int timeStep)//test
@@ -696,8 +698,8 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 		i1v = (jj-1)*(nx)+ii-1 + ny*(nx-1); i2v = (jj-1)*nx+ii + ny*(nx-1);
 
 		//calc time derivatives //flag this doesn't work for rotating bodies because it is only using body index 0
-		du_dt = uB[0] - uB0[0];
-		dv_dt = vB[0] - vB0[0];
+		du_dt = (uB[0] - uB0[0])/dt;
+		dv_dt = (vB[0] - vB0[0])/dt;
 
 		//find du/dx
 		//U_2 + (U_4-U_2)*(YBI-Y2)/(Y4-Y2)
@@ -803,8 +805,8 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 		i3v = jj*nx+ii-1 + ny*(nx-1);		i4v = jj*nx+ii + ny*(nx-1);
 		i1v = (jj-1)*(nx)+ii-1 + ny*(nx-1); i2v = (jj-1)*nx+ii + ny*(nx-1);
 		//time derivatives
-		du_dt = uB[0] - uB0[0];//flag this doesn't work for rotating bodies because it is only using body index 0
-		dv_dt = vB[0] - vB0[0];
+		du_dt = (uB[0] - uB0[0])/dt;//flag this doesn't work for rotating bodies because it is only using body index 0
+		dv_dt = (vB[0] - vB0[0])/dt;
 
 		//find du/dx
 		//U_1 + (U_3-U_1)*(YBI-Y1)/(Y3-Y1)
@@ -911,8 +913,8 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 		i1v = (jj-1)*(nx)+ii-1 + ny*(nx-1); i2v = (jj-1)*nx+ii + ny*(nx-1);
 
 		//time derivatives
-		du_dt = uB[0] - uB0[0];//flag this doesn't work for rotating bodies because it is only using body index 0
-		dv_dt = vB[0] - vB0[0];
+		du_dt = (uB[0] - uB0[0])/dt;//flag this doesn't work for rotating bodies because it is only using body index 0
+		dv_dt = (vB[0] - vB0[0])/dt;
 
 		//find du/dx
 		//U_2 + (U_4-U_2)*(YBI-Y2)/(Y4-Y2)
@@ -1018,8 +1020,8 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 		i3v = jj*nx+ii-1 + ny*(nx-1);		i4v = jj*nx+ii + ny*(nx-1);
 		i1v = (jj-1)*(nx)+ii-1 + ny*(nx-1); i2v = (jj-1)*nx+ii + ny*(nx-1);
 		//time derivatives
-		du_dt = uB[0] - uB0[0];//flag this doesn't work for rotating bodies because it is only using body index 0
-		dv_dt = vB[0] - vB0[0];
+		du_dt = (uB[0] - uB0[0])/dt;//flag this doesn't work for rotating bodies because it is only using body index 0
+		dv_dt = (vB[0] - vB0[0])/dt;
 
 		//find du/dx
 		//U_1 + (U_3-U_1)*(YBI-Y1)/(Y3-Y1)
@@ -1148,21 +1150,21 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 	 a2[ip] = b31/detA*q1[ip]  +  b32/detA*q2[ip]  +  b33/detA*q3[ip]  +  b34/detA*q4[ip];
 	 a3[ip] = b41/detA*q1[ip]  +  b42/detA*q2[ip]  +  b43/detA*q3[ip]  +  b44/detA*q4[ip];
 
-	 dudt[ip] = du_dt;
+	dudt[ip] = du_dt;
 	ududx[ip] = u_du_dx;
 	vdudy[ip] = v_du_dy;
 	dvdt[ip] = dv_dt;
 	udvdx[ip] = u_dv_dx;
 	vdvdy[ip] = v_dv_dy;
-	 pressureStar[ip] = a0[ip] + a1[ip]*xv[I] + a2[ip]*yu[J] + a3[ip]*xv[I]*yu[J];
+	pressureStar[ip] = a0[ip] + a1[ip]*xv[I] + a2[ip]*yu[J] + a3[ip]*xv[I]*yu[J];
 }
 
 //flag this function is a mess
 __global__
 void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP, double *bx, double *by,
 									double *uB, double *uB0, double *vB, double  *vB0, double *yu, double *yv, double *xu, double *xv,
-									double *body_intercept_p_x, double *body_intercept_p_y, double *image_point_p_x, double *image_point_p_y,
-									int *i_start, int *j_start, int width, int nx, int ny,
+									double *body_intercept_p_x, double *body_intercept_p_y, double *image_point_p_x, double *image_point_p_y, double *body_intercept_p,
+									int *i_start, int *j_start, int width, int nx, int ny, double dt,
 									double *dudt, double *ududx, double *vdudy, double *dvdt, double *udvdx, double *vdvdy,
 									double *a0, double *a1, double *a2, double *a3,
 									double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4)//test
@@ -1321,8 +1323,8 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		i1v = (jj-1)*(nx)+ii-1 + ny*(nx-1); i2v = (jj-1)*nx+ii + ny*(nx-1);
 
 		//calc time derivatives //flag this doesn't work for rotating bodies because it is only using body index 0
-		du_dt = uB[0] - uB0[0];
-		dv_dt = vB[0] - vB0[0];
+		du_dt = (uB[0] - uB0[0])/dt;
+		dv_dt = (vB[0] - vB0[0])/dt;
 
 		//find du/dx
 		//U_2 + (U_4-U_2)*(YBI-Y2)/(Y4-Y2)
@@ -1427,8 +1429,8 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		i3v = jj*nx+ii-1 + ny*(nx-1);		i4v = jj*nx+ii + ny*(nx-1);
 		i1v = (jj-1)*(nx)+ii-1 + ny*(nx-1); i2v = (jj-1)*nx+ii + ny*(nx-1);
 		//time derivatives
-		du_dt = uB[0] - uB0[0];//flag this doesn't work for rotating bodies because it is only using body index 0
-		dv_dt = vB[0] - vB0[0];
+		du_dt = (uB[0] - uB0[0])/dt;//flag this doesn't work for rotating bodies because it is only using body index 0
+		dv_dt = (vB[0] - vB0[0])/dt;
 
 		//find du/dx
 		//U_1 + (U_3-U_1)*(YBI-Y1)/(Y3-Y1)
@@ -1534,8 +1536,8 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		i1v = (jj-1)*(nx)+ii-1 + ny*(nx-1); i2v = (jj-1)*nx+ii + ny*(nx-1);
 
 		//time derivatives
-		du_dt = uB[0] - uB0[0];//flag this doesn't work for rotating bodies because it is only using body index 0
-		dv_dt = vB[0] - vB0[0];
+		du_dt = (uB[0] - uB0[0])/dt;//flag this doesn't work for rotating bodies because it is only using body index 0
+		dv_dt = (vB[0] - vB0[0])/dt;
 
 		//find du/dx
 		//U_2 + (U_4-U_2)*(YBI-Y2)/(Y4-Y2)
@@ -1640,8 +1642,8 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		i3v = jj*nx+ii-1 + ny*(nx-1);		i4v = jj*nx+ii + ny*(nx-1);
 		i1v = (jj-1)*(nx)+ii-1 + ny*(nx-1); i2v = (jj-1)*nx+ii + ny*(nx-1);
 		//time derivatives
-		du_dt = uB[0] - uB0[0];//flag this doesn't work for rotating bodies because it is only using body index 0
-		dv_dt = vB[0] - vB0[0];
+		du_dt = (uB[0] - uB0[0])/dt;//flag this doesn't work for rotating bodies because it is only using body index 0
+		dv_dt = (vB[0] - vB0[0])/dt;
 
 		//find du/dx
 		//U_1 + (U_3-U_1)*(YBI-Y1)/(Y3-Y1)
@@ -1775,7 +1777,8 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 	a3[ip] = b41/detA*q1[ip]  +  b42/detA*q2[ip]  +  b43/detA*q3[ip]  +  b44/detA*q4[ip];
 
 	//pressure at the image point
-	double image_point_pressure = a0[ip] + a1[ip]*image_point_p_x[ip] + a2[ip]*image_point_p_y[ip] + a3[ip]*image_point_p_y[ip]*image_point_p_x[ip];
+	double image_point_pressure = a0[ip] + a1[ip]*image_point_p_x[ip]    + a2[ip]*image_point_p_y[ip]    + a3[ip] * image_point_p_y[ip]   *image_point_p_x[ip];
+	body_intercept_p[ip]        = a0[ip] + a1[ip]*body_intercept_p_x[ip] + a2[ip]*body_intercept_p_y[ip] + a3[ip] * body_intercept_p_x[ip]*body_intercept_p_y[ip]; //used for force calc
 	//interpolate pressure to the ghost node
 	double matD = 0;
 	if (close_index == index1)
@@ -1815,8 +1818,8 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		i1v = (jj-1)*(nx)+ii-1 + ny*(nx-1); i2v = (jj-1)*nx+ii + ny*(nx-1);
 
 		//calc time derivatives //flag this doesn't work for rotating bodies because it is only using body index 0
-		du_dt = uB[0] - uB0[0];
-		dv_dt = vB[0] - vB0[0];
+		du_dt = (uB[0] - uB0[0])/dt;
+		dv_dt = (vB[0] - vB0[0])/dt;
 
 		//find du/dx
 		//U_2 + (U_4-U_2)*(YBI-Y2)/(Y4-Y2)
@@ -1915,8 +1918,8 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		i1v = (jj-1)*(nx)+ii-1 + ny*(nx-1); i2v = (jj-1)*nx+ii + ny*(nx-1);
 
 		//time derivatives
-		du_dt = uB[0] - uB0[0];//flag this doesn't work for rotating bodies because it is only using body index 0
-		dv_dt = vB[0] - vB0[0];
+		du_dt = (uB[0] - uB0[0])/dt;//flag this doesn't work for rotating bodies because it is only using body index 0
+		dv_dt = (vB[0] - vB0[0])/dt;
 
 		//find du/dx
 		//U_1 + (U_3-U_1)*(YBI-Y1)/(Y3-Y1)
@@ -2015,8 +2018,8 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		i1v = (jj-1)*(nx)+ii-1 + ny*(nx-1); i2v = (jj-1)*nx+ii + ny*(nx-1);
 
 		//time derivatives
-		du_dt = uB[0] - uB0[0];//flag this doesn't work for rotating bodies because it is only using body index 0
-		dv_dt = vB[0] - vB0[0];
+		du_dt = (uB[0] - uB0[0])/dt;//flag this doesn't work for rotating bodies because it is only using body index 0
+		dv_dt = (vB[0] - vB0[0])/dt;
 
 		//find du/dx
 		//U_2 + (U_4-U_2)*(YBI-Y2)/(Y4-Y2)
@@ -2115,8 +2118,8 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		i1v = (jj-1)*(nx)+ii-1 + ny*(nx-1); i2v = (jj-1)*nx+ii + ny*(nx-1);
 
 		//time derivatives
-		du_dt = uB[0] - uB0[0];//flag this doesn't work for rotating bodies because it is only using body index 0
-		dv_dt = vB[0] - vB0[0];
+		du_dt = (uB[0] - uB0[0])/dt;//flag this doesn't work for rotating bodies because it is only using body index 0
+		dv_dt = (vB[0] - vB0[0])/dt;
 
 		//find du/dx
 		//U_1 + (U_3-U_1)*(YBI-Y1)/(Y3-Y1)

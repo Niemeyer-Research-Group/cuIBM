@@ -1,0 +1,13 @@
+- direction: x
+  start: -1.0
+  mid_h: 0.00625
+  subDomains:
+    - end: 1.0
+      stretchRatio: 1.0
+
+- direction: y
+  start: -1.0
+  mid_h: 0.00625
+  subDomains:
+    - end: 1.0
+      stretchRatio: 1.0

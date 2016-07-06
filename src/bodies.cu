@@ -25,6 +25,13 @@ void bodies::initialise(parameterDB &db, domain &D)
 	// number of bodies in the flow
 	numBodies = B->size();
 
+	//oscylinder
+	xCoeff = (*B)[0].xCoefficient;
+	uCoeff = (*B)[0].uCoefficient;
+	frequency = (*B)[0].frequency;
+	xPhase = (*B)[0].xPhase;
+	uPhase = (*B)[0].uPhase;
+
 	// set the sizes of all the arrays
 	numPoints.resize(numBodies);
 	offsets.resize(numBodies);
@@ -83,7 +90,11 @@ void bodies::initialise(parameterDB &db, domain &D)
 	uBk.resize(totalPoints);
 	vBk.resize(totalPoints);
 
+	force_dudn.resize(totalPoints);
+	force_dvdn.resize(totalPoints);
 	force_pressure.resize(totalPoints);
+	force_x.resize(totalPoints);
+	force_y.resize(totalPoints);
 	x1.resize(totalPoints);
 	x2.resize(totalPoints);
 	x3.resize(totalPoints);
@@ -208,8 +219,7 @@ void boundingBox(double *x, double *y,
  */
 void bodies::calculateBoundingBoxes(parameterDB &db, domain &D)
 {
-	double scale = db["simulation"]["scaleCV"].get<double>(),
-		     dx, dy;
+	double scale = db["simulation"]["scaleCV"].get<double>();
 	double	*x_r = thrust::raw_pointer_cast( &(D.x[0]) ),
 			*y_r = thrust::raw_pointer_cast( &(D.y[0]) ),
 			*xmin_r = thrust::raw_pointer_cast( &(xleft[0]) ),
