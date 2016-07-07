@@ -142,15 +142,21 @@ void fadlunModified::writeCommon()
 void fadlunModified::stepTime()
 {
 	generateRHS1();
-	NavierStokesSolver::solveIntermediateVelocity();
+	solveIntermediateVelocity();
+	arrayprint(u,"u0","x",-1);
+	arrayprint(N,"N","x",-1);
+	arrayprint(L,"L","x",-1);
+	arrayprint(bc1,"bc1","x",-1);
+	arrayprint(rhs1,"rhs1","x",-1);
+	arrayprint(uhat,"uhat","x",-1);
 
 	generateRHS2();
-	NavierStokesSolver::solvePoisson();
+	solvePoisson();
 
 	velocityProjection();
 
 	//std::cout<<timeStep<<std::endl;
-	NavierStokesSolver::timeStep++;
+	timeStep++;
 }
 
 /**

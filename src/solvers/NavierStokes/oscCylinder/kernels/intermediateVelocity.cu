@@ -26,7 +26,7 @@ void setInsideVelocity(int *ghostTags, double *u, double *uB, double *vB, int nx
 	if (iu >= (nx-1)*ny) //flag indexing is janky for doing x and y at the same time
 			return;
 	//			 not at inside edge             at inside edge
-	u[iu] = (ghostTags[iu] != 0) * u[iu] + (ghostTags[iu] == 0) * uB[0]; //flag won't work for rotating bodies because were not getting a local body velocity
+	u[iu] = (ghostTags[iu] != 0) * u[iu] + (ghostTags[iu] == 0) * uB[0];//flag won't work for rotating bodies because were not getting a local body velocity
 	u[iv] = (ghostTags[iv] != 0) * u[iv] + (ghostTags[iv] == 0) * vB[0];
 }
 }

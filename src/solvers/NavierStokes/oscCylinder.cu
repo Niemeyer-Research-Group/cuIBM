@@ -201,6 +201,15 @@ void oscCylinder::stepTime()
 
 	velocityProjection();
 
+	if (timeStep%100 == 0)
+	{
+		arrayprint(pressure,"p","p",-1);
+		arrayprint(u,"u","x",-1);
+		arrayprint(ghostTagsUV,"ghostu","x",-1);
+		arrayprint(ghostTagsP,"ghostp","p",-1);
+		std::cout<<B.midX<<"\n";
+	}
+
 	//Release the body after a certain timestep
 	if (timeStep >= (*paramDB)["simulation"]["startStep"].get<int>())
 	{
@@ -210,13 +219,17 @@ void oscCylinder::stepTime()
 	}
 
 	timeStep++;
-	//if (timeStep%100 == 0)
-		std::cout<<timeStep<<std::endl;
+	std::cout<<timeStep<<std::endl;
+
 	if (timeStep%(*paramDB)["simulation"]["nt"].get<int>() == 0)
 	{
 		//arrayprint(pressure,"p","p");
-		//arrayprint(u,"u","x");
+		arrayprint(u,"u","x",-1);
 		std::cout<<"Maximun CFL: " << cfl_max << std::endl;
+		std::cout<<"Expected CFL: " << (*paramDB)["simulation"]["dt"].get<double>()*bc[XMINUS][0]/domInfo->mid_h << std::endl;
+		std::cout<<"CFL I: " << cfl_I << std::endl;
+		std::cout<<"CFL J: " << cfl_J << std::endl;
+		std::cout<<"CFL ts: " << cfl_ts << std::endl;
 	}
 }
 

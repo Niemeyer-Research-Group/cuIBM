@@ -26,10 +26,15 @@ void oscCylinder::CFL()
 	kernels::calculateCFL<<<grid,block>>>(cfl_r, u_r, dx_r, dy_r, nx, ny, dt);
 	
 	thrust::device_vector<double>::iterator iter = thrust::max_element(cfl.begin(),cfl.end());
-	//unsigned int position = iter - cfl.begin();
+	unsigned int position = iter - cfl.begin();
 	double max_val = *iter;
 	if (max_val > cfl_max)
+	{
 		cfl_max = max_val;
+		cfl_I = position%nx;
+		cfl_J = int(position/nx);
+		cfl_ts = timeStep;
+	}
 	logger.stopTimer("CFL");
 }
 

@@ -15,7 +15,10 @@ class oscCylinder : public luoIBM
 protected:
 	std::ofstream midPositionFile;
 	cusp::array1d<double, cusp::device_memory> cfl;
-	double cfl_max;
+	double	cfl_max,
+			cfl_I,
+			cfl_J,
+			cfl_ts;
 
 	//////////////////////////
 	//oscCylinder.h
