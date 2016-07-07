@@ -14,7 +14,8 @@ class oscCylinder : public luoIBM
 {
 protected:
 	std::ofstream midPositionFile;
-	cusp::array1d<double, cusp::device_memory> cfl;
+	cusp::array1d<double, cusp::device_memory> cfl,
+												distance;
 	double	cfl_max,
 			cfl_I,
 			cfl_J,
@@ -35,6 +36,7 @@ protected:
 	//CFL.inl
 	//////////////////////////
 	void CFL();
+	void calcDistance();
 public:
 	//////////////////////////
 	//oscCylinder.cu

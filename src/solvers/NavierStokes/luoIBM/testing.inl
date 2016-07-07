@@ -323,8 +323,8 @@ void luoIBM::testInterpP()
 		for (int I=i_start;  I<i_end;  I++)
 		{
 			ip = J*nx + I;
-			if (ghostTagsP[ip] >0)//for inside
-			//if (hybridTagsP[ip] >0)//for outside
+			//if (ghostTagsP[ip] >0)//for inside
+			if (hybridTagsP[ip] >0)//for outside
 			{
 				//std::cout<<I<<"\t"<<J<<"\t"<<iv<<"\n";
 				body_nodes << x1_ip_p[ip]<<"\t";
@@ -349,8 +349,8 @@ void luoIBM::testInterpP()
 				body_nodes << q2_p[ip] <<"\t";
 				body_nodes << q3_p[ip] <<"\t";
 				body_nodes << q4_p[ip] <<"\t";
-				//body_nodes << pressureStar[ip] <<"\t";//outside
-				body_nodes << pressure[ip] <<"\t";//inside
+				body_nodes << pressureStar[ip] <<"\t";//outside
+				//body_nodes << pressure[ip] <<"\t";//inside
 				body_nodes << a0[ip] <<"\t";
 				body_nodes << a1[ip] <<"\t";
 				body_nodes << a2[ip] <<"\t";

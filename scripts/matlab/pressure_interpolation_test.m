@@ -2,8 +2,8 @@
 clc
 clear
 close all
-% M = dlmread('/scratch/src/cuIBM/validation/luo/test/interp_testP.csv','\t',1,0); %start on second row to avoid headers
-M = dlmread('/scratch/src/cuIBM/validation/cylinder/Re40/interp_testP.csv','\t',1,0); %start on second row to avoid headers
+M = dlmread('/scratch/src/cuIBM/validation/osc/flow/interp_testP.csv','\t',1,0); %start on second row to avoid headers
+% M = dlmread('/scratch/src/cuIBM/validation/cylinder/Re40/interp_testP.csv','\t',1,0); %start on second row to avoid headers
 % 1     2       3       4       5       6       7       8       9       10      11  12  13  14  15  16  17  18  19  20  21  22  23 24 25 26 27
 % BN_X1	BN_Y1   BN_X2	BN_Y2	GN_X    GN_Y	BI_X	BI_Y    IP_X	IP_Y	x1	x2	x3  x4	y1	y2	y3	y4	q1	q2	q3	q4	p* a0 a1 a2 a3
 X = zeros(1,7);
@@ -63,8 +63,9 @@ zlabel('pressure')
 %% 2d pressure interpolation
 clc
 clear
-close all
-M = dlmread('/scratch/src/cuIBM/validation/luo/test/interp_testP.csv','\t',1,0); %start on second row to avoid headers
+% close all
+figure
+M = dlmread('/scratch/src/cuIBM/validation/osc/flow/interp_testP.csv','\t',1,0); %start on second row to avoid headers
 % 1     2       3       4       5       6       7       8       9       10      11  12  13  14  15  16  17  18  19  20  21  22  23
 % BN_X1	BN_Y1   BN_X2	BN_Y2	GN_X    GN_Y	BI_X	BI_Y    IP_X	IP_Y	x1	x2	x3  x4	y1	y2	y3	y4	q1	q2	q3	q4	p*
 X = zeros(1,7);
@@ -77,7 +78,7 @@ for i =1:length(M)
     X(4) = M(i,12); %corner2
     X(5) = M(i,13); %corner3
     X(6) = M(i,14); %corner4
-    X(7) = M(i,9); %image piont
+    X(7) = M(i,9); %image point
     x1 = [M(i,1),M(i,3)]; %body
     Y(1) = M(i,6);
     Y(2) = M(i,8);
@@ -101,7 +102,7 @@ for i =1:length(M)
     plot(X(3:6),Y(3:6),'rd'), hold on %interpolation corners
     plot(M(i,1),M(i,2),'rs',M(i,3),M(i,4),'rs') %body nodes
     %plot([X(1) X(7)], [Y(1) Y(7)], 'k-') % line between ghost node and image point
-    trouble_nodes = [33];
+    trouble_nodes = [];
     if(any(i==trouble_nodes))
         linecolor = [1 0 0]; %if trouble spot set red else set blue
     else
@@ -114,7 +115,6 @@ for i =1:length(M)
     end
 end
     
-figure(1)
 set(gca,'Color',[0.8 0.8 0.8]);
 legend('Ghost Node','Boundary Intercept','Body','Image Point','Interpolation corner')
 axis square

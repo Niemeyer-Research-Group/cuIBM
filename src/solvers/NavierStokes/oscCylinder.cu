@@ -71,7 +71,6 @@ void oscCylinder::updateSolver()
 {
 	logger.startTimer("Bounding Boxes");
 	B.calculateBoundingBoxes(*paramDB, *domInfo);//flag this isn't really needed because the body never moves out of the bounding box
-
 	logger.stopTimer("Bounding Boxes");
 
 	tagPoints();
@@ -136,6 +135,7 @@ void oscCylinder::initialise()
 {
 	luoIBM::initialise();
 	cfl.resize(domInfo->nx*domInfo->ny);
+	distance.resize((domInfo->nx-1)*domInfo->ny + (domInfo->ny-1)*domInfo->nx);
 	cfl_max = 0;
 
 	//output
@@ -201,13 +201,15 @@ void oscCylinder::stepTime()
 
 	velocityProjection();
 
-	if (timeStep%100 == 0)
+	if (timeStep%100 == 0 && timeStep>1)
 	{
+		//calcDistance();
 		arrayprint(pressure,"p","p",-1);
 		arrayprint(u,"u","x",-1);
 		arrayprint(ghostTagsUV,"ghostu","x",-1);
+		arrayprint(hybridTagsUV,"hybridu","x",-1);
 		arrayprint(ghostTagsP,"ghostp","p",-1);
-		std::cout<<B.midX<<"\n";
+		//std::cout<<B.midX<<"\n";
 	}
 
 	//Release the body after a certain timestep
@@ -224,7 +226,7 @@ void oscCylinder::stepTime()
 	if (timeStep%(*paramDB)["simulation"]["nt"].get<int>() == 0)
 	{
 		//arrayprint(pressure,"p","p");
-		arrayprint(u,"u","x",-1);
+		//arrayprint(u,"u","x",-1);
 		std::cout<<"Maximun CFL: " << cfl_max << std::endl;
 		std::cout<<"Expected CFL: " << (*paramDB)["simulation"]["dt"].get<double>()*bc[XMINUS][0]/domInfo->mid_h << std::endl;
 		std::cout<<"CFL I: " << cfl_I << std::endl;

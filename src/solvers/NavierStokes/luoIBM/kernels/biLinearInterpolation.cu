@@ -656,9 +656,9 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 	double X1u,X2u,X3u,X4u,Y1u,Y2u,Y3u,Y4u,velTemp,lTemp;
 	double X1v,X2v,X3v,X4v,Y1v,Y2v,Y3v,Y4v;
 	int i1u, i2u, i3u, i4u, i1v, i2v, i3v, i4v;
-	//check if any points are inside of the body, then calculate the neuman boundary condition for them
+	//move the closes node to the body to the surface then calculate the neuman boundary condition for it
 	//point 1
-	if (hybridTagsP[index1] == ip)
+	if (hybridTagsP[index1] == ip)//flag this could/should/can be an if else statment not 4 if statements
 	{
 		//setup
 		x1[ip] = body_intercept_p_x[ip];
@@ -1273,7 +1273,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 	double X1v,X2v,X3v,X4v,Y1v,Y2v,Y3v,Y4v;
 	int i1u, i2u, i3u, i4u, i1v, i2v, i3v, i4v;
 
-	//if the node is inside the body, set it to be a neuman condition
+	//if the node is inside the body, move it to the surface then set it to be a neuman condition
 	//point 1
 	if (ghostTagsP[index1] != -1)
 	{
@@ -1779,8 +1779,9 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 	//pressure at the image point
 	double image_point_pressure = a0[ip] + a1[ip]*image_point_p_x[ip]    + a2[ip]*image_point_p_y[ip]    + a3[ip] * image_point_p_y[ip]   *image_point_p_x[ip];
 	body_intercept_p[ip]        = a0[ip] + a1[ip]*body_intercept_p_x[ip] + a2[ip]*body_intercept_p_y[ip] + a3[ip] * body_intercept_p_x[ip]*body_intercept_p_y[ip]; //used for force calc
-	//interpolate pressure to the ghost node
+
 	double matD = 0;
+	//For the closest node to the BI,
 	if (close_index == index1)
 	{
 		n_x = image_point_p_x[index1] - body_intercept_p_x[index1];
@@ -2188,7 +2189,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 	dvdt[ip] = dv_dt;
 	udvdx[ip] = u_dv_dx;
 	vdvdy[ip] = v_dv_dy;
+	//extrapolate pressure to the ghost node
 	pressure[ip] = image_point_pressure + sqrt(pow(image_point_p_x[ip]-xv[I],2)+pow(image_point_p_y[ip]-yu[J],2))*matD;
 }
-
 }

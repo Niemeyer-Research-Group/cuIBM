@@ -139,8 +139,8 @@ void luoIBM::weightPressure()
 									dudt_r,ududx_r,dvdt_r,vdudy_r,udvdx_r,vdvdy_r,
 									a0_r, a1_r, a2_r, a3_r,
 									x1_p_r, x2_p_r, x3_p_r, x4_p_r, y1_p_r, y2_p_r, y3_p_r, y4_p_r, q1_p_r, q2_p_r, q3_p_r, q4_p_r);
-	//arrayprint(body_intercept_p,"bip","p",-1);
-	//testInterpP();
+	if (timeStep == 100)
+		testInterpP();
 	logger.stopTimer("weightPressure");
 }
 

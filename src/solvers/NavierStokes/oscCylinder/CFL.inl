@@ -38,3 +38,31 @@ void oscCylinder::CFL()
 	logger.stopTimer("CFL");
 }
 
+void oscCylinder::calcDistance()
+{
+	double	*distance_r = thrust::raw_pointer_cast ( &(distance[0]) ),
+			*xu_r = thrust::raw_pointer_cast ( &(domInfo->xu[0]) ),
+			*xv_r = thrust::raw_pointer_cast ( &(domInfo->xv[0]) ),
+			*yu_r = thrust::raw_pointer_cast ( &(domInfo->yu[0]) ),
+			*yv_r = thrust::raw_pointer_cast ( &(domInfo->yv[0]) );
+	
+	int	*ghostTagsUV_r = thrust::raw_pointer_cast ( &(ghostTagsUV[0]) ),
+		*ghostTagsP_r  = thrust::raw_pointer_cast ( &(ghostTagsP[0]) );
+			
+	int nx = domInfo ->nx,
+		ny = domInfo ->ny,
+		width_i = B.numCellsXHost, //flag this value is only moved to the host once (in B.initialise) if the body is moving too much this could break 
+		height_j=B.numCellsYHost;  //this is done because we need the value on the host to calculate the grid size, but copying it to the host every TS is expensive
+	
+	int *i_start_r = thrust::raw_pointer_cast ( &(B.startI[0]) ),
+		*j_start_r = thrust::raw_pointer_cast ( &(B.startJ[0]) );
+	double dt = (*paramDB)["simulation"]["dt"].get<double>();
+
+	const int blocksize = 256;
+	dim3 grid( int( (width_i*height_j-0.5)/blocksize ) +1, 1);
+	dim3 block(blocksize, 1);
+	
+	kernels::testDistance<<<grid,block>>>(distance_r, ghostTagsUV_r, ghostTagsP_r, xu_r, xv_r, yu_r, yv_r, B.midX, B.midY,
+											i_start_r, j_start_r, width_i, nx, ny);
+	arrayprint(distance,"distance","p",-1);
+}
