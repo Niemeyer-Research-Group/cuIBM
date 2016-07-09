@@ -311,6 +311,7 @@ void luoIBM::testInterpP()
 					"a1\t"
 					"a2\t"
 					"a3\t"
+					"BI_p\t"
 					"dudt\t"
 					"ududx\t"
 					"vdudy\t"
@@ -349,12 +350,13 @@ void luoIBM::testInterpP()
 				body_nodes << q2_p[ip] <<"\t";
 				body_nodes << q3_p[ip] <<"\t";
 				body_nodes << q4_p[ip] <<"\t";
-				body_nodes << pressureStar[ip] <<"\t";//outside
-				//body_nodes << pressure[ip] <<"\t";//inside
+				//body_nodes << pressureStar[ip] <<"\t";//outside
+				body_nodes << pressure[ip] <<"\t";//inside
 				body_nodes << a0[ip] <<"\t";
 				body_nodes << a1[ip] <<"\t";
 				body_nodes << a2[ip] <<"\t";
 				body_nodes << a3[ip] <<"\t";
+				body_nodes << body_intercept_p[ip] << "\t";
 				body_nodes << dudt[ip] <<"\t";
 				body_nodes << ududx[ip] <<"\t";
 				body_nodes << vdudy[ip] <<"\t";

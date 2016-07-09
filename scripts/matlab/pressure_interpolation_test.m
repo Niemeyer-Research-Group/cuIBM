@@ -1,15 +1,17 @@
 %% 3d pressure interpolation
 clc
 clear
-close all
+% close all
+figure
 M = dlmread('/scratch/src/cuIBM/validation/osc/flow/interp_testP.csv','\t',1,0); %start on second row to avoid headers
 % M = dlmread('/scratch/src/cuIBM/validation/cylinder/Re40/interp_testP.csv','\t',1,0); %start on second row to avoid headers
-% 1     2       3       4       5       6       7       8       9       10      11  12  13  14  15  16  17  18  19  20  21  22  23 24 25 26 27
-% BN_X1	BN_Y1   BN_X2	BN_Y2	GN_X    GN_Y	BI_X	BI_Y    IP_X	IP_Y	x1	x2	x3  x4	y1	y2	y3	y4	q1	q2	q3	q4	p* a0 a1 a2 a3
+% 1     2       3       4       5       6       7       8       9       10      11  12  13  14  15  16  17  18  19  20  21  22  23 24 25 26 27 28
+% BN_X1	BN_Y1   BN_X2	BN_Y2	GN_X    GN_Y	BI_X	BI_Y    IP_X	IP_Y	x1	x2	x3  x4	y1	y2	y3	y4	q1	q2	q3	q4	p* a0 a1 a2 a3 BI_p
 X = zeros(1,7);
 Y = zeros(1,7);
 Z = zeros(1,7);
-for i = 33%:length(M)
+hold on
+for i = 45%1:length(M)
     X(1) = M(i,5); %ghost node
     X(2) = M(i,7); %body intercept
     X(3) = M(i,11); %corner1
@@ -33,28 +35,32 @@ for i = 33%:length(M)
     Z(5) = M(i,21);
     Z(6) = M(i,22);
     z1 = [0,0];
+%     matD = M(i,34)+M(i,29)+M(i,30)+M(i,31)+M(i,32)+M(i,33)
+%     scatter3(M(i,7),M(i,8),-matD)
 %     [Q, a] = interpolateP(X(3:6), Y(3:6), Z(3:6));
     Q= @(X,Y) M(i,24) + M(i,25)*X + M(i,26)*Y + M(i,27)*X*Y;
     
-    scatter3(X(1),Y(1),Z(1),'ks'), hold on %ghost node
-    scatter3(X(7),Y(7),Z(1),'kx'), hold on %image point node
-    scatter3(X(2),Y(2),Z(2),'ko'), hold on %body intercept
+    aa = scatter3(X(1),Y(1),Z(1),'ks');%ghost node
+    bb = scatter3(X(7),Y(7),M(i,29),'kx'); %image point node
+    cc = scatter3(X(2),Y(2),M(i,28),'ko'); %body intercept
+    ff = scatter3(X(2),Y(2),M(i,30),'k+'); %bi2
     xx = linspace(X(3),X(4), 10);
     yy = linspace(Y(3),Y(5),10);
     for j = 1:length(xx)
         for k = 1:length(yy)
-            scatter3(xx(j),yy(k),Q(xx(j),yy(k)))
+            dd = scatter3(xx(j),yy(k),Q(xx(j),yy(k)));
         end
     end
     for j=3:6 %corners
         if abs(Z(j))<35
-            scatter3(X(j),Y(j),Z(j),'rd')
+            ee = scatter3(X(j),Y(j),Z(j),'rd');
         end
     end
 %     plot3([X(1) X(2)], [Y(1) Y(2)], [Z(1),Z(2)],'--') %line between gn and cpp ip
 end
 axis square
-legend('Ghost node','Image Point', 'Body Intercept', 'Corners')
+% legend('Ghost node','Image Point', 'Body Intercept', 'Corners')
+legend([aa bb cc dd ee ff],'ghost','ip','bi','field','corner', 'BI')
 xlabel('x')
 ylabel('y')
 zlabel('pressure')
@@ -102,7 +108,7 @@ for i =1:length(M)
     plot(X(3:6),Y(3:6),'rd'), hold on %interpolation corners
     plot(M(i,1),M(i,2),'rs',M(i,3),M(i,4),'rs') %body nodes
     %plot([X(1) X(7)], [Y(1) Y(7)], 'k-') % line between ghost node and image point
-    trouble_nodes = [];
+    trouble_nodes = [45];
     if(any(i==trouble_nodes))
         linecolor = [1 0 0]; %if trouble spot set red else set blue
     else

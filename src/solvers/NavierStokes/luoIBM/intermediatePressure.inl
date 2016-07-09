@@ -126,7 +126,7 @@ void luoIBM::weightPressure()
 									uB_r, uB0_r, vB_r, vB0_r, yu_r, yv_r, xu_r, xv_r,
 									body_intercept_p_x_r, body_intercept_p_y_r, image_point_p_x_r, image_point_p_y_r,
 									i_start_r, j_start_r, width_i, nx, ny, dt,
-									dudt_r,ududx_r,dvdt_r,vdudy_r,udvdx_r,vdvdy_r,
+									dudt_r,ududx_r,vdudy_r,dvdt_r,udvdx_r,vdvdy_r,
 									a0_r, a1_r, a2_r, a3_r,
 									x1_p_r, x2_p_r, x3_p_r, x4_p_r, y1_p_r, y2_p_r, y3_p_r, y4_p_r, q1_p_r, q2_p_r, q3_p_r, q4_p_r, timeStep);
 	kernels::weightP<<<grid,block>>>(pressure_r, pressureStar_r, ghostTagsP_r, hybridTagsP_r, yu_r, xv_r,
@@ -136,7 +136,7 @@ void luoIBM::weightPressure()
 									uB_r, uB0_r, vB_r, vB0_r, yu_r, yv_r, xu_r, xv_r,
 									body_intercept_p_x_r, body_intercept_p_y_r, image_point_p_x_r, image_point_p_y_r,  body_intercept_p_r,
 									i_start_r, j_start_r, width_i, nx, ny, dt,
-									dudt_r,ududx_r,dvdt_r,vdudy_r,udvdx_r,vdvdy_r,
+									dudt_r,ududx_r,vdudy_r,dvdt_r,udvdx_r,vdvdy_r,
 									a0_r, a1_r, a2_r, a3_r,
 									x1_p_r, x2_p_r, x3_p_r, x4_p_r, y1_p_r, y2_p_r, y3_p_r, y4_p_r, q1_p_r, q2_p_r, q3_p_r, q4_p_r);
 	if (timeStep == 100)

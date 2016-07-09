@@ -5,7 +5,7 @@ close all
 % figure
 %change these
 number = '100';
-type = 'p'; %p or u
+type = 'u'; %p or u
 suffix = ''; %u: 0, star, hat, hatfinal, empty. p: 0, star, empty
 view = 'out';
 
@@ -38,7 +38,7 @@ end
 midy = round(length(u(:,1))/2);
 midx = round(length(u(1,:))/2);
 % surf(M((midy-50):(midy+50),(midx-50):(midx+50)))
-surf(u(:,1:127)), hold on
+surf(u(60:100,1:127)), hold on
 title(strcat(type,suffix))
 xlabel('x')
 ylabel('y')
@@ -163,6 +163,7 @@ number = '100';
 
 %load data
 caseFolder = '/scratch/src/cuIBM/validation/osc/flow/output/';
+% caseFolder = '/scratch/src/cuIBM/validation/osc/static/output/';
 path = strcat(caseFolder,number,'p.csv');
 ghostpath = strcat(caseFolder,number,'ghostp.csv');
 delim = '\t';
@@ -177,11 +178,18 @@ for i =1:length(p(:,1))
         end
     end
 end
+
+% h = 0.005;
+% s = 0.4;
+% X = linspace(-s+h/2,s-h/2,160);
+% s=0.2;
+% Y = linspace(-s+h/2,s-h/2,80);
 h = 0.03125;
 X = linspace(-2.0+h/2,2.0-h/2,128);
 Y = linspace(-2.0+h/2,2.0-h/2,128);
 %plot area round body
 surf(X(44:88),Y(44:88),p(44:88,44:88)), hold on
+% surf(X,Y,p(73:152,81:240))
 xlabel('x')
 ylabel('y')
 zlabel('z')
