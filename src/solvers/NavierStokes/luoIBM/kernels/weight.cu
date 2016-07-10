@@ -126,7 +126,8 @@ void weightP(double *pressure, double *pressureStar, int *ghostTagsP, int *hybri
 		delta_2 = sqrt( pow( body_intercept_x[ip+nx]-xv[I],2 ) + pow( body_intercept_y[ip+nx]-yu[J+1], 2 ) );
 	//calculate alpha
 	alpha = sqrt( pow( delta_1/dx , 2 ) + pow( delta_2/dy , 2 ) );
-	//blend uhat
+	alpha = 0;
+	//blend p
 	pressure[ip] = (1-alpha)*pressure[ip] + alpha*pressureStar[ip];
 }
 

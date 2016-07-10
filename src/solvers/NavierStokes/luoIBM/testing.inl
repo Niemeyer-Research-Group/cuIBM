@@ -350,8 +350,8 @@ void luoIBM::testInterpP()
 				body_nodes << q2_p[ip] <<"\t";
 				body_nodes << q3_p[ip] <<"\t";
 				body_nodes << q4_p[ip] <<"\t";
-				//body_nodes << pressureStar[ip] <<"\t";//outside
-				body_nodes << pressure[ip] <<"\t";//inside
+				body_nodes << pressureStar[ip] <<"\t";//outside
+				//body_nodes << pressure[ip] <<"\t";//inside
 				body_nodes << a0[ip] <<"\t";
 				body_nodes << a1[ip] <<"\t";
 				body_nodes << a2[ip] <<"\t";

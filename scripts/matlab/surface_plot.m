@@ -38,7 +38,8 @@ end
 midy = round(length(u(:,1))/2);
 midx = round(length(u(1,:))/2);
 % surf(M((midy-50):(midy+50),(midx-50):(midx+50)))
-surf(u(60:100,1:127)), hold on
+% surf(u(60:100,1:127)), hold on
+surf(u);
 title(strcat(type,suffix))
 xlabel('x')
 ylabel('y')

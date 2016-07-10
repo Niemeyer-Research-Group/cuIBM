@@ -581,7 +581,7 @@ __global__
 void interpolatePressureToHybridNode(double *pressure, double *pressureStar, double *u, int *hybridTagsP, double *bx, double *by,
 									double *uB, double *uB0, double *vB, double  *vB0, double *yu, double *yv, double *xu, double *xv,
 									double *body_intercept_p_x, double *body_intercept_p_y, double *image_point_p_x, double *image_point_p_y,
-									int *i_start, int *j_start, int width, int nx, int ny, double dt,
+									int *i_start, int *j_start, int width, int nx, int ny, double dt, double totalPoints,
 									double *dudt, double *ududx, double *vdudy, double *dvdt, double *udvdx, double *vdvdy,
 									double *a0, double *a1, double *a2, double *a3,
 									double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4, int timeStep)//test
@@ -601,13 +601,7 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 
 	double	n_x,
 			n_y,
-			nl,
-			du_dt,
-			u_du_dx,
-			v_du_dy,
-			dv_dt,
-			u_dv_dx,
-			v_dv_dy;
+			nl;
 	/*
 	 *   	(x3,y3)__________(x4,y4)
 	 *   	|					   |
@@ -653,114 +647,53 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 	double a41 = 1, a42 = x4[ip],  a43 = y4[ip], a44 = x4[ip]*y4[ip];
 
 	//setup for neuman BC
-	double X1u,X2u,X3u,X4u,Y1u,Y2u,Y3u,Y4u,velTemp,lTemp;
-	double X1v,X2v,X3v,X4v,Y1v,Y2v,Y3v,Y4v;
-	int i1u, i2u, i3u, i4u, i1v, i2v, i3v, i4v;
+	double distance, distance2, min, min2, matDi, matDj, matD2i, matD2j, matDBIi, matDBIj;
+	int bodyindex, bodyindex2;
 	//move the closes node to the body to the surface then calculate the neuman boundary condition for it
 	//point 1
-	if (hybridTagsP[index1] == ip)//flag this could/should/can be an if else statment not 4 if statements
+	if (hybridTagsP[index1] == ip)
 	{
 		//setup
 		x1[ip] = body_intercept_p_x[ip];
 		y1[ip] = body_intercept_p_y[ip];
-		n_x = image_point_p_x[ip] - x1[ip]; //flag this seems questionable
+		n_x = image_point_p_x[ip] - x1[ip];
 		n_y = image_point_p_y[ip] - y1[ip];
 		nl = sqrt(n_x*n_x+n_y*n_y);
 
-		//find the four u velocity nodes around the body intercept
-		ii = I-5; jj = J-5;
-		while (xu[ii] < body_intercept_p_x[ip])
-			ii++;
-		while (yu[jj] < body_intercept_p_y[ip])
-			jj++;
-		X3u = xu[ii-1]; X4u = xu[ii];
-		X1u = xu[ii-1]; X2u = xu[ii];
-
-		Y3u = yu[jj];   Y4u = yu[jj];
-		Y1u = yu[jj-1]; Y2u = yu[jj-1];
-
-		i3u = jj*(nx-1) + ii -1;	i4u = jj*(nx-1) + ii;
-		i1u = (jj-1)*(nx-1)+ii-1;	i2u = (jj-1)*(nx-1)+ii;
-
-		//find the four v velocity nodes around the body intercept
-		ii = I-5; jj = J-5;
-		while (xv[ii] < body_intercept_p_x[ip])
-			ii++;
-		while (yv[jj] < body_intercept_p_y[ip])
-			jj++;
-		X3v = xv[ii-1];	X4v = xv[ii];
-		X1v = xv[ii-1];	X2v = xv[ii];
-
-		Y3v = yv[jj];	Y4v = Y3v;
-		Y1v = yv[jj-1];	Y2v = Y1v;
-
-		i3v = jj*nx+ii-1 + ny*(nx-1);		i4v = jj*nx+ii + ny*(nx-1);
-		i1v = (jj-1)*(nx)+ii-1 + ny*(nx-1); i2v = (jj-1)*nx+ii + ny*(nx-1);
-
-		//calc time derivatives //flag this doesn't work for rotating bodies because it is only using body index 0
-		du_dt = (uB[0] - uB0[0])/dt;
-		dv_dt = (vB[0] - vB0[0])/dt;
-
-		//find du/dx
-		//U_2 + (U_4-U_2)*(YBI-Y2)/(Y4-Y2)
-		//check if were too close to the u node in x direction to get good values, if we are: interpolate from u nodes farther away
-		if ( abs( X2u-body_intercept_p_x[ip] ) < (X2u-X1u)*0.75 )
+		//find two closest body nodes
+		min = 1;
+		min2 = 1;
+		for (int k=0; k<totalPoints; k++)
 		{
-			velTemp = u[i2u+1] + (u[i4u+1] - u[i2u+1])*(y1[ip]-Y2u)/(Y4u-Y2u);
-			lTemp = X2u + X2u - X1u;
+			distance = sqrt(pow(bx[k]-x1[ip],2)+pow(by[k]-y1[ip],2));
+			if (distance<min)
+			{
+				min = distance;
+				bodyindex = k;
+			}
 		}
-		else
+		for (int k=0; k<totalPoints; k++)
 		{
-			velTemp = u[i2u] + (u[i4u] - u[i2u])*(y1[ip]-Y2u)/(Y4u-Y2u);					//flag which order do the subtractions go in
-			lTemp = X2u;
+			distance = sqrt(pow(bx[k]-x1[ip],2)+pow(by[k]-y1[ip],2));
+			distance2 = sqrt(pow(bx[bodyindex]-bx[k],2)+pow(by[bodyindex]-bx[k],2));
+			if (distance<min2 && distance2>0)
+			{
+				min2 = distance;
+				bodyindex2 = k;
+			}
 		}
-		u_du_dx = uB[0]  *  (velTemp - uB[0])/(lTemp-x1[ip]);
 
-		//find du/dy
-		//U_3 + (U_4-U_3)*(XBI-X3)/(X4-X3)
-		//check if were too close to u node in y direction
-		if ( abs( Y3u-body_intercept_p_y[ip] ) < (Y3u-Y1u)*0.75 )
-		{
-			velTemp = u[i3u + (nx-1)] + (u[i4u + (nx-1)] - u[i3u + (nx-1)])*(x1[ip]-X3u)/(X4u-X3u);
-			lTemp = Y3u + Y3u - Y1u;
-		}
-		else
-		{
-			velTemp = u[i3u] + (u[i4u] - u[i3u])*(x1[ip]-X3u)/(X4u-X3u);
-			lTemp = Y3u;
-		}
-		v_du_dy = vB[0]  *  (velTemp - uB[0])/(lTemp-y1[ip]);
+		//calc Du/Dt at body nodes
+		matDi = (uB[bodyindex]-uB0[bodyindex])/dt;
+		matDj = (vB[bodyindex]-vB0[bodyindex])/dt;
+		matD2i = (uB[bodyindex2]-uB0[bodyindex2])/dt;
+		matD2j = (vB[bodyindex2]-vB0[bodyindex2])/dt;
 
-		//find dv/dx
-		//V_2 + (V_4-V_2)(YBI-Y2)/(Y4-Y2)
-		//check if were too close to the v node in the x direction
-		if ( abs( X2v-body_intercept_p_x[ip] ) < (X2v-X1v)*0.75 )
-		{
-			velTemp = u[i2v+1] + (u[i4v+1] - u[i2v+1])*(y1[ip]-Y2v)/(Y4v-Y2v);
-			lTemp = X2v+X2v-X1v;
-		}
-		else
-		{
-			velTemp = u[i2v] + (u[i4v] - u[i2v])*(y1[ip]-Y2v)/(Y4v-Y2v);
-			lTemp = X2v;
-		}
-		u_dv_dx = uB[0]  *  (velTemp-vB[0])/(lTemp-x1[ip]);
+		//interp to BI
+		matDBIi = matDi + (matD2i-matDi)/(min+min2)*min;
+		matDBIj = matDj + (matD2j-matDj)/(min+min2)*min;
 
-		//find dv/dy
-		//U_3 + (U_4-U_3)*(XBI-X3)/(X4-X3)
-		if ( abs( Y3v-body_intercept_p_y[ip] ) < (Y3v-Y1v)*0.75 )
-		{
-			velTemp = u[i3v+nx] + (u[i4v+nx] - u[i3v+nx])*(x1[ip]-X3v)/(X4v-X3v);
-			lTemp = Y3v+Y3v-Y1v;
-		}
-		else
-		{
-			velTemp = u[i3v] + (u[i4v] - u[i3v])*(x1[ip]-X3v)/(X4v-X3v);
-			lTemp = Y3v;
-		}
-		v_dv_dy = vB[0]  *  (velTemp - vB[0])/(lTemp-y1[ip]);
-
-		q1[ip] = -(n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt + u_dv_dx + v_dv_dy));
+		q1[ip] = - ( matDBIi*n_x/nl + matDBIj*n_y/nl ) ;
 
 		a11 = 0;
 		a12 = n_x/nl;
@@ -768,106 +701,48 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 		a14 = a13*x1[ip]+a12*y1[ip];
 	}
 	//point 2
-	if (hybridTagsP[index2] == ip)
+	else if (hybridTagsP[index2] == ip)
 	{
 		x2[ip] = body_intercept_p_x[ip];
 		y2[ip] = body_intercept_p_y[ip];
 		n_x = image_point_p_x[ip] - x2[ip];
 		n_y = image_point_p_y[ip] - y2[ip];
 		nl = sqrt(n_x*n_x+n_y*n_y);
-		//find the four u velocity nodes around the body intercept
-		ii = I-5; jj = J-5;
-		while (xu[ii] < body_intercept_p_x[ip])
-			ii++;
-		while (yu[jj] < body_intercept_p_y[ip])
-			jj++;
-		X3u = xu[ii-1]; X4u = xu[ii];
-		X1u = xu[ii-1]; X2u = xu[ii];
 
-		Y3u = yu[jj];   Y4u = yu[jj];
-		Y1u = yu[jj-1]; Y2u = yu[jj-1];
-
-		i3u = jj*(nx-1) + ii -1;	i4u = jj*(nx-1) + ii;
-		i1u = (jj-1)*(nx-1)+ii-1;	i2u = (jj-1)*(nx-1)+ii;
-
-		//find the four v velocity nodes around the body intercept
-		ii = I-5; jj = J-5;
-		while (xv[ii] < body_intercept_p_x[ip])
-			ii++;
-		while (yv[jj] < body_intercept_p_y[ip])
-			jj++;
-		X3v = xv[ii-1];	X4v = xv[ii];
-		X1v = xv[ii-1];	X2v = xv[ii];
-
-		Y3v = yv[jj];	Y4v = Y3v;
-		Y1v = yv[jj-1];	Y2v = Y1v;
-
-		i3v = jj*nx+ii-1 + ny*(nx-1);		i4v = jj*nx+ii + ny*(nx-1);
-		i1v = (jj-1)*(nx)+ii-1 + ny*(nx-1); i2v = (jj-1)*nx+ii + ny*(nx-1);
-		//time derivatives
-		du_dt = (uB[0] - uB0[0])/dt;//flag this doesn't work for rotating bodies because it is only using body index 0
-		dv_dt = (vB[0] - vB0[0])/dt;
-
-		//find du/dx
-		//U_1 + (U_3-U_1)*(YBI-Y1)/(Y3-Y1)
-		//check if were too close to the u node in x direction to get good values, if we are: interpolate from u nodes farther away
-		if ( abs( X1u-body_intercept_p_x[ip] ) < (X2u-X1u)*0.75 )
+		//find two closest body nodes
+		min = 1;
+		min2 = 1;
+		for (int k=0; k<totalPoints; k++)
 		{
-			velTemp = u[i1u-1] + (u[i3u-1] - u[i1u-1])*(y2[ip]-Y1u)/(Y3u-Y1u);
-			lTemp = X1u + X1u - X2u;
+			distance = sqrt(pow(bx[k]-x2[ip],2)+pow(by[k]-y2[ip],2));
+			if (distance<min)
+			{
+				min = distance;
+				bodyindex = k;
+			}
 		}
-		else
+		for (int k=0; k<totalPoints; k++)
 		{
-			velTemp = u[i1u] + (u[i3u] - u[i1u])*(y2[ip]-Y1u)/(Y3u-Y1u);
-			lTemp = X1u;
+			distance = sqrt(pow(bx[k]-x2[ip],2)+pow(by[k]-y2[ip],2));
+			distance2 = sqrt(pow(bx[bodyindex]-bx[k],2)+pow(by[bodyindex]-bx[k],2));
+			if (distance<min2 && distance2>0)
+			{
+				min2 = distance;
+				bodyindex2 = k;
+			}
 		}
-		u_du_dx = -uB[0]  *  (velTemp - uB[0])/(lTemp-x2[ip]); //flag were using - uB here because the slope is wrong, there should be many deriviatives that are not dudx that have the wrong slope as well, fix them
 
-		//find du/dy
-		//U_3 + (U_4-U_3)*(XBI-X3)/(X4-X3)
-		//check if were too close to u node in y direction
-		if ( abs( Y3u-body_intercept_p_y[ip] ) < (Y3u-Y1u)*0.75 )
-		{
-			velTemp = u[i3u+(nx-1)] + (u[i4u+(nx-1)] - u[i3u+(nx-1)])*(x2[ip]-X3u)/(X4u-X3u);
-			lTemp = Y3u + Y3u - Y1u;
-		}
-		else
-		{
-			velTemp = u[i3u] + (u[i4u] - u[i3u])*(x2[ip]-X3u)/(X4u-X3u);
-			lTemp = Y3u;
-		}
-		v_du_dy = vB[0]  *  (velTemp - uB[0])/(lTemp-y2[ip]);
+		//calc Du/Dt at body nodes
+		matDi = (uB[bodyindex]-uB0[bodyindex])/dt;
+		matDj = (vB[bodyindex]-vB0[bodyindex])/dt;
+		matD2i = (uB[bodyindex2]-uB0[bodyindex2])/dt;
+		matD2j = (vB[bodyindex2]-vB0[bodyindex2])/dt;
 
-		//find dv/dx
-		//V_1 + (V_3-V_1)(YBI-Y1)/(Y3-Y1)
-		//check if were too close to the v node in the x direction
-		if ( abs( X1v-body_intercept_p_x[ip] ) < (X2v-X1v)*0.75 )
-		{
-			velTemp =u[i1v-1] + (u[i3v-1] - u[i1v-1])*(y2[ip]-Y1v)/(Y3v-Y1v);
-			lTemp = X1v+X1v-X2v;
-		}
-		else
-		{
-			velTemp = u[i1v] + (u[i3v] - u[i1v])*(y2[ip]-Y1v)/(Y3v-Y1v);
-			lTemp = X1v;
-		}
-		u_dv_dx = uB[0]  *  (velTemp-vB[0])/(lTemp-x2[ip]);
+		//interp to BI
+		matDBIi = matDi + (matD2i-matDi)/(min+min2)*min;
+		matDBIj = matDj + (matD2j-matDj)/(min+min2)*min;
 
-		//find dv/dy
-		//U_3 + (U_4-U_3)*(XBI-X3)/(X4-X3)
-		if ( abs( Y3v-body_intercept_p_y[ip] ) < (Y3v-Y1v)*0.75 )
-		{
-			velTemp = u[i3v+nx] + (u[i4v+nx] - u[i3v+nx])*(x2[ip]-X3v)/(X4v-X3v);
-			lTemp = Y3v+Y3v-Y1v;
-		}
-		else
-		{
-			velTemp = u[i3v] + (u[i4v] - u[i3v])*(x2[ip]-X3v)/(X4v-X3v);
-			lTemp = Y3v;
-		}
-		v_dv_dy = vB[0]  *  (velTemp - vB[0])/(lTemp-y2[ip]);
-
-		q2[ip] = -(n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt+u_dv_dx + v_dv_dy));
+		q2[ip] = - ( matDBIi*n_x/nl + matDBIj*n_y/nl ) ;
 
 		a21 = 0;
 		a22 = n_x/nl;
@@ -875,107 +750,48 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 		a24 = a23*x2[ip]+a22*y2[ip];
 	}
 	//point 3
-	if (hybridTagsP[index3] == ip)
+	else if (hybridTagsP[index3] == ip)
 	{
 		x3[ip] = body_intercept_p_x[ip];
 		y3[ip] = body_intercept_p_y[ip];
 		n_x = image_point_p_x[ip] - x3[ip];
 		n_y = image_point_p_y[ip] - y3[ip];
 		nl = sqrt(n_x*n_x+n_y*n_y);
-		//find the four u velocity nodes around the body intercept
-		ii = I-5; jj = J-5;
-		while (xu[ii] < body_intercept_p_x[ip])
-			ii++;
-		while (yu[jj] < body_intercept_p_y[ip])
-			jj++;
-		X3u = xu[ii-1]; X4u = xu[ii];
-		X1u = xu[ii-1]; X2u = xu[ii];
 
-		Y3u = yu[jj];   Y4u = yu[jj];
-		Y1u = yu[jj-1]; Y2u = yu[jj-1];
-
-		i3u = jj*(nx-1) + ii -1;	i4u = jj*(nx-1) + ii;
-		i1u = (jj-1)*(nx-1)+ii-1;	i2u = (jj-1)*(nx-1)+ii;
-
-		//find the four v velocity nodes around the body intercept
-		ii = I-5; jj = J-5;
-		while (xv[ii] < body_intercept_p_x[ip])
-			ii++;
-		while (yv[jj] < body_intercept_p_y[ip])
-			jj++;
-		X3v = xv[ii-1];	X4v = xv[ii];
-		X1v = xv[ii-1];	X2v = xv[ii];
-
-		Y3v = yv[jj];	Y4v = Y3v;
-		Y1v = yv[jj-1];	Y2v = Y1v;
-
-		i3v = jj*nx+ii-1 + ny*(nx-1);		i4v = jj*nx+ii + ny*(nx-1);
-		i1v = (jj-1)*(nx)+ii-1 + ny*(nx-1); i2v = (jj-1)*nx+ii + ny*(nx-1);
-
-		//time derivatives
-		du_dt = (uB[0] - uB0[0])/dt;//flag this doesn't work for rotating bodies because it is only using body index 0
-		dv_dt = (vB[0] - vB0[0])/dt;
-
-		//find du/dx
-		//U_2 + (U_4-U_2)*(YBI-Y2)/(Y4-Y2)
-		//check if were too close to the u node in x direction to get good values, if we are: interpolate from u nodes farther away
-		if ( abs( X2u-body_intercept_p_x[ip] ) < (X2u-X1u)*0.75 )
+		//find two closest body nodes
+		min = 1;
+		min2 = 1;
+		for (int k=0; k<totalPoints; k++)
 		{
-			velTemp = u[i2u+1] + (u[i4u+1] - u[i2u+1])*(y3[ip]-Y2u)/(Y4u-Y2u);
-			lTemp = X2u + X2u - X1u;
+			distance = sqrt(pow(bx[k]-x3[ip],2)+pow(by[k]-y3[ip],2));
+			if (distance<min)
+			{
+				min = distance;
+				bodyindex = k;
+			}
 		}
-		else
+		for (int k=0; k<totalPoints; k++)
 		{
-			velTemp = u[i2u] + (u[i4u] - u[i2u])*(y3[ip]-Y2u)/(Y4u-Y2u);
-			lTemp = X2u;
+			distance = sqrt(pow(bx[k]-x3[ip],2)+pow(by[k]-y3[ip],2));
+			distance2 = sqrt(pow(bx[bodyindex]-bx[k],2)+pow(by[bodyindex]-bx[k],2));
+			if (distance<min2 && distance2>0)
+			{
+				min2 = distance;
+				bodyindex2 = k;
+			}
 		}
-		u_du_dx = uB[0]  *  (velTemp - uB[0])/(lTemp-x3[ip]);
 
-		//find du/dy
-		//U_1 + (U_2-U_1)*(XBI-X1)/(X2-X1)
-		//check if were too close to u node in y direction
-		if ( abs( Y1u-body_intercept_p_y[ip] ) < (Y3u-Y1u)*0.75 )
-		{
-			velTemp = u[i1u-(nx-1)] + (u[i2u-(nx-1)] - u[i2u-(nx-1)])*(x3[ip]-X1u)/(X2u-X1u);
-			lTemp = Y1u + Y1u - Y3u;
-		}
-		else
-		{
-			velTemp = u[i1u] + (u[i2u] - u[i2u])*(x3[ip]-X1u)/(X2u-X1u);
-			lTemp = Y1u;
-		}
-		v_du_dy = vB[0]  *  (velTemp - uB[0])/(lTemp-y3[ip]);
+		//calc Du/Dt at body nodes
+		matDi = (uB[bodyindex]-uB0[bodyindex])/dt;
+		matDj = (vB[bodyindex]-vB0[bodyindex])/dt;
+		matD2i = (uB[bodyindex2]-uB0[bodyindex2])/dt;
+		matD2j = (vB[bodyindex2]-vB0[bodyindex2])/dt;
 
-		//find dv/dx
-		//V_2 + (V_4-V_2)(YBI-Y2)/(Y4-Y2)
-		//check if were too close to the v node in the x direction
-		if ( abs( X2v-body_intercept_p_x[ip] ) < (X2v-X1v)*0.75 )
-		{
-			velTemp = u[i2v+1] + (u[i4v+1] - u[i2v+1])*(y3[ip]-Y2v)/(Y4v-Y2v);
-			lTemp = X2v+X2v-X1v;
-		}
-		else
-		{
-			velTemp = u[i2v] + (u[i4v] - u[i2v])*(y3[ip]-Y2v)/(Y4v-Y2v);
-			lTemp = X2v;
-		}
-		u_dv_dx = uB[0]  *  (velTemp-vB[0])/(lTemp-x3[ip]);
+		//interp to BI
+		matDBIi = matDi + (matD2i-matDi)/(min+min2)*min;
+		matDBIj = matDj + (matD2j-matDj)/(min+min2)*min;
 
-		//find dv/dy
-		//U_1 + (U_2-U_1)*(XBI-X1)/(X2-X1)
-		if ( abs( Y1v-body_intercept_p_y[ip] ) < (Y3v-Y1v)*0.75 )
-		{
-			velTemp = u[i1v-nx] + (u[i2v-nx] - u[i1v-nx])*(x3[ip]-X1v)/(X2v-X1v);
-			lTemp = Y1v+Y1v-Y3v;
-		}
-		else
-		{
-			velTemp = u[i1v] + (u[i2v] - u[i1v])*(x3[ip]-X1v)/(X2v-X1v);
-			lTemp = Y1v;
-		}
-		v_dv_dy = vB[0]  *  (velTemp - vB[0])/(lTemp-y3[ip]);
-
-		q3[ip] = -(n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt+u_dv_dx + v_dv_dy));
+		q3[ip] = - ( matDBIi*n_x/nl + matDBIj*n_y/nl ) ;
 
 		a31 = 0;
 		a32 = n_x/nl;
@@ -990,107 +806,46 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 		n_x = image_point_p_x[ip] - x4[ip];
 		n_y = image_point_p_y[ip] - y4[ip];
 		nl = sqrt(n_x*n_x+n_y*n_y);
-		//find the four u velocity nodes around the body intercept
-		ii = I-5; jj = J-5;
-		while (xu[ii] < body_intercept_p_x[ip])
-			ii++;
-		while (yu[jj] < body_intercept_p_y[ip])
-			jj++;
-		X3u = xu[ii-1]; X4u = xu[ii];
-		X1u = xu[ii-1]; X2u = xu[ii];
 
-		Y3u = yu[jj];   Y4u = yu[jj];
-		Y1u = yu[jj-1]; Y2u = yu[jj-1];
-
-		i3u = jj*(nx-1) + ii -1;	i4u = jj*(nx-1) + ii;
-		i1u = (jj-1)*(nx-1)+ii-1;	i2u = (jj-1)*(nx-1)+ii;
-
-		//find the four v velocity nodes around the body intercept
-		ii = I-5; jj = J-5;
-		while (xv[ii] < body_intercept_p_x[ip])
-			ii++;
-		while (yv[jj] < body_intercept_p_y[ip])
-			jj++;
-		X3v = xv[ii-1];	X4v = xv[ii];
-		X1v = xv[ii-1];	X2v = xv[ii];
-
-		Y3v = yv[jj];	Y4v = Y3v;
-		Y1v = yv[jj-1];	Y2v = Y1v;
-
-		i3v = jj*nx+ii-1 + ny*(nx-1);		i4v = jj*nx+ii + ny*(nx-1);
-		i1v = (jj-1)*(nx)+ii-1 + ny*(nx-1); i2v = (jj-1)*nx+ii + ny*(nx-1);
-		//time derivatives
-		du_dt = (uB[0] - uB0[0])/dt;//flag this doesn't work for rotating bodies because it is only using body index 0
-		dv_dt = (vB[0] - vB0[0])/dt;
-
-		//find du/dx
-		//U_1 + (U_3-U_1)*(YBI-Y1)/(Y3-Y1)
-		//check if were too close to the u node in x direction to get good values, if we are: interpolate from u nodes farther away
-		if ( abs( X1u-body_intercept_p_x[ip] ) < (X2u-X1u)*0.75 )
+		//find two closest body nodes
+		min = 1;
+		min2 = 1;
+		for (int k=0; k<totalPoints; k++)
 		{
-			velTemp = u[i1u-1] + (u[i3u-1] - u[i1u-1])*(y4[ip]-Y1u)/(Y3u-Y1u);
-			lTemp = X1u + X1u - X2u;
+			distance = sqrt(pow(bx[k]-x4[ip],2)+pow(by[k]-y4[ip],2));
+			if (distance<min)
+			{
+				min = distance;
+				bodyindex = k;
+			}
 		}
-		else
+		for (int k=0; k<totalPoints; k++)
 		{
-			velTemp = u[i1u] + (u[i3u] - u[i1u])*(y4[ip]-Y1u)/(Y3u-Y1u);
-			lTemp = X1u;
+			distance = sqrt(pow(bx[k]-x4[ip],2)+pow(by[k]-y4[ip],2));
+			distance2 = sqrt(pow(bx[bodyindex]-bx[k],2)+pow(by[bodyindex]-bx[k],2));
+			if (distance<min2 && distance2>0)
+			{
+				min2 = distance;
+				bodyindex2 = k;
+			}
 		}
-		u_du_dx = -uB[0]  *  (velTemp - uB[0])/(lTemp-x4[ip]);
 
-		//find du/dy
-		//U_1 + (U_2-U_1)*(XBI-X1)/(X2-X1)
-		//check if were too close to u node in y direction
-		if ( abs( Y3u-body_intercept_p_y[ip] ) < (Y3u-Y1u)*0.75 )
-		{
-			velTemp = u[i1u-(nx-1)] + (u[i2u-(nx-1)] - u[i2u-(nx-1)])*(x4[ip]-X1u)/(X2u-X1u);
-			lTemp = Y1u + Y1u - Y3u;
-		}
-		else
-		{
-			velTemp = u[i1u] + (u[i2u] - u[i2u])*(x4[ip]-X1u)/(X2u-X1u);
-			lTemp = Y1u;
-		}
-		v_du_dy = vB[0]  *  (velTemp - uB[0])/(lTemp-y4[ip]);
+		//calc Du/Dt at body nodes
+		matDi = (uB[bodyindex]-uB0[bodyindex])/dt;
+		matDj = (vB[bodyindex]-vB0[bodyindex])/dt;
+		matD2i = (uB[bodyindex2]-uB0[bodyindex2])/dt;
+		matD2j = (vB[bodyindex2]-vB0[bodyindex2])/dt;
 
-		//find dv/dx
-		//V_1 + (V_3-V_1)(YBI-Y1)/(Y3-Y1)
-		//check if were too close to the v node in the x direction
-		if ( abs( X1v-body_intercept_p_x[ip] ) < (X2v-X1v)*0.75 )
-		{
-			velTemp = u[i1v-1] + (u[i3v-1] - u[i1v-1])*(y4[ip]-Y1v)/(Y3v-Y1v);
-			lTemp = X1v+X1v-X2v;
-		}
-		else
-		{
-			velTemp = u[i1v] + (u[i3v] - u[i1v])*(y4[ip]-Y1v)/(Y3v-Y1v);
-			lTemp = X1v;
-		}
-		u_dv_dx = uB[0]  *  (velTemp-vB[0])/(lTemp-x4[ip]);
-		//if (timeStep == 1)
-		//	q4[ip] = u_dv_dx;
+		//interp to BI
+		matDBIi = matDi + (matD2i-matDi)/(min+min2)*min;
+		matDBIj = matDj + (matD2j-matDj)/(min+min2)*min;
 
-		//find dv/dy
-		//U_1 + (U_2-U_1)*(XBI-X1)/(X2-X1)
-		if ( abs( Y1v-body_intercept_p_y[ip] ) < (Y3v-Y1v)*0.75 )
-		{
-			velTemp = u[i1v-nx] + (u[i2v-nx] - u[i1v-nx])*(x4[ip]-X1v)/(X2v-X1v);
-			lTemp = Y1v+Y1v-Y3v;
-		}
-		else
-		{
-			velTemp = u[i1v] + (u[i2v] - u[i1v])*(x4[ip]-X1v)/(X2v-X1v);
-			lTemp = Y1v;
-		}
-		v_dv_dy = vB[0]  *  (velTemp - vB[0])/(lTemp-y4[ip]);
-
-		q4[ip] = -(n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt+u_dv_dx + v_dv_dy));
+		q4[ip] = - ( matDBIi*n_x/nl + matDBIj*n_y/nl ) ;
 
 		a41 = 0;
 		a42 = n_x/nl;
 		a43 = n_y/nl;
 		a44 = a43*x4[ip]+a42*y4[ip];
-		vdvdy[ip] = 4;
 	}
 	//solve equation for bilinear interpolation of values to image point
 	//http://www.cg.info.hiroshima-cu.ac.jp/~miyazaki/knowledge/teche23.html  //for solving a 4x4 matrix exactly
@@ -1154,10 +909,6 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 	//dudt[ip] = du_dt;
 	//ududx[ip] = u_du_dx;
 	pressureStar[ip] = a0[ip] + a1[ip]*xv[I] + a2[ip]*yu[J] + a3[ip]*xv[I]*yu[J];
-	dudt[ip] = a0[ip] + a1[ip]*image_point_p_x[ip] + a2[ip]*image_point_p_y[ip] + a3[ip]*image_point_p_x[ip]*image_point_p_y[ip];
-	ududx[ip] = a0[ip] + a1[ip]*body_intercept_p_x[ip] + a2[ip]*body_intercept_p_y[ip] + a3[ip]*body_intercept_p_x[ip]*body_intercept_p_y[ip];
-	vdudy[ip] = xv[I];
-	dvdt[ip] = yu[J];
 }
 
 //flag this function is a mess
@@ -1165,7 +916,7 @@ __global__
 void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP, double *bx, double *by,
 									double *uB, double *uB0, double *vB, double  *vB0, double *yu, double *yv, double *xu, double *xv,
 									double *body_intercept_p_x, double *body_intercept_p_y, double *image_point_p_x, double *image_point_p_y, double *body_intercept_p,
-									int *i_start, int *j_start, int width, int nx, int ny, double dt,
+									int *i_start, int *j_start, int width, int nx, int ny, double dt, double totalPoints,
 									double *dudt, double *ududx, double *vdudy, double *dvdt, double *udvdx, double *vdvdy,
 									double *a0, double *a1, double *a2, double *a3,
 									double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4)//test
@@ -1186,13 +937,6 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 	double	n_x,
 			n_y,
 			nl,
-			du_dt,
-			u_du_dx,
-			v_du_dy,
-			dv_dt,
-			u_dv_dx,
-			v_dv_dy,
-			matD = 0,
 			matDClose;
 	int close_index,
 		index1,
@@ -1272,22 +1016,13 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 	}
 
 	//setup for neuman BC
-	double X1u,X2u,X3u,X4u,Y1u,Y2u,Y3u,Y4u,velTemp,lTemp;
-	double X1v,X2v,X3v,X4v,Y1v,Y2v,Y3v,Y4v;
-	int i1u, i2u, i3u, i4u, i1v, i2v, i3v, i4v;
+	double distance, distance2, min2, matDi, matDj, matD2i, matD2j, matDBIi, matDBIj;
+	int bodyindex, bodyindex2;
 
 	//if the node is inside the body, move it to the surface then set it to be a neuman condition
 	//point 1
 	if (ghostTagsP[index1] != -1 || index1 == close_index)
 	{
-		//the material derivatve is calculated as follows
-		//-(n_x/nl * (du/dt + u*du/dx + v*du/dy) + n_y/nl * (dv/dt + u*dv/dx + v*dv/dy));
-		//it is discritized around the body intercept(as opposed to the image point or something)
-		//the derivatvies are found as follows:
-		//1 find the four u and v nodes that surround the BI
-		//2 interpolate between two of those nodes to get a u or v value at an x or y location that is horizontal or vertical to the BI
-		//3 use interpolated value and body velocity to calc derivative
-
 		//setup
 		x1[ip] = body_intercept_p_x[index1];
 		y1[ip] = body_intercept_p_y[index1];
@@ -1295,112 +1030,46 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		n_y = image_point_p_y[index1] - y1[ip];
 		nl = sqrt(n_x*n_x+n_y*n_y);
 
-		//find the four u velocity nodes around the body intercept
-		ii = I-5; jj = J-5;
-		while (xu[ii] < x1[ip])
-			ii++;
-		while (yu[jj] < y1[ip])
-			jj++;
-		X3u = xu[ii-1]; X4u = xu[ii];
-		X1u = xu[ii-1]; X2u = xu[ii];
-
-		Y3u = yu[jj];   Y4u = yu[jj];
-		Y1u = yu[jj-1]; Y2u = yu[jj-1];
-
-		i3u = jj*(nx-1) + ii -1;	i4u = jj*(nx-1) + ii;
-		i1u = (jj-1)*(nx-1)+ii-1;	i2u = (jj-1)*(nx-1)+ii;
-
-		//find the four v velocity nodes around the body intercept
-		ii = I-5; jj = J-5;
-		while (xv[ii] < x1[ip])
-			ii++;
-		while (yv[jj] < y1[ip])
-			jj++;
-		X3v = xv[ii-1];	X4v = xv[ii];
-		X1v = xv[ii-1];	X2v = xv[ii];
-
-		Y3v = yv[jj];	Y4v = Y3v;
-		Y1v = yv[jj-1];	Y2v = Y1v;
-
-		i3v = jj*nx+ii-1 + ny*(nx-1);		i4v = jj*nx+ii + ny*(nx-1);
-		i1v = (jj-1)*(nx)+ii-1 + ny*(nx-1); i2v = (jj-1)*nx+ii + ny*(nx-1);
-
-		//calc time derivatives //flag this doesn't work for rotating bodies because it is only using body index 0
-		du_dt = (uB[0] - uB0[0])/dt;
-		dv_dt = (vB[0] - vB0[0])/dt;
-
-		//find du/dx
-		//U_2 + (U_4-U_2)*(YBI-Y2)/(Y4-Y2)
-		//check if were too close to the u node in x direction to get good values, if we are: interpolate from u nodes farther away
-		if ( abs( X2u-body_intercept_p_x[index1] ) < (X2u-X1u)*0.75 )
+		//find two closest body nodes
+		min = 1;
+		min2 = 1;
+		for (int k=0; k<totalPoints; k++)
 		{
-			velTemp = u[i2u+1] + (u[i4u+1] - u[i2u+1])*(y1[ip]-Y2u)/(Y4u-Y2u);
-			lTemp = X2u + X2u - X1u;
+			distance = sqrt(pow(bx[k]-x1[ip],2)+pow(by[k]-y1[ip],2));
+			if (distance<min)
+			{
+				min = distance;
+				bodyindex = k;
+			}
 		}
-		else
+		for (int k=0; k<totalPoints; k++)
 		{
-			velTemp = u[i2u] + (u[i4u] - u[i2u])*(y1[ip]-Y2u)/(Y4u-Y2u);
-			lTemp = X2u;
+			distance = sqrt(pow(bx[k]-x1[ip],2)+pow(by[k]-y1[ip],2));
+			distance2 = sqrt(pow(bx[bodyindex]-bx[k],2)+pow(by[bodyindex]-bx[k],2));
+			if (distance<min2 && distance2>0)
+			{
+				min2 = distance;
+				bodyindex2 = k;
+			}
 		}
-		u_du_dx = uB[0]  *  (velTemp - uB[0])/(lTemp-x1[ip]);
 
-		//find du/dy
-		//U_3 + (U_4-U_3)*(XBI-X3)/(X4-X3)
-		//check if were too close to u node in y direction
-		if ( abs( Y3u-body_intercept_p_y[index1] ) < (Y3u-Y1u)*0.75 )
-		{
-			velTemp = u[i3u + (nx-1)] + (u[i4u + (nx-1)] - u[i3u + (nx-1)])*(x1[ip]-X3u)/(X4u-X3u);
-			lTemp = Y3u + Y3u - Y1u;
-		}
-		else
-		{
-			velTemp = u[i3u] + (u[i4u] - u[i3u])*(x1[ip]-X3u)/(X4u-X3u);
-			lTemp = Y3u;
-		}
-		v_du_dy = vB[0]  *  (velTemp - uB[0])/(lTemp-y1[ip]);
+		//calc Du/Dt at body nodes
+		matDi = (uB[bodyindex]-uB0[bodyindex])/dt;
+		matDj = (vB[bodyindex]-vB0[bodyindex])/dt;
+		matD2i = (uB[bodyindex2]-uB0[bodyindex2])/dt;
+		matD2j = (vB[bodyindex2]-vB0[bodyindex2])/dt;
 
-		//find dv/dx
-		//V_2 + (V_4-V_2)(YBI-Y2)/(Y4-Y2)
-		//check if were too close to the v node in the x direction
-		if ( abs( X2v-body_intercept_p_x[index1] ) < (X2v-X1v)*0.75 )
-		{
-			velTemp = u[i2v+1] + (u[i4v+1] - u[i2v+1])*(y1[ip]-Y2v)/(Y4v-Y2v);
-			lTemp = X2v+X2v-X1v;
-		}
-		else
-		{
-			velTemp = u[i2v] + (u[i4v] - u[i2v])*(y1[ip]-Y2v)/(Y4v-Y2v);
-			lTemp = X2v;
-		}
-		u_dv_dx = uB[0]  *  (velTemp-vB[0])/(lTemp-x1[ip]);
+		//interp to BI
+		matDBIi = matDi + (matD2i-matDi)/(min+min2)*min;
+		matDBIj = matDj + (matD2j-matDj)/(min+min2)*min;
 
-		//find dv/dy
-		//U_3 + (U_4-U_3)*(XBI-X3)/(X4-X3)
-		if ( abs( Y3v-body_intercept_p_y[index1] ) < (Y3v-Y1v)*0.75 )
-		{
-			velTemp = u[i3v+nx] + (u[i4v+nx] - u[i3v+nx])*(x1[ip]-X3v)/(X4v-X3v);
-			lTemp = Y3v+Y3v-Y1v;
-		}
-		else
-		{
-			velTemp = u[i3v] + (u[i4v] - u[i3v])*(x1[ip]-X3v)/(X4v-X3v);
-			lTemp = Y3v;
-		}
-		v_dv_dy = vB[0]  *  (velTemp - vB[0])/(lTemp-y1[ip]);
 
-		matD = (n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt + u_dv_dx + v_dv_dy));
 		if (index1 == close_index)
 		{
-			matDClose = matD;
-			/*dudt[ip] = n_x/nl*du_dt;
-			ududx[ip] = n_x/nl*u_du_dx;
-			vdudy[ip] = n_x/nl*v_du_dy;
-			dvdt[ip] = n_y/nl*dv_dt;
-			udvdx[ip] = n_y/nl*u_dv_dx;
-			vdvdy[ip] = n_y/nl*v_dv_dy;*/
-			dudt[ip] = 1;
+			matDClose = ( matDBIi*n_x/nl + matDBIj*n_y/nl );
 		}
-		q1[ip] = -matD;
+		q1[ip] = - ( matDBIi*n_x/nl + matDBIj*n_y/nl );
+
 		a11 = 0;
 		a12 = n_x/nl;
 		a13 = n_y/nl;
@@ -1414,111 +1083,52 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		n_x = image_point_p_x[index2] - x2[ip];
 		n_y = image_point_p_y[index2] - y2[ip];
 		nl = sqrt(n_x*n_x+n_y*n_y);
-		//find the four u velocity nodes around the body intercept
-		ii = I-5; jj = J-5;
-		while (xu[ii] < x2[ip])
-			ii++;
-		while (yu[jj] < y2[ip])
-			jj++;
-		X3u = xu[ii-1]; X4u = xu[ii];
-		X1u = xu[ii-1]; X2u = xu[ii];
 
-		Y3u = yu[jj];   Y4u = yu[jj];
-		Y1u = yu[jj-1]; Y2u = yu[jj-1];
-
-		i3u = jj*(nx-1) + ii -1;	i4u = jj*(nx-1) + ii;
-		i1u = (jj-1)*(nx-1)+ii-1;	i2u = (jj-1)*(nx-1)+ii;
-
-		//find the four v velocity nodes around the body intercept
-		ii = I-5; jj = J-5;
-		while (xv[ii] < x2[ip])
-			ii++;
-		while (yv[jj] < y2[ip])
-			jj++;
-		X3v = xv[ii-1];	X4v = xv[ii];
-		X1v = xv[ii-1];	X2v = xv[ii];
-
-		Y3v = yv[jj];	Y4v = Y3v;
-		Y1v = yv[jj-1];	Y2v = Y1v;
-
-		i3v = jj*nx+ii-1 + ny*(nx-1);		i4v = jj*nx+ii + ny*(nx-1);
-		i1v = (jj-1)*(nx)+ii-1 + ny*(nx-1); i2v = (jj-1)*nx+ii + ny*(nx-1);
-		//time derivatives
-		du_dt = (uB[0] - uB0[0])/dt;//flag this doesn't work for rotating bodies because it is only using body index 0
-		dv_dt = (vB[0] - vB0[0])/dt;
-
-		//find du/dx
-		//U_1 + (U_3-U_1)*(YBI-Y1)/(Y3-Y1)
-		//check if were too close to the u node in x direction to get good values, if we are: interpolate from u nodes farther away
-		if ( abs( X1u-body_intercept_p_x[index2] ) < (X2u-X1u)*0.75 )
+		//find two closest body nodes
+		min = 1;
+		min2 = 1;
+		for (int k=0; k<totalPoints; k++)
 		{
-			velTemp = u[i1u-1] + (u[i3u-1] - u[i1u-1])*(y2[ip]-Y1u)/(Y3u-Y1u);
-			lTemp = X1u + X1u - X2u;
+			distance = sqrt(pow(bx[k]-x2[ip],2)+pow(by[k]-y2[ip],2));
+			if (distance<min)
+			{
+				min = distance;
+				bodyindex = k;
+			}
 		}
-		else
+		for (int k=0; k<totalPoints; k++)
 		{
-			velTemp = u[i1u] + (u[i3u] - u[i1u])*(y2[ip]-Y1u)/(Y3u-Y1u);
-			lTemp = X1u;
+			distance = sqrt(pow(bx[k]-x2[ip],2)+pow(by[k]-y2[ip],2));
+			distance2 = sqrt(pow(bx[bodyindex]-bx[k],2)+pow(by[bodyindex]-bx[k],2));
+			if (distance<min2 && distance2>0)
+			{
+				min2 = distance;
+				bodyindex2 = k;
+			}
 		}
-		u_du_dx = -uB[0]  *  (velTemp - uB[0])/(lTemp-x2[ip]);
 
-		//find du/dy
-		//U_3 + (U_4-U_3)*(XBI-X3)/(X4-X3)
-		//check if were too close to u node in y direction
-		if ( abs( Y3u-body_intercept_p_y[index2] ) < (Y3u-Y1u)*0.75 )
-		{
-			velTemp = u[i3u+(nx-1)] + (u[i4u+(nx-1)] - u[i3u+(nx-1)])*(x2[ip]-X3u)/(X4u-X3u);
-			lTemp = Y3u + Y3u - Y1u;
-		}
-		else
-		{
-			velTemp = u[i3u] + (u[i4u] - u[i3u])*(x2[ip]-X3u)/(X4u-X3u);
-			lTemp = Y3u;
-		}
-		v_du_dy = vB[0]  *  (velTemp - uB[0])/(lTemp-y2[ip]);
+		//calc Du/Dt at body nodes
+		matDi = (uB[bodyindex]-uB0[bodyindex])/dt;
+		matDj = (vB[bodyindex]-vB0[bodyindex])/dt;
+		matD2i = (uB[bodyindex2]-uB0[bodyindex2])/dt;
+		matD2j = (vB[bodyindex2]-vB0[bodyindex2])/dt;
 
-		//find dv/dx
-		//V_1 + (V_3-V_1)(YBI-Y1)/(Y3-Y1)
-		//check if were too close to the v node in the x direction
-		if ( abs( X1v-body_intercept_p_x[index2] ) < (X2v-X1v)*0.75 )
-		{
-			velTemp =u[i1v-1] + (u[i3v-1] - u[i1v-1])*(y2[ip]-Y1v)/(Y3v-Y1v);
-			lTemp = X1v+X1v-X2v;
-		}
-		else
-		{
-			velTemp = u[i1v] + (u[i3v] - u[i1v])*(y2[ip]-Y1v)/(Y3v-Y1v);
-			lTemp = X1v;
-		}
-		u_dv_dx = uB[0]  *  (velTemp-vB[0])/(lTemp-x2[ip]);
+		//interp to BI
+		matDBIi = matDi + (matD2i-matDi)/(min+min2)*min;
+		matDBIj = matDj + (matD2j-matDj)/(min+min2)*min;
 
-		//find dv/dy
-		//U_3 + (U_4-U_3)*(XBI-X3)/(X4-X3)
-		if ( abs( Y3v-body_intercept_p_y[index2] ) < (Y3v-Y1v)*0.75 )
-		{
-			velTemp = u[i3v+nx] + (u[i4v+nx] - u[i3v+nx])*(x2[ip]-X3v)/(X4v-X3v);
-			lTemp = Y3v+Y3v-Y1v;
-		}
-		else
-		{
-			velTemp = u[i3v] + (u[i4v] - u[i3v])*(x2[ip]-X3v)/(X4v-X3v);
-			lTemp = Y3v;
-		}
-		v_dv_dy = vB[0]  *  (velTemp - vB[0])/(lTemp-y2[ip]);
-
-		matD = (n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt + u_dv_dx + v_dv_dy));
+		//if this is the close index, set matDclose
 		if (index2 == close_index)
 		{
-			matDClose = matD;
-			/*dudt[ip] = n_x/nl*du_dt;
-			ududx[ip] = n_x/nl*u_du_dx;
-			vdudy[ip] = n_x/nl*v_du_dy;
-			dvdt[ip] = n_y/nl*dv_dt;
-			udvdx[ip] = n_y/nl*u_dv_dx;
-			vdvdy[ip] = n_y/nl*v_dv_dy;*/
-			dudt[ip] = 2;
+			matDClose = ( matDBIi*n_x/nl + matDBIj*n_y/nl );
+			dudt[ip] = uB[0];
+			ududx[ip] = uB0[0];
+			vdudy[ip] = 0;
+			dvdt[ip] = 0;
+			udvdx[ip] = 0;
 		}
-		q2[ip] = -matD;
+		q2[ip] = - ( matDBIi*n_x/nl + matDBIj*n_y/nl );
+
 		a21 = 0;
 		a22 = n_x/nl;
 		a23 = n_y/nl;
@@ -1532,112 +1142,47 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		n_x = image_point_p_x[index3] - x3[ip];
 		n_y = image_point_p_y[index3] - y3[ip];
 		nl = sqrt(n_x*n_x+n_y*n_y);
-		//find the four u velocity nodes around the body intercept
-		ii = I-5; jj = J-5;
-		while (xu[ii] < x3[ip])
-			ii++;
-		while (yu[jj] < y3[ip])
-			jj++;
-		X3u = xu[ii-1]; X4u = xu[ii];
-		X1u = xu[ii-1]; X2u = xu[ii];
 
-		Y3u = yu[jj];   Y4u = yu[jj];
-		Y1u = yu[jj-1]; Y2u = yu[jj-1];
-
-		i3u = jj*(nx-1) + ii -1;	i4u = jj*(nx-1) + ii;
-		i1u = (jj-1)*(nx-1)+ii-1;	i2u = (jj-1)*(nx-1)+ii;
-
-		//find the four v velocity nodes around the body intercept
-		ii = I-5; jj = J-5;
-		while (xv[ii] < x3[ip])
-			ii++;
-		while (yv[jj] < y3[ip])
-			jj++;
-		X3v = xv[ii-1];	X4v = xv[ii];
-		X1v = xv[ii-1];	X2v = xv[ii];
-
-		Y3v = yv[jj];	Y4v = Y3v;
-		Y1v = yv[jj-1];	Y2v = Y1v;
-
-		i3v = jj*nx+ii-1 + ny*(nx-1);		i4v = jj*nx+ii + ny*(nx-1);
-		i1v = (jj-1)*(nx)+ii-1 + ny*(nx-1); i2v = (jj-1)*nx+ii + ny*(nx-1);
-
-		//time derivatives
-		du_dt = (uB[0] - uB0[0])/dt;//flag this doesn't work for rotating bodies because it is only using body index 0
-		dv_dt = (vB[0] - vB0[0])/dt;
-
-		//find du/dx
-		//U_2 + (U_4-U_2)*(YBI-Y2)/(Y4-Y2)
-		//check if were too close to the u node in x direction to get good values, if we are: interpolate from u nodes farther away
-		if ( abs( X2u-body_intercept_p_x[index3] ) < (X2u-X1u)*0.75 )
+		//find two closest body nodes
+		min = 1;
+		min2 = 1;
+		for (int k=0; k<totalPoints; k++)
 		{
-			velTemp = u[i2u+1] + (u[i4u+1] - u[i2u+1])*(y3[ip]-Y2u)/(Y4u-Y2u);
-			lTemp = X2u + X2u - X1u;
+			distance = sqrt(pow(bx[k]-x3[ip],2)+pow(by[k]-y3[ip],2));
+			if (distance<min)
+			{
+				min = distance;
+				bodyindex = k;
+			}
 		}
-		else
+		for (int k=0; k<totalPoints; k++)
 		{
-			velTemp = u[i2u] + (u[i4u] - u[i2u])*(y3[ip]-Y2u)/(Y4u-Y2u);
-			lTemp = X2u;
+			distance = sqrt(pow(bx[k]-x3[ip],2)+pow(by[k]-y3[ip],2));
+			distance2 = sqrt(pow(bx[bodyindex]-bx[k],2)+pow(by[bodyindex]-bx[k],2));
+			if (distance<min2 && distance2>0)
+			{
+				min2 = distance;
+				bodyindex2 = k;
+			}
 		}
-		u_du_dx = uB[0]  *  (velTemp - uB[0])/(lTemp-x3[ip]);
 
-		//find du/dy
-		//U_1 + (U_2-U_1)*(XBI-X1)/(X2-X1)
-		//check if were too close to u node in y direction
-		if ( abs( Y1u-body_intercept_p_y[index3] ) < (Y3u-Y1u)*0.75 )
-		{
-			velTemp = u[i1u-(nx-1)] + (u[i2u-(nx-1)] - u[i2u-(nx-1)])*(x3[ip]-X1u)/(X2u-X1u);
-			lTemp = Y1u + Y1u - Y3u;
-		}
-		else
-		{
-			velTemp = u[i1u] + (u[i2u] - u[i2u])*(x3[ip]-X1u)/(X2u-X1u);
-			lTemp = Y1u;
-		}
-		v_du_dy = vB[0]  *  (velTemp - uB[0])/(lTemp-y3[ip]);
+		//calc Du/Dt at body nodes
+		matDi = (uB[bodyindex]-uB0[bodyindex])/dt;
+		matDj = (vB[bodyindex]-vB0[bodyindex])/dt;
+		matD2i = (uB[bodyindex2]-uB0[bodyindex2])/dt;
+		matD2j = (vB[bodyindex2]-vB0[bodyindex2])/dt;
 
-		//find dv/dx
-		//V_2 + (V_4-V_2)(YBI-Y2)/(Y4-Y2)
-		//check if were too close to the v node in the x direction
-		if ( abs( X2v-body_intercept_p_x[index3] ) < (X2v-X1v)*0.75 )
-		{
-			velTemp = u[i2v+1] + (u[i4v+1] - u[i2v+1])*(y3[ip]-Y2v)/(Y4v-Y2v);
-			lTemp = X2v+X2v-X1v;
-		}
-		else
-		{
-			velTemp = u[i2v] + (u[i4v] - u[i2v])*(y3[ip]-Y2v)/(Y4v-Y2v);
-			lTemp = X2v;
-		}
-		u_dv_dx = uB[0]  *  (velTemp-vB[0])/(lTemp-x3[ip]);
+		//interp to BI
+		matDBIi = matDi + (matD2i-matDi)/(min+min2)*min;
+		matDBIj = matDj + (matD2j-matDj)/(min+min2)*min;
 
-		//find dv/dy
-		//U_1 + (U_2-U_1)*(XBI-X1)/(X2-X1)
-		if ( abs( Y1v-body_intercept_p_y[index3] ) < (Y3v-Y1v)*0.75 )
-		{
-			velTemp = u[i1v-nx] + (u[i2v-nx] - u[i1v-nx])*(x3[ip]-X1v)/(X2v-X1v);
-			lTemp = Y1v+Y1v-Y3v;
-		}
-		else
-		{
-			velTemp = u[i1v] + (u[i2v] - u[i1v])*(x3[ip]-X1v)/(X2v-X1v);
-			lTemp = Y1v;
-		}
-		v_dv_dy = vB[0]  *  (velTemp - vB[0])/(lTemp-y3[ip]);
-
-		matD = (n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt + u_dv_dx + v_dv_dy));
+		//if this is the close index, set matDclose
 		if (index3 == close_index)
 		{
-			matDClose = matD;
-			/*dudt[ip] = n_x/nl*du_dt;
-			ududx[ip] = n_x/nl*u_du_dx;
-			vdudy[ip] = n_x/nl*v_du_dy;
-			dvdt[ip] = n_y/nl*dv_dt;
-			udvdx[ip] = n_y/nl*u_dv_dx;
-			vdvdy[ip] = n_y/nl*v_dv_dy;*/
-			dudt[ip] = 3;
+			matDClose = ( matDBIi*n_x/nl + matDBIj*n_y/nl );
 		}
-		q3[ip] = -matD;
+		q3[ip] = - ( matDBIi*n_x/nl + matDBIj*n_y/nl );
+
 		a31 = 0;
 		a32 = n_x/nl;
 		a33 = n_y/nl;
@@ -1651,111 +1196,46 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		n_x = image_point_p_x[index4] - x4[ip];
 		n_y = image_point_p_y[index4] - y4[ip];
 		nl = sqrt(n_x*n_x+n_y*n_y);
-		//find the four u velocity nodes around the body intercept
-		ii = I-5; jj = J-5;
-		while (xu[ii] < x4[ip])
-			ii++;
-		while (yu[jj] < y4[ip])
-			jj++;
-		X3u = xu[ii-1]; X4u = xu[ii];
-		X1u = xu[ii-1]; X2u = xu[ii];
 
-		Y3u = yu[jj];   Y4u = yu[jj];
-		Y1u = yu[jj-1]; Y2u = yu[jj-1];
-
-		i3u = jj*(nx-1) + ii -1;	i4u = jj*(nx-1) + ii;
-		i1u = (jj-1)*(nx-1)+ii-1;	i2u = (jj-1)*(nx-1)+ii;
-
-		//find the four v velocity nodes around the body intercept
-		ii = I-5; jj = J-5;
-		while (xv[ii] < x4[ip])
-			ii++;
-		while (yv[jj] < y4[ip])
-			jj++;
-		X3v = xv[ii-1];	X4v = xv[ii];
-		X1v = xv[ii-1];	X2v = xv[ii];
-
-		Y3v = yv[jj];	Y4v = Y3v;
-		Y1v = yv[jj-1];	Y2v = Y1v;
-
-		i3v = jj*nx+ii-1 + ny*(nx-1);		i4v = jj*nx+ii + ny*(nx-1);
-		i1v = (jj-1)*(nx)+ii-1 + ny*(nx-1); i2v = (jj-1)*nx+ii + ny*(nx-1);
-		//time derivatives
-		du_dt = (uB[0] - uB0[0])/dt;//flag this doesn't work for rotating bodies because it is only using body index 0
-		dv_dt = (vB[0] - vB0[0])/dt;
-
-		//find du/dx
-		//U_1 + (U_3-U_1)*(YBI-Y1)/(Y3-Y1)
-		//check if were too close to the u node in x direction to get good values, if we are: interpolate from u nodes farther away
-		if ( abs( X1u-body_intercept_p_x[index4] ) < (X2u-X1u)*0.75 )
+		//find two closest body nodes
+		min = 1;
+		min2 = 1;
+		for (int k=0; k<totalPoints; k++)
 		{
-			velTemp = u[i1u-1] + (u[i3u-1] - u[i1u-1])*(y4[ip]-Y1u)/(Y3u-Y1u);
-			lTemp = X1u + X1u - X2u;
+			distance = sqrt(pow(bx[k]-x4[ip],2)+pow(by[k]-y4[ip],2));
+			if (distance<min)
+			{
+				min = distance;
+				bodyindex = k;
+			}
 		}
-		else
+		for (int k=0; k<totalPoints; k++)
 		{
-			velTemp = u[i1u] + (u[i3u] - u[i1u])*(y4[ip]-Y1u)/(Y3u-Y1u);
-			lTemp = X1u;
+			distance = sqrt(pow(bx[k]-x4[ip],2)+pow(by[k]-y4[ip],2));
+			distance2 = sqrt(pow(bx[bodyindex]-bx[k],2)+pow(by[bodyindex]-bx[k],2));
+			if (distance<min2 && distance2>0)
+			{
+				min2 = distance;
+				bodyindex2 = k;
+			}
 		}
-		u_du_dx = -uB[0]  *  (velTemp - uB[0])/(lTemp-x4[ip]);
 
-		//find du/dy
-		//U_1 + (U_2-U_1)*(XBI-X1)/(X2-X1)
-		//check if were too close to u node in y direction
-		if ( abs( Y3u-body_intercept_p_y[index4] ) < (Y3u-Y1u)*0.75 )
-		{
-			velTemp = u[i1u-(nx-1)] + (u[i2u-(nx-1)] - u[i2u-(nx-1)])*(x4[ip]-X1u)/(X2u-X1u);
-			lTemp = Y1u + Y1u - Y3u;
-		}
-		else
-		{
-			velTemp = u[i1u] + (u[i2u] - u[i2u])*(x4[ip]-X1u)/(X2u-X1u);
-			lTemp = Y1u;
-		}
-		v_du_dy = vB[0]  *  (velTemp - uB[0])/(lTemp-y4[ip]);
+		//calc Du/Dt at body nodes
+		matDi = (uB[bodyindex]-uB0[bodyindex])/dt;
+		matDj = (vB[bodyindex]-vB0[bodyindex])/dt;
+		matD2i = (uB[bodyindex2]-uB0[bodyindex2])/dt;
+		matD2j = (vB[bodyindex2]-vB0[bodyindex2])/dt;
 
-		//find dv/dx
-		//V_1 + (V_3-V_1)(YBI-Y1)/(Y3-Y1)
-		//check if were too close to the v node in the x direction
-		if ( abs( X1v-body_intercept_p_x[index4] ) < (X2v-X1v)*0.75 )
-		{
-			velTemp = u[i1v-1] + (u[i3v-1] - u[i1v-1])*(y4[ip]-Y1v)/(Y3v-Y1v);
-			lTemp = X1v+X1v-X2v;
-		}
-		else
-		{
-			velTemp = u[i1v] + (u[i3v] - u[i1v])*(y4[ip]-Y1v)/(Y3v-Y1v);
-			lTemp = X1v;
-		}
-		u_dv_dx = uB[0]  *  (velTemp-vB[0])/(lTemp-x4[ip]);
+		//interp to BI
+		matDBIi = matDi + (matD2i-matDi)/(min+min2)*min;
+		matDBIj = matDj + (matD2j-matDj)/(min+min2)*min;
 
-		//find dv/dy
-		//U_1 + (U_2-U_1)*(XBI-X1)/(X2-X1)
-		if ( abs( Y1v-body_intercept_p_y[index4] ) < (Y3v-Y1v)*0.75 )
-		{
-			velTemp = u[i1v-nx] + (u[i2v-nx] - u[i1v-nx])*(x4[ip]-X1v)/(X2v-X1v);
-			lTemp = Y1v+Y1v-Y3v;
-		}
-		else
-		{
-			velTemp = u[i1v] + (u[i2v] - u[i1v])*(x4[ip]-X1v)/(X2v-X1v);
-			lTemp = Y1v;
-		}
-		v_dv_dy = vB[0]  *  (velTemp - vB[0])/(lTemp-y4[ip]);
-
-		matD = (n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt + u_dv_dx + v_dv_dy));
+		//if this is the close index, set matDclose
 		if (index4 == close_index)
 		{
-			matDClose = matD;
-			/*dudt[ip] = n_x/nl*du_dt;
-			ududx[ip] = n_x/nl*u_du_dx;
-			vdudy[ip] = n_x/nl*v_du_dy;
-			dvdt[ip] = n_y/nl*dv_dt;
-			udvdx[ip] = n_y/nl*u_dv_dx;
-			vdvdy[ip] = n_y/nl*v_dv_dy;*/
-			dudt[ip] = 4;
+			matDClose = ( matDBIi*n_x/nl + matDBIj*n_y/nl );
 		}
-		q4[ip] = -matD;
+		q4[ip] = - ( matDBIi*n_x/nl + matDBIj*n_y/nl );
 
 		a41 = 0;
 		a42 = n_x/nl;
@@ -1831,416 +1311,6 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 	double image_point_pressure = a0[ip] + a1[ip]*image_point_p_x[ip]    + a2[ip]*image_point_p_y[ip]    + a3[ip] * image_point_p_y[ip]   *image_point_p_x[ip];
 	body_intercept_p[ip]        = a0[ip] + a1[ip]*body_intercept_p_x[ip] + a2[ip]*body_intercept_p_y[ip] + a3[ip] * body_intercept_p_x[ip]*body_intercept_p_y[ip]; //used for force calc
 
-/*
-	//For the closest node to the BI,
-	if (close_index == index1)
-	{
-		n_x = image_point_p_x[index1] - body_intercept_p_x[index1];
-		n_y = image_point_p_y[index1] - body_intercept_p_y[index1];
-		nl = sqrt(n_x*n_x+n_y*n_y);
-
-		//find the four u velocity nodes around the body intercept
-		ii = I-5; jj = J-5;
-		while (xu[ii] < body_intercept_p_x[index1])
-			ii++;
-		while (yu[jj] < body_intercept_p_y[index1])
-			jj++;
-		X3u = xu[ii-1]; X4u = xu[ii];
-		X1u = xu[ii-1]; X2u = xu[ii];
-
-		Y3u = yu[jj];   Y4u = yu[jj];
-		Y1u = yu[jj-1]; Y2u = yu[jj-1];
-
-		i3u = jj*(nx-1) + ii -1;	i4u = jj*(nx-1) + ii;
-		i1u = (jj-1)*(nx-1)+ii-1;	i2u = (jj-1)*(nx-1)+ii;
-
-		//find the four v velocity nodes around the body intercept
-		ii = I-5; jj = J-5;
-		while (xv[ii] < body_intercept_p_x[index1])
-			ii++;
-		while (yv[jj] < body_intercept_p_y[index1])
-			jj++;
-		X3v = xv[ii-1];	X4v = xv[ii];
-		X1v = xv[ii-1];	X2v = xv[ii];
-
-		Y3v = yv[jj];	Y4v = Y3v;
-		Y1v = yv[jj-1];	Y2v = Y1v;
-
-		i3v = jj*nx+ii-1 + ny*(nx-1);		i4v = jj*nx+ii + ny*(nx-1);
-		i1v = (jj-1)*(nx)+ii-1 + ny*(nx-1); i2v = (jj-1)*nx+ii + ny*(nx-1);
-
-		//calc time derivatives //flag this doesn't work for rotating bodies because it is only using body index 0
-		du_dt = (uB[0] - uB0[0])/dt;
-		dv_dt = (vB[0] - vB0[0])/dt;
-
-		//find du/dx
-		//U_2 + (U_4-U_2)*(YBI-Y2)/(Y4-Y2)
-		//check if were too close to the u node in x direction to get good values, if we are: interpolate from u nodes farther away
-		if ( abs( X2u-body_intercept_p_x[index1] ) < (X2u-X1u)*0.75 )
-		{
-			velTemp = u[i2u+1] + (u[i4u+1] - u[i2u+1])*(body_intercept_p_y[index1]-Y2u)/(Y4u-Y2u);
-			lTemp = X2u + X2u - X1u;
-		}
-		else
-		{
-			velTemp = u[i2u] + (u[i4u] - u[i2u])*(body_intercept_p_y[index1]-Y2u)/(Y4u-Y2u);
-			lTemp = X2u;
-		}
-		u_du_dx = uB[0]  *  (velTemp - uB[0])/(lTemp-body_intercept_p_x[index1]);
-
-		//find du/dy
-		//U_3 + (U_4-U_3)*(XBI-X3)/(X4-X3)
-		//check if were too close to u node in y direction
-		if ( abs( Y3u-body_intercept_p_y[index1] ) < (Y3u-Y1u)*0.75 )
-		{
-			velTemp = u[i3u + (nx-1)] + (u[i4u + (nx-1)] - u[i3u + (nx-1)])*(body_intercept_p_x[index1]-X3u)/(X4u-X3u);
-			lTemp = Y3u + Y3u - Y1u;
-		}
-		else
-		{
-			velTemp = u[i3u] + (u[i4u] - u[i3u])*(body_intercept_p_x[index1]-X3u)/(X4u-X3u);
-			lTemp = Y3u;
-		}
-		v_du_dy = vB[0]  *  (velTemp - uB[0])/(lTemp-body_intercept_p_y[index1]);
-
-		//find dv/dx
-		//V_2 + (V_4-V_2)(YBI-Y2)/(Y4-Y2)
-		//check if were too close to the v node in the x direction
-		if ( abs( X2v-body_intercept_p_x[index1] ) < (X2v-X1v)*0.75 )
-		{
-			velTemp = u[i2v+1] + (u[i4v+1] - u[i2v+1])*(body_intercept_p_y[index1]-Y2v)/(Y4v-Y2v);
-			lTemp = X2v+X2v-X1v;
-		}
-		else
-		{
-			velTemp = u[i2v] + (u[i4v] - u[i2v])*(body_intercept_p_y[index1]-Y2v)/(Y4v-Y2v);
-			lTemp = X2v;
-		}
-		u_dv_dx = uB[0]  *  (velTemp-vB[0])/(lTemp-body_intercept_p_x[index1]);
-
-		//find dv/dy
-		//U_3 + (U_4-U_3)*(XBI-X3)/(X4-X3)
-		if ( abs( Y3v-body_intercept_p_y[index1] ) < (Y3v-Y1v)*0.75 )
-		{
-			velTemp = u[i3v+nx] + (u[i4v+nx] - u[i3v+nx])*(body_intercept_p_x[index1]-X3v)/(X4v-X3v);
-			lTemp = Y3v+Y3v-Y1v;
-		}
-		else
-		{
-			velTemp = u[i3v] + (u[i4v] - u[i3v])*(body_intercept_p_x[index1]-X3v)/(X4v-X3v);
-			lTemp = Y3v;
-		}
-		v_dv_dy = vB[0]  *  (velTemp - vB[0])/(lTemp-body_intercept_p_y[index1]);
-
-		matD = (n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt + u_dv_dx + v_dv_dy));
-	}
-	else if (close_index == index2)
-	{
-		n_x = image_point_p_x[index2] - body_intercept_p_x[index2];
-		n_y = image_point_p_y[index2] - body_intercept_p_y[index2];
-		nl = sqrt(n_x*n_x+n_y*n_y);
-		//find the four u velocity nodes around the body intercept
-		ii = I-5; jj = J-5;
-		while (xu[ii] < body_intercept_p_x[index2])
-			ii++;
-		while (yu[jj] < body_intercept_p_y[index2])
-			jj++;
-		X3u = xu[ii-1]; X4u = xu[ii];
-		X1u = xu[ii-1]; X2u = xu[ii];
-
-		Y3u = yu[jj];   Y4u = yu[jj];
-		Y1u = yu[jj-1]; Y2u = yu[jj-1];
-
-		i3u = jj*(nx-1) + ii -1;	i4u = jj*(nx-1) + ii;
-		i1u = (jj-1)*(nx-1)+ii-1;	i2u = (jj-1)*(nx-1)+ii;
-
-		//find the four v velocity nodes around the body intercept
-		ii = I-5; jj = J-5;
-		while (xv[ii] < body_intercept_p_x[index2])
-			ii++;
-		while (yv[jj] < body_intercept_p_y[index2])
-			jj++;
-		X3v = xv[ii-1];	X4v = xv[ii];
-		X1v = xv[ii-1];	X2v = xv[ii];
-
-		Y3v = yv[jj];	Y4v = Y3v;
-		Y1v = yv[jj-1];	Y2v = Y1v;
-
-		i3v = jj*nx+ii-1 + ny*(nx-1);		i4v = jj*nx+ii + ny*(nx-1);
-		i1v = (jj-1)*(nx)+ii-1 + ny*(nx-1); i2v = (jj-1)*nx+ii + ny*(nx-1);
-
-		//time derivatives
-		du_dt = (uB[0] - uB0[0])/dt;//flag this doesn't work for rotating bodies because it is only using body index 0
-		dv_dt = (vB[0] - vB0[0])/dt;
-
-		//find du/dx
-		//U_1 + (U_3-U_1)*(YBI-Y1)/(Y3-Y1)
-		//check if were too close to the u node in x direction to get good values, if we are: interpolate from u nodes farther away
-		if ( abs( X1u-body_intercept_p_x[index2] ) < (X2u-X1u)*0.75 )
-		{
-			velTemp = u[i1u-1] + (u[i3u-1] - u[i1u-1])*(body_intercept_p_y[index2]-Y1u)/(Y3u-Y1u);
-			lTemp = X1u + X1u - X2u;
-		}
-		else
-		{
-			velTemp = u[i1u] + (u[i3u] - u[i1u])*(body_intercept_p_y[index2]-Y1u)/(Y3u-Y1u);
-			lTemp = X1u;
-		}
-		u_du_dx = -uB[0]  *  (velTemp - uB[0])/(lTemp-body_intercept_p_x[index2]);
-
-		//find du/dy
-		//U_3 + (U_4-U_3)*(XBI-X3)/(X4-X3)
-		//check if were too close to u node in y direction
-		if ( abs( Y3u-body_intercept_p_y[index2] ) < (Y3u-Y1u)*0.75 )
-		{
-			velTemp = u[i3u+(nx-1)] + (u[i4u+(nx-1)] - u[i3u+(nx-1)])*(body_intercept_p_x[index2]-X3u)/(X4u-X3u);
-			lTemp = Y3u + Y3u - Y1u;
-		}
-		else
-		{
-			velTemp = u[i3u] + (u[i4u] - u[i3u])*(body_intercept_p_x[index2]-X3u)/(X4u-X3u);
-			lTemp = Y3u;
-		}
-		v_du_dy = vB[0]  *  (velTemp - uB[0])/(lTemp-body_intercept_p_y[index2]);
-
-		//find dv/dx
-		//V_1 + (V_3-V_1)(YBI-Y1)/(Y3-Y1)
-		//check if were too close to the v node in the x direction
-		if ( abs( X1v-body_intercept_p_x[index2] ) < (X2v-X1v)*0.75 )
-		{
-			velTemp =u[i1v-1] + (u[i3v-1] - u[i1v-1])*(body_intercept_p_y[index2]-Y1v)/(Y3v-Y1v);
-			lTemp = X1v+X1v-X2v;
-		}
-		else
-		{
-			velTemp = u[i1v] + (u[i3v] - u[i1v])*(body_intercept_p_y[index2]-Y1v)/(Y3v-Y1v);
-			lTemp = X1v;
-		}
-		u_dv_dx = uB[0]  *  (velTemp-vB[0])/(lTemp-body_intercept_p_x[index2]);
-
-		//find dv/dy
-		//U_3 + (U_4-U_3)*(XBI-X3)/(X4-X3)
-		if ( abs( Y3v-body_intercept_p_y[index2] ) < (Y3v-Y1v)*0.75 )
-		{
-			velTemp = u[i3v+nx] + (u[i4v+nx] - u[i3v+nx])*(body_intercept_p_x[index2]-X3v)/(X4v-X3v);
-			lTemp = Y3v+Y3v-Y1v;
-		}
-		else
-		{
-			velTemp = u[i3v] + (u[i4v] - u[i3v])*(body_intercept_p_x[index2]-X3v)/(X4v-X3v);
-			lTemp = Y3v;
-		}
-		v_dv_dy = vB[0]  *  (velTemp - vB[0])/(lTemp-body_intercept_p_y[index2]);
-
-		matD = (n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt+u_dv_dx + v_dv_dy));
-	}
-	else if (close_index == index3)
-	{
-		n_x = image_point_p_x[index3] - body_intercept_p_x[index3];
-		n_y = image_point_p_y[index3] - body_intercept_p_y[index3];
-		nl = sqrt(n_x*n_x+n_y*n_y);
-		//find the four u velocity nodes around the body intercept
-		ii = I-5; jj = J-5;
-		while (xu[ii] < body_intercept_p_x[index3])
-			ii++;
-		while (yu[jj] < body_intercept_p_y[index3])
-			jj++;
-		X3u = xu[ii-1]; X4u = xu[ii];
-		X1u = xu[ii-1]; X2u = xu[ii];
-
-		Y3u = yu[jj];   Y4u = yu[jj];
-		Y1u = yu[jj-1]; Y2u = yu[jj-1];
-
-		i3u = jj*(nx-1) + ii -1;	i4u = jj*(nx-1) + ii;
-		i1u = (jj-1)*(nx-1)+ii-1;	i2u = (jj-1)*(nx-1)+ii;
-
-		//find the four v velocity nodes around the body intercept
-		ii = I-5; jj = J-5;
-		while (xv[ii] < body_intercept_p_x[index3])
-			ii++;
-		while (yv[jj] < body_intercept_p_y[index3])
-			jj++;
-		X3v = xv[ii-1];	X4v = xv[ii];
-		X1v = xv[ii-1];	X2v = xv[ii];
-
-		Y3v = yv[jj];	Y4v = Y3v;
-		Y1v = yv[jj-1];	Y2v = Y1v;
-
-		i3v = jj*nx+ii-1 + ny*(nx-1);		i4v = jj*nx+ii + ny*(nx-1);
-		i1v = (jj-1)*(nx)+ii-1 + ny*(nx-1); i2v = (jj-1)*nx+ii + ny*(nx-1);
-
-		//time derivatives
-		du_dt = (uB[0] - uB0[0])/dt;//flag this doesn't work for rotating bodies because it is only using body index 0
-		dv_dt = (vB[0] - vB0[0])/dt;
-
-		//find du/dx
-		//U_2 + (U_4-U_2)*(YBI-Y2)/(Y4-Y2)
-		//check if were too close to the u node in x direction to get good values, if we are: interpolate from u nodes farther away
-		if ( abs( X2u-body_intercept_p_x[index3] ) < (X2u-X1u)*0.75 )
-		{
-			velTemp = u[i2u+1] + (u[i4u+1] - u[i2u+1])*(body_intercept_p_y[index3]-Y2u)/(Y4u-Y2u);
-			lTemp = X2u + X2u - X1u;
-		}
-		else
-		{
-			velTemp = u[i2u] + (u[i4u] - u[i2u])*(body_intercept_p_y[index3]-Y2u)/(Y4u-Y2u);
-			lTemp = X2u;
-		}
-		u_du_dx = uB[0]  *  (velTemp - uB[0])/(lTemp-body_intercept_p_x[index3]);
-
-		//find du/dy
-		//U_1 + (U_2-U_1)*(XBI-X1)/(X2-X1)
-		//check if were too close to u node in y direction
-		if ( abs( Y1u-body_intercept_p_y[index3] ) < (Y3u-Y1u)*0.75 )
-		{
-			velTemp = u[i1u-(nx-1)] + (u[i2u-(nx-1)] - u[i2u-(nx-1)])*(body_intercept_p_x[index3]-X1u)/(X2u-X1u);
-			lTemp = Y1u + Y1u - Y3u;
-		}
-		else
-		{
-			velTemp = u[i1u] + (u[i2u] - u[i2u])*(body_intercept_p_x[index3]-X1u)/(X2u-X1u);
-			lTemp = Y1u;
-		}
-		v_du_dy = vB[0]  *  (velTemp - uB[0])/(lTemp-body_intercept_p_y[index3]);
-
-		//find dv/dx
-		//V_2 + (V_4-V_2)(YBI-Y2)/(Y4-Y2)
-		//check if were too close to the v node in the x direction
-		if ( abs( X2v-body_intercept_p_x[index3] ) < (X2v-X1v)*0.75 )
-		{
-			velTemp = u[i2v+1] + (u[i4v+1] - u[i2v+1])*(body_intercept_p_y[index3]-Y2v)/(Y4v-Y2v);
-			lTemp = X2v+X2v-X1v;
-		}
-		else
-		{
-			velTemp = u[i2v] + (u[i4v] - u[i2v])*(body_intercept_p_y[index3]-Y2v)/(Y4v-Y2v);
-			lTemp = X2v;
-		}
-		u_dv_dx = uB[0]  *  (velTemp-vB[0])/(lTemp-body_intercept_p_x[index3]);
-
-		//find dv/dy
-		//U_1 + (U_2-U_1)*(XBI-X1)/(X2-X1)
-		if ( abs( Y1v-body_intercept_p_y[index3] ) < (Y3v-Y1v)*0.75 )
-		{
-			velTemp = u[i1v-nx] + (u[i2v-nx] - u[i1v-nx])*(body_intercept_p_x[index3]-X1v)/(X2v-X1v);
-			lTemp = Y1v+Y1v-Y3v;
-		}
-		else
-		{
-			velTemp = u[i1v] + (u[i2v] - u[i1v])*(body_intercept_p_x[index3]-X1v)/(X2v-X1v);
-			lTemp = Y1v;
-		}
-		v_dv_dy = vB[0]  *  (velTemp - vB[0])/(lTemp-body_intercept_p_y[index3]);
-
-		matD = (n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt+u_dv_dx + v_dv_dy));
-	}
-	else if (close_index == index4)
-	{
-		n_x = image_point_p_x[index4] - body_intercept_p_x[index4];
-		n_y = image_point_p_y[index4] - body_intercept_p_y[index4];
-		nl = sqrt(n_x*n_x+n_y*n_y);
-		//find the four u velocity nodes around the body intercept
-		ii = I-5; jj = J-5;
-		while (xu[ii] < body_intercept_p_x[index4])
-			ii++;
-		while (yu[jj] < body_intercept_p_y[index4])
-			jj++;
-		X3u = xu[ii-1]; X4u = xu[ii];
-		X1u = xu[ii-1]; X2u = xu[ii];
-
-		Y3u = yu[jj];   Y4u = yu[jj];
-		Y1u = yu[jj-1]; Y2u = yu[jj-1];
-
-		i3u = jj*(nx-1) + ii -1;	i4u = jj*(nx-1) + ii;
-		i1u = (jj-1)*(nx-1)+ii-1;	i2u = (jj-1)*(nx-1)+ii;
-
-		//find the four v velocity nodes around the body intercept
-		ii = I-5; jj = J-5;
-		while (xv[ii] < body_intercept_p_x[index4])
-			ii++;
-		while (yv[jj] < body_intercept_p_y[index4])
-			jj++;
-		X3v = xv[ii-1];	X4v = xv[ii];
-		X1v = xv[ii-1];	X2v = xv[ii];
-
-		Y3v = yv[jj];	Y4v = Y3v;
-		Y1v = yv[jj-1];	Y2v = Y1v;
-
-		i3v = jj*nx+ii-1 + ny*(nx-1);		i4v = jj*nx+ii + ny*(nx-1);
-		i1v = (jj-1)*(nx)+ii-1 + ny*(nx-1); i2v = (jj-1)*nx+ii + ny*(nx-1);
-
-		//time derivatives
-		du_dt = (uB[0] - uB0[0])/dt;//flag this doesn't work for rotating bodies because it is only using body index 0
-		dv_dt = (vB[0] - vB0[0])/dt;
-
-		//find du/dx
-		//U_1 + (U_3-U_1)*(YBI-Y1)/(Y3-Y1)
-		//check if were too close to the u node in x direction to get good values, if we are: interpolate from u nodes farther away
-		if ( abs( X1u-body_intercept_p_x[index4] ) < (X2u-X1u)*0.75 )
-		{
-			velTemp = u[i1u-1] + (u[i3u-1] - u[i1u-1])*(body_intercept_p_y[index4]-Y1u)/(Y3u-Y1u);
-			lTemp = X1u + X1u - X2u;
-		}
-		else
-		{
-			velTemp = u[i1u] + (u[i3u] - u[i1u])*(body_intercept_p_y[index4]-Y1u)/(Y3u-Y1u);
-			lTemp = X1u;
-		}
-		u_du_dx = -uB[0]  *  (velTemp - uB[0])/(lTemp-body_intercept_p_x[index4]);
-
-		//find du/dy
-		//U_1 + (U_2-U_1)*(XBI-X1)/(X2-X1)
-		//check if were too close to u node in y direction
-		if ( abs( Y3u-body_intercept_p_y[index4] ) < (Y3u-Y1u)*0.75 )
-		{
-			velTemp = u[i1u-(nx-1)] + (u[i2u-(nx-1)] - u[i2u-(nx-1)])*(body_intercept_p_x[index4]-X1u)/(X2u-X1u);
-			lTemp = Y1u + Y1u - Y3u;
-		}
-		else
-		{
-			velTemp = u[i1u] + (u[i2u] - u[i2u])*(body_intercept_p_x[index4]-X1u)/(X2u-X1u);
-			lTemp = Y1u;
-		}
-		v_du_dy = vB[0]  *  (velTemp - uB[0])/(lTemp-body_intercept_p_y[index4]);
-
-		//find dv/dx
-		//V_1 + (V_3-V_1)(YBI-Y1)/(Y3-Y1)
-		//check if were too close to the v node in the x direction
-		if ( abs( X1v-body_intercept_p_x[index4] ) < (X2v-X1v)*0.75 )
-		{
-			velTemp = u[i1v-1] + (u[i3v-1] - u[i1v-1])*(body_intercept_p_y[index4]-Y1v)/(Y3v-Y1v);
-			lTemp = X1v+X1v-X2v;
-		}
-		else
-		{
-			velTemp = u[i1v] + (u[i3v] - u[i1v])*(body_intercept_p_y[index4]-Y1v)/(Y3v-Y1v);
-			lTemp = X1v;
-		}
-		u_dv_dx = uB[0]  *  (velTemp-vB[0])/(lTemp-body_intercept_p_x[index4]);
-
-		//find dv/dy
-		//U_1 + (U_2-U_1)*(XBI-X1)/(X2-X1)
-		if ( abs( Y1v-body_intercept_p_y[index4] ) < (Y3v-Y1v)*0.75 )
-		{
-			velTemp = u[i1v-nx] + (u[i2v-nx] - u[i1v-nx])*(body_intercept_p_x[index4]-X1v)/(X2v-X1v);
-			lTemp = Y1v+Y1v-Y3v;
-		}
-		else
-		{
-			velTemp = u[i1v] + (u[i2v] - u[i1v])*(body_intercept_p_x[index4]-X1v)/(X2v-X1v);
-			lTemp = Y1v;
-		}
-		v_dv_dy = vB[0]  *  (velTemp - vB[0])/(lTemp-body_intercept_p_y[index4]);
-
-		matD = (n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt+u_dv_dx + v_dv_dy));
-	}
-	dudt[ip] = du_dt;
-	ududx[ip] = u_du_dx;
-	vdudy[ip] = v_du_dy;
-	dvdt[ip] = dv_dt;
-	udvdx[ip] = u_dv_dx;
-	vdvdy[ip] = v_dv_dy;*/
-	//dudt[ip] = matDClose;
 	//extrapolate pressure to the ghost node
 	pressure[ip] = image_point_pressure + sqrt(pow(image_point_p_x[ip]-xv[I],2)+pow(image_point_p_y[ip]-yu[J],2))*matDClose;
 }

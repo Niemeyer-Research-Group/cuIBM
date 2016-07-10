@@ -38,13 +38,13 @@ axis([0 5 0 6])
 close all
 clear
 clc
-pathbase = '/scratch/src/cuIBM/validation/';
-cases = 'osc/flow/forces';
+pathF = '/scratch/src/cuIBM/validation/osc/flow/forces';
+pathx = '/scratch/src/cuIBM/validation/osc/flow/midPosition';
 delim = '\t';
 
 %read data
-forces = dlmread(strcat(pathbase,cases),delim,0,0);
-x = dlmread(strcat(pathbase,'osc/flow/midPosition'),delim,1,0);
+forces = dlmread(pathF,delim,0,0);
+x = dlmread(pathx,delim,1,0);
 %plot
 hold on
 plot(forces(10:end,1),forces(10:end,2),'r') %present

@@ -41,9 +41,7 @@ for i = 45%1:length(M)
     Q= @(X,Y) M(i,24) + M(i,25)*X + M(i,26)*Y + M(i,27)*X*Y;
     
     aa = scatter3(X(1),Y(1),Z(1),'ks');%ghost node
-    bb = scatter3(X(7),Y(7),M(i,29),'kx'); %image point node
-    cc = scatter3(X(2),Y(2),M(i,28),'ko'); %body intercept
-    ff = scatter3(X(2),Y(2),M(i,30),'k+'); %bi2
+    cc = scatter3(X(2),Y(2),M(i,28),'kx'); %body intercept
     xx = linspace(X(3),X(4), 10);
     yy = linspace(Y(3),Y(5),10);
     for j = 1:length(xx)
@@ -60,7 +58,7 @@ for i = 45%1:length(M)
 end
 axis square
 % legend('Ghost node','Image Point', 'Body Intercept', 'Corners')
-legend([aa bb cc dd ee ff],'ghost','ip','bi','field','corner', 'BI')
+legend([aa cc dd ee],'ghost','BI','field','corner')
 xlabel('x')
 ylabel('y')
 zlabel('pressure')
