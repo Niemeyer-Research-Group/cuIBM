@@ -3,6 +3,7 @@
   nt: 1000
   nsave: 1000
   SolverType: LUO
+  scaleCV: 2.0
   linearSolvers:
     - system: velocity
       solver: CG

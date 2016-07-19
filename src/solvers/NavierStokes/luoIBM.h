@@ -20,7 +20,6 @@ protected:
 		hybridTagsUV2,		///< velocity nodes 2 outside the boundary    (tags2)
 		hybridTagsP;		///< pressure nodes just outside the boundary (tagsPout)
 
-
 	cusp::array1d<double, cusp::device_memory>
 		pressureStar,
 		ustar,
@@ -85,6 +84,48 @@ protected:
 		udvdx,
 		vdvdy;
 
+	//interp variables
+	cusp::array1d<double, cusp::device_memory>
+		detA,
+		alpha,
+		b11,
+		b12,
+		b13,
+		b14,
+		b21,
+		b22,
+		b23,
+		b24,
+		b31,
+		b32,
+		b33,
+		b34,
+		b41,
+		b42,
+		b43,
+		b44,
+		stencilCoef,
+		interpCoef;
+
+	cusp::array1d<int, cusp::device_memory>
+		countD;
+
+	cusp::array1d<int, cusp::host_memory>
+		countH;
+
+	cusp::array1d<bool, cusp::device_memory>
+		q1flag,
+		q2flag,
+		q3flag,
+		q4flag;
+
+	cusp::array1d<int, cusp::device_memory>
+		index1,
+		index2,
+		index3,
+		index4;
+
+
 	bodies 	B;		///< bodies in the flow
 
 	std::ofstream forceFile;
@@ -105,14 +146,19 @@ protected:
 	//////////////////////////
 	//intermediatePressure.inl
 	//////////////////////////
-	void preRHS2Interpolation();
-	void weightPressure();
-
+	void preRHS2();
+	void interpPGN();
+	void sizeLHS2();
 
 	//////////////////////////
 	//tagpoints.inl
 	//////////////////////////
 	void tagPoints();
+
+	//////////////////////////
+	//cast.inl
+	//////////////////////////
+	void castluo();
 
 	//////////////////////////
 	//testing.inl

@@ -585,7 +585,7 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 									double *dudt, double *ududx, double *vdudy, double *dvdt, double *udvdx, double *vdvdy,
 									double *a0, double *a1, double *a2, double *a3,
 									double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4, int timeStep)//test
-{
+{//flag u not used anymore
 	int idx	= threadIdx.x + blockDim.x * blockIdx.x,
 		i	= idx % (width),
 		j	= idx / (width),

@@ -25,7 +25,7 @@ void NavierStokesSolver::generateRHS2()
 			*xp_r	= thrust::raw_pointer_cast( &(bc[XPLUS][0]) );
 
 	const int blocksize = 256;
-	
+
 	double	dt = (*paramDB)["simulation"]["dt"].get<double>();
 
 	dim3 grid( int( (nx*ny-0.5)/blocksize ) +1, 1);

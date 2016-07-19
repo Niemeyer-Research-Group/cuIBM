@@ -4,15 +4,15 @@ clear
 close all
 % figure
 %change these
-number = '100';
+number = '1000';
 type = 'u'; %p or u
 suffix = ''; %u: 0, star, hat, hatfinal, empty. p: 0, star, empty
 view = 'out';
 
 %load data
 % caseFolder = '/scratch/src/cuIBM/validation/luo/test/output/'
-% caseFolder = '/scratch/src/cuIBM/validation/cylinder/Re40/output/';
-caseFolder = '/scratch/src/cuIBM/validation/osc/flow/output/';
+caseFolder = '/scratch/src/cuIBM/validation/cylinder/Re40/output/';
+% caseFolder = '/scratch/src/cuIBM/validation/osc/flow/output/';
 path = strcat(caseFolder,number,type,suffix,'.csv');
 ghostpath = strcat(caseFolder,number,'ghost',type,'.csv');
 delim = '\t';
@@ -99,7 +99,8 @@ zlabel('z')
 %% plot hybrid and ghost velocities 
 clc
 clear
-close all
+% close all
+figure
 
 number = '100';
 type = 'u'; %p or u

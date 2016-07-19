@@ -47,12 +47,16 @@ forces = dlmread(pathF,delim,0,0);
 x = dlmread(pathx,delim,1,0);
 %plot
 hold on
-plot(forces(10:end,1),forces(10:end,2),'r') %present
+plot(forces(10:end,1),forces(10:end,2),'k') %Fx
+plot(forces(10:end,1),forces(10:end,3),'b') %fxx (pressure, velocity dependant)
+plot(forces(10:end,1),forces(10:end,4),'r') %fxy (velocity dependant)
+plot(forces(10:end,1),forces(10:end,5),'g') %fxu (time, velocity dependant)
 hold off
+legend('Fx','FxX','FxY','FxU')
 xlabel('time')
 ylabel('force')
 title('Drag')
-axis([0 10 -2 6])
+axis([0 5 -2 6])
 
 % figure
 % X = 0:0.1:10;

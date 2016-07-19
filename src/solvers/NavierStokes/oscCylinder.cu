@@ -32,7 +32,13 @@ void oscCylinder::writeData()
 	writeCommon();
 	if (timeStep == 0)
 		forceFile<<"timestep\tFx\tFy\n";
-	forceFile << timeStep*dt << '\t' << B.forceX << '\t' << B.forceY << std::endl;
+	//forceFile << timeStep*dt << '\t' << B.forceX << '\t' << B.forceY << std::endl;
+	forceFile	<< timeStep*dt << "\t"
+				<< B.forceX << "\t"
+				<< fxx << "\t"
+				<< fxy << "\t"
+				<< fxu << "\t"
+				<< B.forceY << std::endl;
 	logger.stopTimer("output");
 }
 
@@ -75,14 +81,7 @@ void oscCylinder::updateSolver()
 
 	tagPoints();
 	generateLHS1();//is this needed?
-	generateLHS2();
-
-	logger.startTimer("Preconditioner");
-	if (iterationCount2 > 100)
-	{
-		PC.update(LHS1, LHS2);
-	}
-	logger.stopTimer("Preconditioner");
+	//generateLHS2();
 }
 
 /*
@@ -195,23 +194,32 @@ void oscCylinder::stepTime()
 	solveIntermediateVelocity();
 	weightUhat();
 
+	preRHS2();
+	sizeLHS2();
+	generateLHS2();
 	generateRHS2();
-	solvePoisson();
-	weightPressure();
+	logger.startTimer("sort LHS2");
+	LHS2.sort_by_row_and_column();
+	logger.stopTimer("sort LHS2");
+	//print(LHS2);
+	//printLHS();
 
+	solvePoisson();
+
+	interpPGN();
 	velocityProjection();
 
-	if (timeStep%100 == 0 && timeStep>1)
+	std::cout<<timeStep<<std::endl;
+	timeStep++;
+	if (timeStep == 1000)
 	{
-		//calcDistance();
+		arrayprint(uhat,"uhat","x",-1);
 		arrayprint(pressure,"p","p",-1);
 		arrayprint(u,"u","x",-1);
-		arrayprint(ghostTagsUV,"ghostu","x",-1);
-		arrayprint(hybridTagsUV,"hybridu","x",-1);
 		arrayprint(ghostTagsP,"ghostp","p",-1);
-		//std::cout<<B.midX<<"\n";
+		arrayprint(ghostTagsUV,"ghostu","x",-1);
+		arrayprint(hybridTagsP,"hybridp","p",-1);
 	}
-
 	//Release the body after a certain timestep
 	if (timeStep >= (*paramDB)["simulation"]["startStep"].get<int>())
 	{
@@ -220,9 +228,7 @@ void oscCylinder::stepTime()
 		CFL();
 	}
 
-	timeStep++;
-	std::cout<<timeStep<<std::endl;
-
+	//print at end
 	if (timeStep%(*paramDB)["simulation"]["nt"].get<int>() == 0)
 	{
 		//arrayprint(pressure,"p","p");

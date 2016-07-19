@@ -69,6 +69,7 @@ protected:
 	void solveIntermediateVelocity();
 	void solvePoisson();
 	void arrayprint(cusp::array1d<double, cusp::device_memory> value, std::string name, std::string type, int time);
+	void printLHS();
 
 	//////////////////////////
 	//intermediateVelocity.inl

@@ -91,6 +91,11 @@ void fadlunModified::initialise()
 void fadlunModified::initialiseLHS()
 {
 	parameterDB  &db = *NavierStokesSolver::paramDB;
+	int nx = domInfo->nx,
+		ny = domInfo->ny,
+		numUV = (nx-1)*ny + (ny-1)*nx;
+	LHS1.resize(numUV, numUV, (nx-1)*ny*5 - 2*ny-2*(nx-1)       +        (ny-1)*nx*5 - 2*(ny-1) - 2*nx);
+	LHS2.resize(nx*ny, nx*ny, 5*nx*ny - 2*ny-2*nx); //flag this should have some zero terms in it because no nodes are being removing to account for the different stencil at the body
 	generateLHS1();
 	generateLHS2();
 
@@ -143,12 +148,6 @@ void fadlunModified::stepTime()
 {
 	generateRHS1();
 	solveIntermediateVelocity();
-	arrayprint(u,"u0","x",-1);
-	arrayprint(N,"N","x",-1);
-	arrayprint(L,"L","x",-1);
-	arrayprint(bc1,"bc1","x",-1);
-	arrayprint(rhs1,"rhs1","x",-1);
-	arrayprint(uhat,"uhat","x",-1);
 
 	generateRHS2();
 	solvePoisson();

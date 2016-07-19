@@ -150,7 +150,6 @@ void luoIBM::weightUhat()
 
 	int *i_start_r = thrust::raw_pointer_cast ( &(B.startI[0]) ),
 		*j_start_r = thrust::raw_pointer_cast ( &(B.startJ[0]) );
-	
 	const int blocksize = 256;
 	dim3 grid( int( (width_i*height_j-0.5)/blocksize ) +1, 1);
 	dim3 block(blocksize, 1);

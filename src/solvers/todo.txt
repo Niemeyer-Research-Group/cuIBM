@@ -8,11 +8,10 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //io/postprocessing
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//todo fix parse files to not grab a bunch of shit they don't need
+//todo fix parse files to not grab a bunch of stuff they don't need
 //todo add ured to parse, yaml
 //todo make shell scripts make output with the optimal ulims, xlims and vortlims
 //todo make robin bc controlled by yaml file
-//todo make midpoisitoni file not show up if mid position isn't moving
 //todo turn the appropriate output files into csv files
 //todo make video script smarter, eg check for run.info before running then check for pictures before making pictures
 //todo video files seem to make a lot of losses eg, its blurry, why? fix
@@ -38,6 +37,7 @@
 //todo lots of unused functionality in body.h and bodies.cu
 //todo currently you have to set the mid_h in both the body file and domain file
 //todo go through all the thrust pointer casts and make sure they are being used
+//todo move thurst pointer cast from .inl files into initialization file
 //todo make sure all the things being passed into kernels are being used still
 //todo remove various testing constructs
 //todo change naverstokes folder and spawn to fractional step
@@ -58,8 +58,6 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //solver methods
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//todo fix jank so it works
-//todo cylinderRe3000 isn't working, fix it
 //todo optimize various gpu routines
 //todo change tagpoints to use a tighter bounding box
 
@@ -67,7 +65,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //functionality
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//todo enable robin bc on all sides
+//todo enable robin bc on all sides, should be chooseable at runtime
 //todo periodic boundary conditions
 //todo unit tests
 //todo upgrade to amgx
@@ -93,29 +91,18 @@
 //todo look at gpu memory over time
 //todo parsing time?
 //todo look at testing
+//todo write funciton to output LHS matrix
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //luo method
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//todo luo method framework
-//todo luo method point tagging
-	// ghost nodes
-	// hybrid nodes
-//todo luo method extrapolation for ghost nodes
-	//todo u
-	//todo v
-	//todo p
-//todo luo method treatment at hybrid cells
-	//todo blend function
-	//todo interpolation vel
-	//todo NS vel
-//todo luo method treatment of pressure at hybrid nodes 
-//todo validate luo method with lid driven cavity
-//todo validate luo method with static cylinder
 //todo validate luo method with osc cylinder
+//todo validate luo method with osc cylinder in flow
 //todo validate luo method with fsi cylinder
 
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//luo method
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -123,14 +110,32 @@
 //done
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//make the compiler not compile this file 5/10/16
-//remove device/host from dominfo 5/11/16
-//the current way we handle grid sizing sucks, should be more automated/needs built in derp check 5/11/16
-//solver is unreasonably unsteady when it comes to grid/body sizing 5/11/16
-//move osccylinder initialise body out of stepTime() 5/16/16
-//seperate ns and fadlun solvers 5/16/16
-//git is tracking strage, annoying eclipse things --fixed by Kyle
-//change mid_h to mid_h 5/17/16
-//change domainl.yaml for all cases 5/17/16
-//make shell cleanup script not delete whole computer 5/17/16
-//remove old solverType int 5/17/16
+//make the compiler not compile this file
+//remove device/host from dominfo
+//the current way we handle grid sizing sucks, should be more automated/needs built in derp check
+//solver is unreasonably unsteady when it comes to grid/body sizing
+//move osccylinder initialise body out of stepTime()
+//seperate ns and fadlun solvers
+//git is tracking strage, annoying eclipse things
+//change mid_h to mid_h
+//change domainl.yaml for all cases
+//make shell cleanup script not delete whole computer
+//remove old solverType int
+//luo method framework
+//luo method point tagging
+	// ghost nodes
+	// hybrid nodes
+//luo method extrapolation for ghost nodes
+	//u
+	//v
+	//p
+//luo method treatment at hybrid cells
+	//blend function
+	//interpolation vel
+	//NS vel
+//luo method treatment of pressure at hybrid nodes 
+//validate luo method with lid driven cavity
+//validate luo method with static cylinder
+//fix jank so it works
+//cylinderRe3000 isn't working, fix it
+//make midpoisitoni file not show up if mid position isn't moving

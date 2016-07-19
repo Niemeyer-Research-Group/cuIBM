@@ -98,6 +98,38 @@ void luoIBM::initialise()
 	udvdx.resize(numP);
 	vdvdy.resize(numP);
 
+	//interp
+	detA.resize(numP);
+	alpha.resize(numP);
+	b11.resize(numP);
+	b12.resize(numP);
+	b13.resize(numP);
+	b14.resize(numP);
+	b21.resize(numP);
+	b22.resize(numP);
+	b23.resize(numP);
+	b24.resize(numP);
+	b31.resize(numP);
+	b32.resize(numP);
+	b33.resize(numP);
+	b34.resize(numP);
+	b41.resize(numP);
+	b42.resize(numP);
+	b43.resize(numP);
+	b44.resize(numP);
+	stencilCoef.resize(numP);
+	interpCoef.resize(numP);
+	countD.resize(numP);
+	countH.resize(numP);
+	q1flag.resize(numP);
+	q2flag.resize(numP);
+	q3flag.resize(numP);
+	q4flag.resize(numP);
+	index1.resize(numP);
+	index2.resize(numP);
+	index3.resize(numP);
+	index4.resize(numP);
+
 	//tagpoints, size nump
 	ghostTagsP.resize(numP);
 	hybridTagsP.resize(numP);
@@ -146,10 +178,15 @@ void luoIBM::initialise()
 void luoIBM::initialiseLHS()
 {
 	parameterDB  &db = *NavierStokesSolver::paramDB;
+	int nx = domInfo->nx,
+		ny = domInfo->ny,
+		numUV = (nx-1)*ny + (ny-1)*nx;
+	LHS1.resize(numUV, numUV, (nx-1)*ny*5 - 2*ny-2*(nx-1)       +        (ny-1)*nx*5 - 2*(ny-1) - 2*nx);
+	//LHS2.resize(nx*ny, nx*ny, 5*nx*ny - 2*ny-2*nx + nx*ny*3); //flag
 	generateLHS1();
-	generateLHS2();
+	//generateLHS2();
 
-	NavierStokesSolver::PC.generate(NavierStokesSolver::LHS1,NavierStokesSolver::LHS2, db["velocitySolve"]["preconditioner"].get<preconditionerType>(), db["PoissonSolve"]["preconditioner"].get<preconditionerType>());
+	//NavierStokesSolver::PC.generate(NavierStokesSolver::LHS1,NavierStokesSolver::LHS2, db["velocitySolve"]["preconditioner"].get<preconditionerType>(), db["PoissonSolve"]["preconditioner"].get<preconditionerType>());
 	std::cout << "Assembled LUO LHS matrices!" << std::endl;
 }
 
@@ -193,9 +230,6 @@ void luoIBM::writeCommon()
 	{
 		B.writeToFile(folder, NavierStokesSolver::timeStep);
 	}
-
-	// write the number of iterations for each solve
-	iterationsFile << timeStep << '\t' << iterationCount1 << '\t' << iterationCount2 << std::endl;
 }
 
 /**
@@ -207,19 +241,30 @@ void luoIBM::stepTime()
 	solveIntermediateVelocity();
 	weightUhat();
 
+	preRHS2();
+	sizeLHS2();
+	generateLHS2();
 	generateRHS2();
-	solvePoisson();
-	weightPressure();
+	LHS2.sort_by_row_and_column();
+	//print(LHS2);
+	//printLHS();
+	PC.generate(LHS1,LHS2, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>(), (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
 
+	solvePoisson();
+
+	interpPGN();
 	velocityProjection();
 
 	std::cout<<timeStep<<std::endl;
 	timeStep++;
 	if (timeStep == 1000)
 	{
-		//arrayprint(u,"u","x",-1);
-		//arrayprint(u,"v","y");
-		//arrayprint(pressure,"p","p",-1);
+		arrayprint(uhat,"uhat","x",-1);
+		arrayprint(pressure,"p","p",-1);
+		arrayprint(u,"u","x",-1);
+		arrayprint(ghostTagsP,"ghostp","p",-1);
+		arrayprint(ghostTagsUV,"ghostu","x",-1);
+		arrayprint(hybridTagsP,"hybridp","p",-1);
 	}
 }
 
