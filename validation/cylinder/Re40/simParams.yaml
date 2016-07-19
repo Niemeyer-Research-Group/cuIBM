@@ -2,7 +2,7 @@
   dt: 0.005
   nt: 1000
   nsave: 1000
-  SolverType: LUO
+  SolverType: FADLUN
   linearSolvers:
     - system: velocity
       solver: CG

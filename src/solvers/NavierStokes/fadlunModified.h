@@ -30,6 +30,23 @@ protected:
 		uv,		///< velocity at the IB on the device
 		test;
 
+
+	int	*tags_r,
+		*tagsOld_r,
+		*tagsPOld_r,
+		*tags2_r,
+		*tagsIn_r,
+		*tagsP_r,
+		*tagsPOut_r;
+
+
+	double	*distance_from_intersection_to_node_r,
+			*distance_between_nodes_at_IB_r,
+			*distance_from_u_to_body_r,
+			*distance_from_v_to_body_r,
+			*uv_r,
+			*test_r;
+
 	bodies 	B;		///< bodies in the flow
 
 	std::ofstream forceFile;
@@ -79,4 +96,9 @@ public:
 	//projectVelocity.inl
 	//////////////////////////
 	virtual void velocityProjection();
+
+	//////////////////////////
+	//cusp.cu
+	//////////////////////////
+	virtual void cast();
 };

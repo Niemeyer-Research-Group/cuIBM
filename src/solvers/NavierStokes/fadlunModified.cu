@@ -26,36 +26,21 @@ fadlunModified::fadlunModified(parameterDB *pDB, domain *dInfo)
 void fadlunModified::initialise()
 {
 	NavierStokesSolver::initialiseNoBody();
-	NavierStokesSolver::logger.startTimer("initialise");
+	logger.startTimer("initialise");
 
-	int nx = NavierStokesSolver::domInfo->nx,
-		ny = NavierStokesSolver::domInfo->ny;
-
-	int numUV = (nx-1)*ny + nx*(ny-1);
-	int numP  = nx*ny;
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	//ARRAYS
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	//tagpoints, size uv, device
-	tags.resize(numUV);//used in lhs1
-	tagsOld.resize(numUV);
-	tagsPOld.resize(numP);
-	tags2.resize(numUV);//used in lhs1
-	tagsIn.resize(numUV);//used in lhs1
-	distance_from_intersection_to_node.resize(numUV);
-	distance_between_nodes_at_IB.resize(numUV);
-	uv.resize(numUV);
+	fadlunModified::cast();
 
-	//tagpoints, size np, device
-	tagsP.resize(numP);//flag
-	tagsPOut.resize(numP);//flag
-	distance_from_u_to_body.resize(numP);
-	distance_from_v_to_body.resize(numP);
-	test.resize(numP); //flag
-
+	std::cout << "fadlun arrays resized and cast!" << std::endl;
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	//ARRAYS
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	cusp::blas::fill(tagsOld,-1);
 	cusp::blas::fill(tagsPOld,-1);
 
+	std::cout << "Initialised fadlun arrays!" << std::endl;
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	//Initialize Bodies
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -104,10 +89,6 @@ void fadlunModified::initialiseLHS()
  */
 void fadlunModified::writeData()
 {
-
-	parameterDB  &db = *NavierStokesSolver::paramDB;
-	double dt  = db["simulation"]["dt"].get<double>();
-
 	logger.startTimer("output");
 	writeCommon();
 	logger.stopTimer("output");
@@ -143,12 +124,6 @@ void fadlunModified::stepTime()
 {
 	generateRHS1();
 	solveIntermediateVelocity();
-	arrayprint(u,"u0","x",-1);
-	arrayprint(N,"N","x",-1);
-	arrayprint(L,"L","x",-1);
-	arrayprint(bc1,"bc1","x",-1);
-	arrayprint(rhs1,"rhs1","x",-1);
-	arrayprint(uhat,"uhat","x",-1);
 
 	generateRHS2();
 	solvePoisson();
@@ -167,10 +142,3 @@ void fadlunModified::shutDown()
 	NavierStokesSolver::shutDown();
 	forceFile.close();
 }
-
-#include "FadlunModified/intermediateVelocity.inl"
-#include "FadlunModified/intermediatePressure.inl"
-#include "FadlunModified/projectVelocity.inl"
-#include "FadlunModified/tagpoints.inl"
-#include "FadlunModified/calculateForce.inl"
-#include "FadlunModified/checkTags.inl"
