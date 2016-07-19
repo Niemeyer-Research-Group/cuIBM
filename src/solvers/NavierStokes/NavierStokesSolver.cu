@@ -44,12 +44,12 @@ void NavierStokesSolver::initialise()
 void NavierStokesSolver::initialiseNoBody()
 {
 	printf("NS initalising\n");
-	int nx = domInfo->nx,
-		ny = domInfo->ny;
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+	//Resize and Cast
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+	cast();
 
-	int numUV = (nx-1)*ny + nx*(ny-1);
-	int numP  = nx*ny;
-
+	std::cout << "Arrays resized and cast!" << std::endl;
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	//COMMON STUFF
 	//////////////////////////////////////////////////////////////////////////////////////////////////
@@ -64,30 +64,9 @@ void NavierStokesSolver::initialiseNoBody()
 	io::writeGrid(folder, *domInfo);
 
 	std::cout << "Initialised common stuff!" << std::endl;
-
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	//ARRAYS
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	//doubles, device
-	LHS1.resize(numUV, numUV, (nx-1)*ny*5 - 2*ny-2*(nx-1)       +        (ny-1)*nx*5 - 2*(ny-1) - 2*nx);
-	LHS2.resize(nx*ny, nx*ny, 5*nx*ny - 2*ny-2*nx); //flag
-
-	//Doubles, size uv, device
-	u.resize(numUV);
-	uhat.resize(numUV);
-	uold.resize(numUV);
-	N.resize(numUV);
-	Nold.resize(numUV);
-	L.resize(numUV);
-	Lnew.resize(numUV);
-	rhs1.resize(numUV);
-	bc1.resize(numUV);
-
-	//doubles, size np, device
-	pressure.resize(numP);
-	rhs2.resize(numP);
-	pressure_old.resize(numP);
-
 	cusp::blas::fill(rhs2, 0);//flag
 	cusp::blas::fill(uhat, 0);//flag
 	cusp::blas::fill(Nold, 0);//flag
@@ -111,12 +90,6 @@ void NavierStokesSolver::initialiseNoBody()
 	dim3 dimBlock(blocksize, 1);
 	dim3 dimGridV( int( (nx*(ny-1)-0.5)/blocksize ) +1, 1);
 
-	double *u_r		= thrust::raw_pointer_cast( &(u[0]) ),
-		   *xu_r	= thrust::raw_pointer_cast( &(domInfo->xu[0]) ),
-		   *xv_r	= thrust::raw_pointer_cast( &(domInfo->xv[0]) ),
-		   *yu_r	= thrust::raw_pointer_cast( &(domInfo->yu[0]) ),
-		   *yv_r	= thrust::raw_pointer_cast( &(domInfo->yv[0]) );
-
 	kernels::initialiseU<<<dimGridU,dimBlock>>>(u_r, xu_r, yu_r, uInitial, uPerturb, M_PI, xmax, xmin, ymax, ymin, nx, ny);
 	kernels::initialiseV<<<dimGridV,dimBlock>>>(u_r, xv_r, yv_r, vInitial, vPerturb, M_PI, xmax, xmin, ymax, ymin, nx, ny);
 
@@ -130,12 +103,6 @@ void NavierStokesSolver::initialiseNoBody()
 	boundaryCondition
 		**bcInfo
 		 = (*paramDB)["flow"]["boundaryConditions"].get<boundaryCondition **>();
-
-	//resize boundary arrays by the number of velocity points on boundaries (u and v points)
-	bc[XMINUS].resize(2*ny-1);
-	bc[XPLUS].resize(2*ny-1);
-	bc[YMINUS].resize(2*nx-1);
-	bc[YPLUS].resize(2*nx-1);
 
 	//Top and Bottom
 	for(int i=0; i<nx-1; i++)
@@ -193,27 +160,17 @@ void NavierStokesSolver::stepTime()
 {
 	//1: Solve for intermediate velocity
 	generateRHS1();
-	//arrayprint(rhs1,"rhs1","x");
 	solveIntermediateVelocity();
-	//arrayprint(uhat,"uhat","x");
-	//arrayprint(uhat,"vhat","y");
 
 	//2: Solve for pressure correction
 	generateRHS2();
-	//arrayprint(rhs2,"rhs2","p");
 	solvePoisson();
-	//arrayprint(pressure,"pressure","p");
 
 	//3: Project velocity
 	velocityProjection();
-	//arrayprint(u,"u","x");
-	//arrayprint(u,"v","y");
 
 	//4: update time
 	timeStep++;
-	if (timeStep%(*paramDB)["simulation"]["nsave"].get<int>() == 0)
-	{
-	}
 	//std::cout<<"Timestep: "<<timeStep<<"\n";
 }
 
@@ -313,8 +270,6 @@ void NavierStokesSolver::arrayprint(cusp::array1d<double, cusp::device_memory> v
 	if (timeStep != time && time > 0) //set time to a negative number to always print
 		return;
 	logger.startTimer("output");
-	int nx = domInfo->nx;
-	int ny = domInfo->ny;
 
 	int x_length = nx;
 	int y_length = ny;
@@ -396,8 +351,3 @@ void NavierStokesSolver::shutDown()
 	io::printTimingInfo(logger);
 	iterationsFile.close();
 }
-
-// include inline files
-#include "NavierStokes/intermediateVelocity.inl"
-#include "NavierStokes/intermediatePressure.inl"
-#include "NavierStokes/projectVelocity.inl"

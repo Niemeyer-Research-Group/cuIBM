@@ -111,6 +111,68 @@ public:
 			xPhase,
 			uPhase;
 
+
+	int	*numPoints_r,
+		*offsets_r,
+		*startI_r,
+		*startJ_r,
+		*numCellsX_r,
+		*numCellsY_r,
+		*startI0_r,
+		*startJ0_r,
+		*numCellsX0_r,
+		*numCellsY0_r;
+
+	double	*xmin_r,
+			*xmax_r,
+			*ymin_r,
+			*ymax_r,
+			*xmin0_r,
+			*xmax0_r,
+			*ymin0_r,
+			*ymax0_r,
+			*X_r,
+			*Y_r,
+			*ds_r,
+			*ones_r,
+			*x_r,
+			*y_r,
+			*uB_r,
+			*vB_r,
+			*uBk_r,
+			*vBk_r,
+			*xleft_r,
+			*xright_r,
+			*ybot_r,
+			*ytop_r,
+			*test_r,
+			*x1_r,
+			*x2_r,
+			*x3_r,
+			*x4_r,
+			*y1_r,
+			*y2_r,
+			*y3_r,
+			*y4_r,
+			*q1_r,
+			*q2_r,
+			*q3_r,
+			*q4_r,
+			*point_x_r,
+			*point_y_r,
+			*point2_x_r,
+			*point2_y_r,
+			*point3_x_r,
+			*point3_y_r,
+			*force_pressure_r,
+			*force_dudn_r,
+			*force_dvdn_r,
+			*force_x_r,
+			*force_y_r;
+
+	// set pointers to cusp arrays
+	void cast();
+
 	// set initial position and velocity of each body
 	void initialise(parameterDB &db, domain &D);
 

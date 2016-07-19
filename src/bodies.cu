@@ -21,7 +21,7 @@ void bodies::initialise(parameterDB &db, domain &D)
 {
 	std::cout << "Initialising bodies... ";
 	std::vector<body> *B = db["flow"]["bodies"].get<std::vector<body> *>();
-
+	cast();
 	// number of bodies in the flow
 	numBodies = B->size();
 
@@ -166,6 +166,67 @@ void bodies::initialise(parameterDB &db, domain &D)
 	centerVelocityV0= 0;
 }
 
+void bodies::cast()
+{
+	numPoints_r		= thrust::raw_pointer_cast ( &(numPoints[0]));
+	offsets_r		= thrust::raw_pointer_cast ( &(offsets[0]));
+	startI_r		= thrust::raw_pointer_cast ( &(startI[0]));
+	startJ_r		= thrust::raw_pointer_cast ( &(startJ[0]));
+	numCellsX_r		= thrust::raw_pointer_cast ( &(numCellsX[0]));
+	numCellsY_r		= thrust::raw_pointer_cast ( &(numCellsY[0]));
+	startI0_r		= thrust::raw_pointer_cast ( &(startI0[0]));
+	startJ0_r		= thrust::raw_pointer_cast ( &(startJ0[0]));
+	numCellsX0_r	= thrust::raw_pointer_cast ( &(numCellsX0[0]));
+	numCellsY0_r	= thrust::raw_pointer_cast ( &(numCellsY0[0]));
+
+	xmin_r			= thrust::raw_pointer_cast ( &(xmin[0]));
+	xmax_r			= thrust::raw_pointer_cast ( &(xmax[0]));
+	ymin_r			= thrust::raw_pointer_cast ( &(ymin[0]));
+	ymax_r			= thrust::raw_pointer_cast ( &(ymax[0]));
+	xmin0_r			= thrust::raw_pointer_cast ( &(xmin0[0]));
+	xmax0_r			= thrust::raw_pointer_cast ( &(xmax0[0]));
+	ymin0_r			= thrust::raw_pointer_cast ( &(ymin0[0]));
+	ymax0_r			= thrust::raw_pointer_cast ( &(xmax0[0]));
+	X_r				= thrust::raw_pointer_cast ( &(X[0]));
+	Y_r				= thrust::raw_pointer_cast ( &(Y[0]));
+	ds_r			= thrust::raw_pointer_cast ( &(ds[0]));
+	ones_r			= thrust::raw_pointer_cast ( &(ones[0]));
+	x_r				= thrust::raw_pointer_cast ( &(x[0]));
+	y_r				= thrust::raw_pointer_cast ( &(y[0]));
+	uB_r			= thrust::raw_pointer_cast ( &(uB[0]));
+	vB_r			= thrust::raw_pointer_cast ( &(vB[0]));
+	uBk_r			= thrust::raw_pointer_cast ( &(uBk[0]));
+	vBk_r			= thrust::raw_pointer_cast ( &(vBk[0]));
+	xleft_r			= thrust::raw_pointer_cast ( &(xleft[0]));
+	xright_r		= thrust::raw_pointer_cast ( &(xright[0]));
+	ybot_r			= thrust::raw_pointer_cast ( &(ybot[0]));
+	ytop_r			= thrust::raw_pointer_cast ( &(ytop[0]));
+	test_r			= thrust::raw_pointer_cast ( &(test[0]));
+	x1_r			= thrust::raw_pointer_cast ( &(x1[0]));
+	x2_r			= thrust::raw_pointer_cast ( &(x2[0]));
+	x3_r			= thrust::raw_pointer_cast ( &(x3[0]));
+	x4_r			= thrust::raw_pointer_cast ( &(x4[0]));
+	y1_r			= thrust::raw_pointer_cast ( &(y1[0]));
+	y2_r			= thrust::raw_pointer_cast ( &(y2[0]));
+	y3_r			= thrust::raw_pointer_cast ( &(y3[0]));
+	y4_r			= thrust::raw_pointer_cast ( &(y4[0]));
+	q1_r			= thrust::raw_pointer_cast ( &(q1[0]));
+	q2_r			= thrust::raw_pointer_cast ( &(q2[0]));
+	q3_r			= thrust::raw_pointer_cast ( &(q3[0]));
+	q4_r			= thrust::raw_pointer_cast ( &(q4[0]));
+	point_x_r		= thrust::raw_pointer_cast ( &(point_x[0]));
+	point_y_r		= thrust::raw_pointer_cast ( &(point_y[0]));
+	point2_x_r		= thrust::raw_pointer_cast ( &(point2_x[0]));
+	point2_y_r		= thrust::raw_pointer_cast ( &(point2_y[0]));
+	point3_x_r		= thrust::raw_pointer_cast ( &(point3_x[0]));
+	point3_y_r		= thrust::raw_pointer_cast ( &(point3_y[0]));
+	force_pressure_r= thrust::raw_pointer_cast ( &(force_pressure[0]));
+	force_dudn_r	= thrust::raw_pointer_cast ( &(force_dudn[0]));
+	force_dvdn_r	= thrust::raw_pointer_cast ( &(force_dvdn[0]));
+	force_x_r		= thrust::raw_pointer_cast ( &(force_x[0]));
+	force_y_r		= thrust::raw_pointer_cast ( &(force_y[0]));
+}
+
 //flag this isn't setup to work with multiple bodies
 //flag this kernel is setup to be called recursivly to handle body sizes larger than than
 //flag this kernel isn't working for smaller body node spacing (0.005 works, 0.004 does not), disabling for now
@@ -221,15 +282,7 @@ void bodies::calculateBoundingBoxes(parameterDB &db, domain &D)
 {
 	double scale = db["simulation"]["scaleCV"].get<double>();
 	double	*x_r = thrust::raw_pointer_cast( &(D.x[0]) ),
-			*y_r = thrust::raw_pointer_cast( &(D.y[0]) ),
-			*xmin_r = thrust::raw_pointer_cast( &(xleft[0]) ),
-			*xmax_r = thrust::raw_pointer_cast( &(xright[0]) ),
-			*ymin_r = thrust::raw_pointer_cast( &(ybot[0]) ),
-			*ymax_r = thrust::raw_pointer_cast( &(ytop[0]) );
-	int *startI_r = thrust::raw_pointer_cast( &(startI[0]) ),
-		*startJ_r = thrust::raw_pointer_cast( &(startJ[0]) ),
-		*numCellsX_r = thrust::raw_pointer_cast( &(numCellsX[0]) ),
-		*numCellsY_r = thrust::raw_pointer_cast( &(numCellsY[0]) );
+			*y_r = thrust::raw_pointer_cast( &(D.y[0]) );
 
 	thrust::device_vector<double>::iterator iter_xmax,
 											iter_xmin,

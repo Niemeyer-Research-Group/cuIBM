@@ -1,10 +1,11 @@
+#include <solvers/NavierStokes/luoIBM.h>
+
+
 void luoIBM::divergence()
 {
 	std::cout<<"Outputing divergence\n";
 	int ip, iv, iu;
-	int nx = NavierStokesSolver::domInfo->nx,
-		ny = NavierStokesSolver::domInfo->ny,
-		i_start = B.startI[0],
+	int i_start = B.startI[0],
 		j_start = B.startJ[0],
 		width_i = B.numCellsX[0],
 		height_j = B.numCellsY[0],
@@ -24,7 +25,7 @@ void luoIBM::divergence()
 					"dx_w\t"
 					"x\t"
 					"y\n";
-	
+
 	test_output.open(out.str().c_str());
 	for (int J=j_start;  J<j_end;  J++)
 	{
@@ -55,8 +56,7 @@ void luoIBM::outputPressure()
 {
 	std::cout<<"Outputing pressure\n";
 	int ip;
-	int nx = NavierStokesSolver::domInfo->nx,
-		i_start = B.startI[0],
+	int i_start = B.startI[0],
 		j_start = B.startJ[0],
 		width_i = B.numCellsX[0],
 		height_j = B.numCellsY[0],
@@ -108,8 +108,7 @@ void luoIBM::testInterpX()//flag split this into ghost node and hybrid node func
 {
 	std::cout<<"Outputing for interpolation of the u values\n";
 	int iu;
-	int nx = NavierStokesSolver::domInfo->nx,
-		i_start = B.startI[0],
+	int i_start = B.startI[0],
 		j_start = B.startJ[0],
 		width_i = B.numCellsX[0],
 		height_j = B.numCellsY[0],
@@ -189,9 +188,7 @@ void luoIBM::testInterpY()
 {
 	std::cout<<"Outputing for interpolation of the v values\n";
 	int iv;
-	int nx = NavierStokesSolver::domInfo->nx,
-		ny = domInfo->ny,
-		i_start = B.startI[0],
+	int i_start = B.startI[0],
 		j_start = B.startJ[0],
 		width_i = B.numCellsX[0],
 		height_j = B.numCellsY[0],
@@ -271,8 +268,7 @@ void luoIBM::testInterpP()
 {
 	std::cout<<"Outputing for interpolation of the p values\n";
 	int ip;
-	int nx = NavierStokesSolver::domInfo->nx,
-		i_start = B.startI[0],
+	int i_start = B.startI[0],
 		j_start = B.startJ[0],
 		width_i = B.numCellsX[0],
 		height_j = B.numCellsY[0],
@@ -372,8 +368,7 @@ void luoIBM::testInterpP()
 void luoIBM::testOutputX()
 {
 	int iu;
-	int nx = NavierStokesSolver::domInfo->nx,
-		i_start = B.startI[0],
+	int i_start = B.startI[0],
 		j_start = B.startJ[0],
 		width_i = B.numCellsX[0],
 		height_j = B.numCellsY[0],
@@ -415,14 +410,12 @@ void luoIBM::testOutputY()
 {
 	//test bi, ip
 		int iv;
-		int nx = NavierStokesSolver::domInfo->nx,
-			ny = NavierStokesSolver::domInfo->ny,
-			i_start = B.startI[0],
-			 j_start = B.startJ[0],
-			 width_i = B.numCellsX[0],
-			 height_j = B.numCellsY[0],
-			 i_end = i_start + width_i,
-			 j_end = j_start + height_j;
+		int	i_start = B.startI[0],
+			j_start = B.startJ[0],
+			width_i = B.numCellsX[0],
+			height_j = B.numCellsY[0],
+			i_end = i_start + width_i,
+			j_end = j_start + height_j;
 		std::ofstream body_nodes;
 		parameterDB  &db = *NavierStokesSolver::paramDB;
 		std::string folder = db["inputs"]["caseFolder"].get<std::string>();

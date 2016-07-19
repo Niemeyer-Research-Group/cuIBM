@@ -26,12 +26,8 @@ luoIBM::luoIBM(parameterDB *pDB, domain *dInfo)
 void luoIBM::initialise()
 {
 	NavierStokesSolver::initialiseNoBody();
-	NavierStokesSolver::logger.startTimer("initialise");
-	int nx = NavierStokesSolver::domInfo->nx,
-		ny = NavierStokesSolver::domInfo->ny;
+	logger.startTimer("initialise");
 
-	int numUV = (nx-1)*ny + nx*(ny-1);
-	int numP  = nx*ny;
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	//ARRAYS
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -145,11 +141,10 @@ void luoIBM::initialise()
  */
 void luoIBM::initialiseLHS()
 {
-	parameterDB  &db = *NavierStokesSolver::paramDB;
 	generateLHS1();
 	generateLHS2();
 
-	NavierStokesSolver::PC.generate(NavierStokesSolver::LHS1,NavierStokesSolver::LHS2, db["velocitySolve"]["preconditioner"].get<preconditionerType>(), db["PoissonSolve"]["preconditioner"].get<preconditionerType>());
+	PC.generate(LHS1,LHS2, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>(), (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
 	std::cout << "Assembled LUO LHS matrices!" << std::endl;
 }
 
@@ -158,9 +153,6 @@ void luoIBM::initialiseLHS()
  */
 void luoIBM::writeData()
 {
-	parameterDB  &db = *NavierStokesSolver::paramDB;
-	double dt  = db["simulation"]["dt"].get<double>();
-
 	logger.startTimer("output");
 	writeCommon();
 	logger.stopTimer("output");
@@ -213,14 +205,8 @@ void luoIBM::stepTime()
 
 	velocityProjection();
 
-	std::cout<<timeStep<<std::endl;
 	timeStep++;
-	if (timeStep == 1000)
-	{
-		//arrayprint(u,"u","x",-1);
-		//arrayprint(u,"v","y");
-		//arrayprint(pressure,"p","p",-1);
-	}
+	std::cout<<timeStep<<std::endl;
 }
 
 /**
@@ -231,10 +217,3 @@ void luoIBM::shutDown()
 	NavierStokesSolver::shutDown();
 	forceFile.close();
 }
-
-#include "luoIBM/intermediateVelocity.inl"
-#include "luoIBM/intermediatePressure.inl"
-#include "luoIBM/projectVelocity.inl"
-#include "luoIBM/tagpoints.inl"
-#include "luoIBM/calculateForce.inl"
-#include "luoIBM/testing.inl"

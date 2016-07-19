@@ -85,6 +85,73 @@ protected:
 		udvdx,
 		vdvdy;
 
+	int *ghostTagsUV_r,
+		*ghostTagsP_r,
+		*hybridTagsUV_r,
+		*hybridTagsP_r,
+		*hybridTagsUV2_r;
+
+	double	*pressureStar_r,
+			*ustar_r,
+			*body_intercept_x_r,
+			*body_intercept_y_r,
+			*image_point_x_r,
+			*image_point_y_r,
+			*body_intercept_p_x_r,
+			*body_intercept_p_y_r,
+			*body_intercept_p_r,
+			*image_point_p_x_r,
+			*image_point_p_y_r,
+			*distance_from_intersection_to_node_r,
+			*distance_between_nodes_at_IB_r,
+			*distance_from_u_to_body_r,
+			*distance_from_v_to_body_r,
+			*uv_r;
+
+	double	*x1_ip_r,
+			*x2_ip_r,
+			*y1_ip_r,
+			*y2_ip_r,
+			*x1_ip_p_r,
+			*x2_ip_p_r,
+			*y1_ip_p_r,
+			*y2_ip_p_r,
+			*image_point_u_r,
+			*x1_r,
+			*x2_r,
+			*x3_r,
+			*x4_r,
+			*y1_r,
+			*y2_r,
+			*y3_r,
+			*y4_r,
+			*q1_r,
+			*q2_r,
+			*q3_r,
+			*q4_r,
+			*x1_p_r,
+			*x2_p_r,
+			*x3_p_r,
+			*x4_p_r,
+			*y1_p_r,
+			*y2_p_r,
+			*y3_p_r,
+			*y4_p_r,
+			*q1_p_r,
+			*q2_p_r,
+			*q3_p_r,
+			*q4_p_r,
+			*a0_r,
+			*a1_r,
+			*a2_r,
+			*a3_r,
+			*dudt_r,
+			*ududx_r,
+			*vdudy_r,
+			*dvdt_r,
+			*udvdx_r,
+			*vdvdy_r;
+
 	bodies 	B;		///< bodies in the flow
 
 	std::ofstream forceFile;
@@ -159,4 +226,6 @@ public:
 	//projectVelocity.inl
 	//////////////////////////
 	virtual void velocityProjection();
+
+	virtual void cast();
 };
