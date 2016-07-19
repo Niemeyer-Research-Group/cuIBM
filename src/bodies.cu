@@ -21,7 +21,6 @@ void bodies::initialise(parameterDB &db, domain &D)
 {
 	std::cout << "Initialising bodies... ";
 	std::vector<body> *B = db["flow"]["bodies"].get<std::vector<body> *>();
-	cast();
 	// number of bodies in the flow
 	numBodies = B->size();
 
@@ -120,7 +119,7 @@ void bodies::initialise(parameterDB &db, domain &D)
 	cusp::blas::fill(uB, 0);
 	cusp::blas::fill(vBk, 0);
 	cusp::blas::fill(uBk, 0);
-
+	cast();
 	bodiesMove = false;
 	for(int k=0; k<numBodies; k++)
 	{

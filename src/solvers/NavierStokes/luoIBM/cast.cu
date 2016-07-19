@@ -2,6 +2,77 @@
 
 void luoIBM::cast()
 {
+
+	//resize stuff
+	pressureStar.resize(numP);
+	ustar.resize(numUV);
+	ghostTagsUV.resize(numUV);
+	hybridTagsUV.resize(numUV);
+	hybridTagsUV2.resize(numUV);
+	body_intercept_x.resize(numUV);
+	body_intercept_y.resize(numUV);
+	image_point_x.resize(numUV);
+	image_point_y.resize(numUV);
+	body_intercept_p_x.resize(numP);
+	body_intercept_p_y.resize(numP);
+	body_intercept_p.resize(numP);
+	image_point_p_x.resize(numP);
+	image_point_p_y.resize(numP);
+	distance_from_intersection_to_node.resize(numUV);
+	distance_between_nodes_at_IB.resize(numUV);
+	uv.resize(numUV);
+
+	//testing
+	x1_ip.resize(numUV);
+	x2_ip.resize(numUV);
+	y1_ip.resize(numUV);
+	y2_ip.resize(numUV);
+	x1_ip_p.resize(numP);
+	x2_ip_p.resize(numP);
+	y1_ip_p.resize(numP);
+	y2_ip_p.resize(numP);
+	image_point_u.resize(numUV);
+	x1.resize(numUV);
+	x2.resize(numUV);
+	x3.resize(numUV);
+	x4.resize(numUV);
+	y1.resize(numUV);
+	y2.resize(numUV);
+	y3.resize(numUV);
+	y4.resize(numUV);
+	q1.resize(numUV);
+	q2.resize(numUV);
+	q3.resize(numUV);
+	q4.resize(numUV);
+	x1_p.resize(numP);
+	x2_p.resize(numP);
+	x3_p.resize(numP);
+	x4_p.resize(numP);
+	y1_p.resize(numP);
+	y2_p.resize(numP);
+	y3_p.resize(numP);
+	y4_p.resize(numP);
+	q1_p.resize(numP);
+	q2_p.resize(numP);
+	q3_p.resize(numP);
+	q4_p.resize(numP);
+	a0.resize(numP);
+	a1.resize(numP);
+	a2.resize(numP);
+	a3.resize(numP);
+	dudt.resize(numP);
+	ududx.resize(numP);
+	vdudy.resize(numP);
+	dvdt.resize(numP);
+	udvdx.resize(numP);
+	vdvdy.resize(numP);
+
+	//tags
+	ghostTagsP.resize(numP);
+	hybridTagsP.resize(numP);
+	distance_from_u_to_body.resize(numP);
+	distance_from_v_to_body.resize(numP);
+
 	ghostTagsUV_r 						= thrust::raw_pointer_cast( &(ghostTagsUV[0]) );
 	ghostTagsP_r						= thrust::raw_pointer_cast( &(ghostTagsP[0]) );
 	hybridTagsUV_r						= thrust::raw_pointer_cast( &(hybridTagsUV[0]) );
