@@ -20,7 +20,8 @@ protected:
 			cfl_I,
 			cfl_J,
 			cfl_ts;
-
+	double 	*cfl_r,
+			*distance_r;
 	//////////////////////////
 	//oscCylinder.h
 	//////////////////////////
@@ -52,4 +53,6 @@ public:
 	//IntermediateVelocity.inl
 	//////////////////////////
 	virtual void preRHS1Interpolation();
+
+	virtual void cast();
 };

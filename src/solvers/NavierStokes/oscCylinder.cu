@@ -26,8 +26,6 @@ oscCylinder::oscCylinder(parameterDB *pDB, domain *dInfo)
  */
 void oscCylinder::writeData()
 {
-	parameterDB  &db = *paramDB;
-	double dt  = db["simulation"]["dt"].get<double>();
 	logger.startTimer("output");
 	writeCommon();
 	if (timeStep == 0)
@@ -92,16 +90,11 @@ void oscCylinder::updateSolver()
 //flag this could probably be done with B.update
 void oscCylinder::moveBody()
 {
-	parameterDB  &db = *paramDB;
 	calculateForce();
 	//luoForce();
 
 	logger.startTimer("moveBody");
-	double *x_r	= thrust::raw_pointer_cast( &(B.x[0]) ),
-		   *uB_r= thrust::raw_pointer_cast( &(B.uB[0]) );
-	double	dt	= db["simulation"]["dt"].get<double>(),
-			nu	= db["flow"]["nu"].get<double>(),
-			t = dt*timeStep,
+	double	t = dt*timeStep,
 			f = B.frequency,
 			xCoeff = B.xCoeff,
 			uCoeff = B.uCoeff,
@@ -124,7 +117,7 @@ void oscCylinder::moveBody()
 	dim3 grid( int( (totalPoints)/blocksize ) +1, 1);
 	dim3 block(blocksize, 1);
 	B.uBk = B.uB;
-	kernels::update_body_viv<<<grid,block>>>(x_r, uB_r, xnew-xold, unew, totalPoints);
+	kernels::update_body_viv<<<grid,block>>>(B.x_r, B.uB_r, xnew-xold, unew, totalPoints);
 	logger.stopTimer("moveBody");
 }
 
@@ -134,8 +127,7 @@ void oscCylinder::moveBody()
 void oscCylinder::initialise()
 {
 	luoIBM::initialise();
-	cfl.resize(domInfo->nx*domInfo->ny);
-	distance.resize((domInfo->nx-1)*domInfo->ny + (domInfo->ny-1)*domInfo->nx);
+	oscCylinder::cast();
 	cfl_max = 0;
 
 	//output
@@ -145,9 +137,6 @@ void oscCylinder::initialise()
 	outPosition << folder <<"/midPosition";
 	midPositionFile.open(outPosition.str().c_str());
 
-	double *x_r	= thrust::raw_pointer_cast( &(B.x[0]) ),
-		   *uB_r= thrust::raw_pointer_cast( &(B.uB[0]) ),
-		   *uB0_r=thrust::raw_pointer_cast( &(B.uBk[0]) );
 	double	dt	= db["simulation"]["dt"].get<double>(),
 			nu	= db["flow"]["nu"].get<double>(),
 			t = dt*timeStep,
@@ -180,9 +169,9 @@ void oscCylinder::initialise()
 	dim3 block(blocksize, 1);
 	B.uBk = B.uB;
 	//update position/velocity for current values
-	kernels::update_body_viv<<<grid,block>>>(x_r, uB_r, xnew-xold, unew, totalPoints);
+	kernels::update_body_viv<<<grid,block>>>(B.x_r, B.uB_r, xnew-xold, unew, totalPoints);
 	//set position/velocity for old values
-	kernels::initialise_old<<<grid,block>>>(uB0_r,unew,totalPoints);//flag not sure if this should be done or not, as it is it simulates the body being in motion before we actually start, and it is technically more like an impulsivly started motion
+	kernels::initialise_old<<<grid,block>>>(B.uBk_r,unew,totalPoints);//flag not sure if this should be done or not, as it is it simulates the body being in motion before we actually start, and it is technically more like an impulsivly started motion
 																	//it effects du/dt for the calcualtion of the material derivative in the bilinear interp functions, its overall effect is pretty minimal
 }
 
@@ -201,17 +190,6 @@ void oscCylinder::stepTime()
 
 	velocityProjection();
 
-	if (timeStep%100 == 0 && timeStep>1)
-	{
-		//calcDistance();
-		arrayprint(pressure,"p","p",-1);
-		arrayprint(u,"u","x",-1);
-		arrayprint(ghostTagsUV,"ghostu","x",-1);
-		arrayprint(hybridTagsUV,"hybridu","x",-1);
-		arrayprint(ghostTagsP,"ghostp","p",-1);
-		//std::cout<<B.midX<<"\n";
-	}
-
 	//Release the body after a certain timestep
 	if (timeStep >= (*paramDB)["simulation"]["startStep"].get<int>())
 	{
@@ -225,8 +203,6 @@ void oscCylinder::stepTime()
 
 	if (timeStep%(*paramDB)["simulation"]["nt"].get<int>() == 0)
 	{
-		//arrayprint(pressure,"p","p");
-		//arrayprint(u,"u","x",-1);
 		std::cout<<"Maximun CFL: " << cfl_max << std::endl;
 		std::cout<<"Expected CFL: " << (*paramDB)["simulation"]["dt"].get<double>()*bc[XMINUS][0]/domInfo->mid_h << std::endl;
 		std::cout<<"CFL I: " << cfl_I << std::endl;
@@ -243,6 +219,3 @@ void oscCylinder::shutDown()
 	luoIBM::shutDown();
 	midPositionFile.close();
 }
-
-#include "oscCylinder/intermediateVelocity.inl"
-#include "oscCylinder/CFL.inl"
