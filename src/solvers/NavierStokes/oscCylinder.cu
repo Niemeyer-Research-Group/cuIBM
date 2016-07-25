@@ -128,7 +128,7 @@ void oscCylinder::initialise()
 {
 	luoIBM::initialise();
 	oscCylinder::cast();
-	cfl_max = 0;
+
 
 	//output
 	parameterDB  &db = *paramDB;
@@ -200,7 +200,6 @@ void oscCylinder::stepTime()
 
 	timeStep++;
 	std::cout<<timeStep<<std::endl;
-
 	if (timeStep%(*paramDB)["simulation"]["nt"].get<int>() == 0)
 	{
 		std::cout<<"Maximun CFL: " << cfl_max << std::endl;

@@ -104,6 +104,15 @@ protected:
 			numUV,
 			numP;
 
+	cusp::array1d<double, cusp::device_memory> cfl,
+												distance;
+	double	cfl_max,
+			cfl_I,
+			cfl_J,
+			cfl_ts;
+	double 	*cfl_r,
+			*distance_r;
+
 	//////////////////////////
 	//NavierStokesSolver.cu
 	//////////////////////////
@@ -119,6 +128,11 @@ protected:
 	void generateL();
 	void generateBC1();
 
+	//////////////////////////
+	//CFL
+	//////////////////////////
+	void CFL();
+	void calcDistance();
 public:
 	// constructor -- copy the database and information about the computational grid
 	NavierStokesSolver(parameterDB *pDB=NULL, domain *dInfo=NULL);

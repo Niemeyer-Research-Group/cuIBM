@@ -98,8 +98,8 @@ void luoIBM::writeData()
 
 	logger.startTimer("output");
 	if (NavierStokesSolver::timeStep == 1)
-		forceFile<<"timestep\told\tPressure\tdudn\tnew\n";
-	forceFile << timeStep*dt << '\t' << B.forceX << '\t'<<fxx<<"\t"<<fxy<<"\t"<<fxu<<"\t" << B.forceY << std::endl;
+		forceFile<<"timestep\tFx\tFy\n";
+	forceFile << timeStep*dt << '\t' << B.forceX << '\t'<< B.forceY << std::endl;
 	logger.stopTimer("output");
 }
 
@@ -141,6 +141,15 @@ void luoIBM::stepTime()
 
 	timeStep++;
 	std::cout<<timeStep<<std::endl;
+	CFL();
+	if (timeStep%(*paramDB)["simulation"]["nt"].get<int>() == 0)
+	{
+		std::cout<<"Maximun CFL: " << cfl_max << std::endl;
+		std::cout<<"Expected CFL: " << (*paramDB)["simulation"]["dt"].get<double>()*bc[XMINUS][0]/domInfo->mid_h << std::endl;
+		std::cout<<"CFL I: " << cfl_I << std::endl;
+		std::cout<<"CFL J: " << cfl_J << std::endl;
+		std::cout<<"CFL ts: " << cfl_ts << std::endl;
+	}
 }
 
 /**

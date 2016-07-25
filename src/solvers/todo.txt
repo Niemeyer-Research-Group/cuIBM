@@ -25,21 +25,16 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //todo update what stuff is stored in the paramdb
 //todo remove multibody remants
-//todo replace a, b, uv with more desciptive names
-	//todo remove a and b from .h files and tagpoints.inl
 //todo detemplatize preconditioner.h //not sure if worth, it works as it is and is very confusing
 //todo merge newprecond.cu and preconditioner.h class?
 //todo figure out where exactly the "NavierStokesSolver::variable" specifier is needed then clean it up
 //todo go after //flags
 //todo remove all testing remants from all code
-//todo change .inl files to .cu files
 //todo eclipse is finding a lot of errors that are not errors, fix that
-//todo fix warnings
 //todo lots of unused functionality in body.h and bodies.cu
 //todo currently you have to set the mid_h in both the body file and domain file
 //todo go through all the thrust pointer casts and make sure they are being used
 //todo make sure all the things being passed into kernels are being used still
-//todo remove various testing constructs
 //todo change naverstokes folder and spawn to fractional step
 //todo merge boundaryTypes.h and types.h
 
@@ -59,7 +54,6 @@
 //solver methods
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //todo fix jank so it works
-//todo cylinderRe3000 isn't working, fix it
 //todo optimize various gpu routines
 //todo change tagpoints to use a tighter bounding box
 
@@ -86,51 +80,14 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //todo is the code slower because the preconditioner is moved out of the main file
 //todo does the tagpoints file handle interpolation correctly when the points are coincident
-//todo test different krylov solvers
-//todo test different preconds
-//todo optimize when the precondtioner needs to be updated
 //todo is midx,midy set to 0 before calculating?
 //todo look at gpu memory over time
 //todo parsing time?
-//todo look at testing
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //luo method
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//todo luo method framework
-//todo luo method point tagging
-	// ghost nodes
-	// hybrid nodes
-//todo luo method extrapolation for ghost nodes
-	//todo u
-	//todo v
-	//todo p
-//todo luo method treatment at hybrid cells
-	//todo blend function
-	//todo interpolation vel
-	//todo NS vel
-//todo luo method treatment of pressure at hybrid nodes 
-//todo validate luo method with lid driven cavity
-//todo validate luo method with static cylinder
 //todo validate luo method with osc cylinder
 //todo validate luo method with fsi cylinder
 
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//done
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//make the compiler not compile this file 5/10/16
-//remove device/host from dominfo 5/11/16
-//the current way we handle grid sizing sucks, should be more automated/needs built in derp check 5/11/16
-//solver is unreasonably unsteady when it comes to grid/body sizing 5/11/16
-//move osccylinder initialise body out of stepTime() 5/16/16
-//seperate ns and fadlun solvers 5/16/16
-//git is tracking strage, annoying eclipse things --fixed by Kyle
-//change mid_h to mid_h 5/17/16
-//change domainl.yaml for all cases 5/17/16
-//make shell cleanup script not delete whole computer 5/17/16
-//remove old solverType int 5/17/16

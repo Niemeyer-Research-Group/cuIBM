@@ -52,17 +52,17 @@ protected:
 	std::ofstream forceFile;
 
 	//////////////////////////
-	//calculateForce.inl
+	//calculateForce
 	//////////////////////////
 	void calculateForce();
 
 	//////////////////////////
-	//intermediateVelocity.inl
+	//intermediateVelocity
 	//////////////////////////
 	void updateRobinBoundary();
 
 	//////////////////////////
-	//tagpoints.inl
+	//tagpoints
 	//////////////////////////
 	void tagPoints();
 
@@ -81,24 +81,24 @@ public:
 	virtual void shutDown();
 
 	//////////////////////////
-	//intermediatePressure.inl
+	//intermediatePressure
 	//////////////////////////
 	virtual void generateRHS2();
 	virtual void generateLHS2();
 
 	//////////////////////////
-	//intermediateVelocity.inl
+	//intermediateVelocity
 	//////////////////////////
 	virtual void generateRHS1();
 	virtual void generateLHS1();
 
 	//////////////////////////
-	//projectVelocity.inl
+	//projectVelocity
 	//////////////////////////
 	virtual void velocityProjection();
 
 	//////////////////////////
-	//cusp.cu
+	//cast
 	//////////////////////////
 	virtual void cast();
 };

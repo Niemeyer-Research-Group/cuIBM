@@ -1,5 +1,5 @@
 /***************************************************************************//**
- * \file intermediateVelocity.inl
+ * \file
  * \author Christopher Minar (minarc@oregonstate.edu)
  * \brief functions to invoke the kernels that setup the intermediate velocity solve
  */

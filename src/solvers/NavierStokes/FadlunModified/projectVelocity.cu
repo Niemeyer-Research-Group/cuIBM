@@ -1,5 +1,5 @@
 /***************************************************************************//**
- * \file projectVelocity.inl
+ * \file
  * \author Christopher Minar (minarc@oregonstate.edu)
  * \brief functions to invoke the kernels that update the velocity
  */

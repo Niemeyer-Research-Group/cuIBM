@@ -77,4 +77,11 @@ void NavierStokesSolver::cast()
 	LHS2_row_r		= thrust::raw_pointer_cast( &(LHS2.row_indices[0]) );
 	LHS2_col_r		= thrust::raw_pointer_cast( &(LHS2.column_indices[0]) );
 	LHS2_val_r		= thrust::raw_pointer_cast( &(LHS2.values[0]) );
+
+
+	cfl.resize(nx*ny);
+	distance.resize((nx-1)*ny + (ny-1)*nx);
+
+	cfl_r		= thrust::raw_pointer_cast( &(cfl[0]) );
+	distance_r	= thrust::raw_pointer_cast( &(distance[0]) );
 }

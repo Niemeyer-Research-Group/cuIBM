@@ -157,32 +157,32 @@ protected:
 	std::ofstream forceFile;
 
 	//////////////////////////
-	//calculateForce.inl
+	//calculateForce
 	//////////////////////////
 	void calculateForce();
 	void luoForce();
 
 	//////////////////////////
-	//intermediateVelocity.inl
+	//intermediateVelocity
 	//////////////////////////
 	void updateRobinBoundary();
 	void weightUhat();
 	void zeroVelocity();
 
 	//////////////////////////
-	//intermediatePressure.inl
+	//intermediatePressure
 	//////////////////////////
 	void preRHS2Interpolation();
 	void weightPressure();
 
 
 	//////////////////////////
-	//tagpoints.inl
+	//tagpoints
 	//////////////////////////
 	void tagPoints();
 
 	//////////////////////////
-	//testing.inl
+	//testing
 	//////////////////////////
 	void divergence();
 	void testInterpX(); //x
@@ -199,7 +199,7 @@ public:
 	luoIBM(parameterDB *pDB=NULL, domain *dInfo=NULL);
 
 	//////////////////////////
-	//luoIBM.cu
+	//luoIBM
 	//////////////////////////
 	virtual void initialise();
 	virtual void initialiseLHS();
@@ -210,20 +210,20 @@ public:
 	virtual void shutDown();
 
 	//////////////////////////
-	//intermediatePressure.inl
+	//intermediatePressure
 	//////////////////////////
 	virtual void generateRHS2();
 	virtual void generateLHS2();
 
 	//////////////////////////
-	//intermediateVelocity.inl
+	//intermediateVelocity
 	//////////////////////////
 	virtual void generateRHS1();
 	virtual void preRHS1Interpolation();
 	virtual void generateLHS1();
 
 	//////////////////////////
-	//projectVelocity.inl
+	//projectVelocity
 	//////////////////////////
 	virtual void velocityProjection();
 

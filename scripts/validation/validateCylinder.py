@@ -3,6 +3,7 @@
 import csv
 import argparse
 import numpy as np
+from numpy import genfromtxt
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
@@ -44,15 +45,10 @@ print "-"*80
 gnuplotFile    = caseFolder + '/cylinderRe' + Re + '.plt'
 outFile        = caseFolder + '/cylRe' + Re + 'Drag.pdf'
 
-time=[]
-force=[]
-with open('%s/forces' % caseFolder, 'r') as f:
-	reader = csv.reader(f, delimiter='\t',quotechar='|')
-	i=0	
-	for row in reader:
-		time.append(float(row[0]))
-		force.append(float(row[1])*2.0)
-		i+=1
+my_data = genfromtxt('%s/forces' % caseFolder,dtype=float,delimiter='\t')
+time = [my_data[i][0] for i in xrange(1,len(my_data))]
+force = [my_data[i][1]*2 for i in xrange(1,len(my_data))]
+
 validation_time=[]
 validation_force=[]
 with open(validationData) as f2:
@@ -73,8 +69,6 @@ plt.xlim([0,3])
 plt.ylim([0,int(yMax)])
 plt.savefig('%s/CylinderRe%s.pdf' % (caseFolder,Re))
 plt.clf()
-
-
 #	f.write("'%s/forces' u 1:(2*$2) w l lw 2 lc rgb '#3232ff' title 'Present Work', \\\n" % caseFolder)#
 #	f.write("'%s' u (0.5*$1):2 w p pt 6 ps 2 lc rgb '#ff3232' title 'Koumoutsakos and Leonard, 1995'\n" % validationData)
 	

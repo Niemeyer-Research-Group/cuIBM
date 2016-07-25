@@ -1,5 +1,5 @@
 /***************************************************************************//**
- * \file calculateForce.inl
+ * \file
  * \author Anush Krishnan (anush@bu.edu),
  * \author Christopher Minar (minarc@oregonstate.edu)
  * \brief functions to invoke kernels that will calculate the force on the immersed body

@@ -1,5 +1,5 @@
 /***************************************************************************//**
- * \file CFL.inl
+ * \file
  * \author Christopher Minar (minarc@oregonstate.edu)
  * \brief functions to invoke the kernels that setup the intermediate velocity solve
  */
@@ -7,7 +7,7 @@
 
 #include <solvers/NavierStokes/oscCylinder/kernels/CFL.h>
 
-void oscCylinder::CFL()
+void NavierStokesSolver::CFL()
 {
 	logger.startTimer("CFL");
 
@@ -31,7 +31,8 @@ void oscCylinder::CFL()
 	logger.stopTimer("CFL");
 }
 
-void oscCylinder::calcDistance()
+/*
+void NavierStokesSolver::calcDistance()
 {
 
 	int width_i = B.numCellsXHost, //flag this value is only moved to the host once (in B.initialise) if the body is moving too much this could break
@@ -46,3 +47,4 @@ void oscCylinder::calcDistance()
 											B.startI_r, B.startJ_r, width_i, nx, ny);
 	arrayprint(distance,"distance","p",-1);
 }
+*/

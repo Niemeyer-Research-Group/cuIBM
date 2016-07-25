@@ -131,6 +131,7 @@ void NavierStokesSolver::initialiseNoBody()
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	//OUTPUT
 	////////////////////////////////////////////////////////////////////////////////////////////////
+	cfl_max = 0;
 	std::stringstream outiter;
 	outiter << folder << "/iterations";
 	iterationsFile.open(outiter.str().c_str());
@@ -171,6 +172,15 @@ void NavierStokesSolver::stepTime()
 
 	//4: update time
 	timeStep++;
+	CFL();
+	if (timeStep%(*paramDB)["simulation"]["nt"].get<int>() == 0)
+	{
+		std::cout<<"Maximun CFL: " << cfl_max << std::endl;
+		std::cout<<"Expected CFL: " << (*paramDB)["simulation"]["dt"].get<double>()*bc[XMINUS][0]/domInfo->mid_h << std::endl;
+		std::cout<<"CFL I: " << cfl_I << std::endl;
+		std::cout<<"CFL J: " << cfl_J << std::endl;
+		std::cout<<"CFL ts: " << cfl_ts << std::endl;
+	}
 	//std::cout<<"Timestep: "<<timeStep<<"\n";
 }
 

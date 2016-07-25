@@ -44,6 +44,7 @@ void weightX(double *uhat, double *ustar, int *ghostTagsUV, int *hybridTagsUV, d
 		delta_2 = sqrt( pow( body_intercept_x[iu+(nx-1)]-xu[I],2 ) + pow( body_intercept_y[iu+(nx-1)]-yu[J+1], 2 ) );
 	//calculate alpha
 	alpha = sqrt( pow( delta_1/dx , 2 ) + pow( delta_2/dy , 2 ) );
+	//alpha = 1;
 	//blend uhat
 	uhat[iu] = (1-alpha)*uhat[iu] + alpha*ustar[iu];
 }
@@ -85,6 +86,7 @@ void weightY(double *uhat, double *ustar, int *ghostTagsUV, int *hybridTagsUV, d
 		delta_2 = sqrt( pow( body_intercept_x[iv+nx]-xv[I],2 ) + pow( body_intercept_y[iv+nx]-yv[J+1], 2 ) );
 	//calculate alpha
 	alpha = sqrt( pow( delta_1/dx , 2 ) + pow( delta_2/dy , 2 ) );
+	//alpha = 1;
 	//blend uhat
 	uhat[iv] = (1-alpha)*uhat[iv] + alpha*ustar[iv];
 }
@@ -126,6 +128,7 @@ void weightP(double *pressure, double *pressureStar, int *ghostTagsP, int *hybri
 		delta_2 = sqrt( pow( body_intercept_x[ip+nx]-xv[I],2 ) + pow( body_intercept_y[ip+nx]-yu[J+1], 2 ) );
 	//calculate alpha
 	alpha = sqrt( pow( delta_1/dx , 2 ) + pow( delta_2/dy , 2 ) );
+	//alpha = 1;
 	//blend uhat
 	pressure[ip] = (1-alpha)*pressure[ip] + alpha*pressureStar[ip];
 }
