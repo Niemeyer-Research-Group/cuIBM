@@ -11,7 +11,7 @@ X = zeros(1,7);
 Y = zeros(1,7);
 Z = zeros(1,7);
 hold on
-for i = 1%:length(M)
+for i = 1:length(M)
     X(1) = M(i,5); %ghost node
     X(2) = M(i,7); %body intercept
     X(3) = M(i,11); %corner1
@@ -59,7 +59,7 @@ for i = 1%:length(M)
 %     plot3([X(1) X(2)], [Y(1) Y(2)], [Z(1),Z(2)],'--') %line between gn and cpp ip
 end
 axis square
-axis([-0.6, 0.6, -0.6, 0.6, -50, 50]);
+axis([-0.6, 0.6, -0.6, 0.6, -60, 60]);
 legend('Ghost node','Image Point', 'Body Intercept', 'Corners')
 % legend([aa bb cc dd ee ff],'ghost','ip','bi','field','corner', 'BI')
 xlabel('x')
