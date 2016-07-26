@@ -129,7 +129,6 @@ void oscCylinder::initialise()
 	luoIBM::initialise();
 	oscCylinder::cast();
 
-
 	//output
 	parameterDB  &db = *paramDB;
 	std::string folder = db["inputs"]["caseFolder"].get<std::string>();
@@ -180,6 +179,9 @@ void oscCylinder::initialise()
  */
 void oscCylinder::stepTime()
 {
+	int val = 10;
+	for (int i=0; i<val; i++)
+	{
 	generateRHS1();
 	solveIntermediateVelocity();
 	weightUhat();
@@ -188,8 +190,10 @@ void oscCylinder::stepTime()
 	solvePoisson();
 	weightPressure();
 
+	if (i == val-1)
+		uold = u;
 	velocityProjection();
-
+	}
 	//Release the body after a certain timestep
 	if (timeStep >= (*paramDB)["simulation"]["startStep"].get<int>())
 	{

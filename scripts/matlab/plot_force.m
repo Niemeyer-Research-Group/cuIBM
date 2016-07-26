@@ -43,16 +43,21 @@ cases = 'osc/flow/forces';
 delim = '\t';
 
 %read data
-forces = dlmread(strcat(pathbase,cases),delim,0,0);
+forces = dlmread(strcat(pathbase,'osc/gh','/forces'),delim,0,0);
+% forces1 = dlmread(strcat(pathbase,'osc/ab','/forces1'),delim,0,0);
+% forces2 = dlmread(strcat(pathbase,'osc/ab','/forces2'),delim,0,0);
 x = dlmread(strcat(pathbase,'osc/flow/midPosition'),delim,1,0);
 %plot
 hold on
 plot(forces(10:end,1),forces(10:end,2),'r') %present
+% plot(forces1(10:end,1),forces1(10:end,2),'b')
+% plot(forces2(10:end,1),forces2(10:end,2),'k')
 hold off
+% legend('10','3','1')
 xlabel('time')
 ylabel('force')
 title('Drag')
-axis([0 10 -2 6])
+axis([0 10 0 2])
 
 % figure
 % X = 0:0.1:10;
@@ -76,6 +81,7 @@ delim = '\t';
 
 %read data
 a = dlmread(strcat(pathbase,'ab','/forcesa'),delim,0,0);
+% b = dlmread(strcat(pathbase,'ab','/forces'),delim,0,0);
 b = dlmread(strcat(pathbase,'ab','/forcesb'),delim,0,0);
 c = dlmread(strcat(pathbase,'cd','/forcesc'),delim,0,0);
 d = dlmread(strcat(pathbase,'cd','/forcesd'),delim,0,0);

@@ -129,6 +129,9 @@ void luoIBM::writeCommon()
  */
 void luoIBM::stepTime()
 {
+	int val = 3;
+	for (int i=0; i<val; i++)
+	{
 	generateRHS1();
 	solveIntermediateVelocity();
 	weightUhat();
@@ -137,7 +140,11 @@ void luoIBM::stepTime()
 	solvePoisson();
 	weightPressure();
 
+	if (i == val-1)
+			uold = u;
 	velocityProjection();
+	}
+	//move the pressore old and Nold out of the loop then try again
 
 	timeStep++;
 	std::cout<<timeStep<<std::endl;
