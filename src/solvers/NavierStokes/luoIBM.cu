@@ -129,7 +129,7 @@ void luoIBM::writeCommon()
  */
 void luoIBM::stepTime()
 {
-	int val = 3;
+	int val = 1;
 	for (int i=0; i<val; i++)
 	{
 	generateRHS1();

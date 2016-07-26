@@ -1,6 +1,6 @@
 - type: simulation
   dt: 0.005
-  nt: 1000
+  nt: 1
   nsave: 1000
   SolverType: LUO
   linearSolvers:
