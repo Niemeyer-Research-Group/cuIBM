@@ -71,12 +71,16 @@ clc
 clear
 % close all
 figure
-M = dlmread('/scratch/src/cuIBM/validation/osc/flow/interp_testP.csv','\t',1,0); %start on second row to avoid headers
+% M = dlmread('/scratch/src/cuIBM/validation/osc/flow/interp_testP.csv','\t',1,0); %start on second row to avoid headers
+M = dlmread('/scratch/src/cuIBM/validation/cylinder/Re40/interp_testP.csv','\t',1,0); %start on second row to avoid headers
 % 1     2       3       4       5       6       7       8       9       10      11  12  13  14  15  16  17  18  19  20  21  22  23
 % BN_X1	BN_Y1   BN_X2	BN_Y2	GN_X    GN_Y	BI_X	BI_Y    IP_X	IP_Y	x1	x2	x3  x4	y1	y2	y3	y4	q1	q2	q3	q4	p*
 X = zeros(1,7);
 Y = zeros(1,7);
 Z = zeros(1,7);
+hold on
+x = linspace(0,2*pi, 360);
+plot (0.5*cos(x),0.5*sin(x),'g');
 for i =1:length(M)
     X(1) = M(i,5); %ghost node
     X(2) = M(i,7); %body intercept
@@ -101,12 +105,11 @@ for i =1:length(M)
     Z(5) = M(i,21);
     Z(6) = M(i,22);
     z1 = [0,0];
-    plot(X(1),Y(1),'ks'),hold on %Ghost node
-    plot(X(2),Y(2),'ko'), hold on %body intercept
-    plot(x1,y1,'g-'), hold on %line that is the body
-    plot(X(7),Y(7),'bx'), hold on %image point
-    plot(X(3:6),Y(3:6),'rd'), hold on %interpolation corners
-    plot(M(i,1),M(i,2),'rs',M(i,3),M(i,4),'rs') %body nodes
+    plot(X(1),Y(1),'ks')                                    %Ghost node
+    plot(X(2),Y(2),'ko')                                    %body intercept
+    plot(X(7),Y(7),'bx')                                    %image point
+    plot(X(3:6),Y(3:6),'rd')                                %interpolation corners
+    plot(M(i,1),M(i,2),'rs',M(i,3),M(i,4),'rs')             %body nodes
     %plot([X(1) X(7)], [Y(1) Y(7)], 'k-') % line between ghost node and image point
     trouble_nodes = [45];
     if(any(i==trouble_nodes))

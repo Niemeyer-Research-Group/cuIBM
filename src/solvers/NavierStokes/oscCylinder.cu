@@ -179,7 +179,7 @@ void oscCylinder::initialise()
  */
 void oscCylinder::stepTime()
 {
-	int val = 10;
+	int val = 1;
 	for (int i=0; i<val; i++)
 	{
 	generateRHS1();

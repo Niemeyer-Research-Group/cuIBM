@@ -48,7 +48,7 @@ clc
 clear
 close all
 % M = dlmread('/scratch/src/cuIBM/validation/luo/test/interp_testX.csv','\t',1,0); %start on second row to avoid headers
-M = dlmread('/scratch/src/cuIBM/validation/cylinder/Re40/interp_testX.csv','\t',1,0); %start on second row to avoid headers
+M = dlmread('/scratch/src/cuIBM/validation/cylinder/Re40/interp_testY.csv','\t',1,0); %start on second row to avoid headers
 % 1     2       3       4       5       6       7       8       9       10      11  12  13  14  15  16  17  18  19  20  21  22  23  24
 % BN_X1	BN_Y1   BN_X2	BN_Y2	GN_X    GN_Y	BI_X	BI_Y    IP_X	IP_Y	x1	x2	x3  x4	y1	y2	y3	y4	q1	q2	q3	q4	GN_Uip_u
 X = zeros(1,7);

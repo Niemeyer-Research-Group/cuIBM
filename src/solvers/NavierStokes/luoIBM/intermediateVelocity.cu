@@ -132,7 +132,7 @@ void luoIBM::preRHS1Interpolation()
 													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
 													B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny,
 													x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r, image_point_u_r);
-	testInterpX();
+	//testInterpX();
 	//testInterpY();
 	logger.stopTimer("RHS1 Interpolation");
 }

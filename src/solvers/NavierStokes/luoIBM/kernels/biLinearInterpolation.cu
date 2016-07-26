@@ -15,7 +15,7 @@ void interpolateVelocityToGhostNodeX(double *u, int *ghostTagsUV, double *bx, do
 							double *body_intercept_x, double *body_intercept_y, double *image_point_x, double *image_point_y,
 							int *i_start, int *j_start, int width, int nx, int ny,
 							double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4, double *image_point_u)//testing variables
-{
+{//In the luo et al method they only move corners coincident to the GN to the boundary. We are moving all corners inside to the boundary
 	int idx	= threadIdx.x + blockDim.x * blockIdx.x,
 		i	= idx % (width),
 		j	= idx / (width),
@@ -42,48 +42,66 @@ void interpolateVelocityToGhostNodeX(double *u, int *ghostTagsUV, double *bx, do
 	//find x and y of nodes that bound the image point
 	while (xu[ii] < image_point_x[iu])
 		ii++;
-	x1[iu] = xu[ii-1];
-	x2[iu] = xu[ii];
-	x3[iu] = x1[iu];
-	x4[iu] = x2[iu];
 	while (yu[jj] <image_point_y[iu])
 		jj++;
-	y1[iu] = yu[jj-1];
-	y2[iu] = y1[iu];
-	y3[iu] = yu[jj];
-	y4[iu] = y3[iu];
+	double x[4] = {xu[ii-1], xu[ii], xu[ii-1], xu[ii]};
+	double y[4] = {yu[jj-1], yu[jj-1], yu[jj], yu[jj]};
+	//find index at corners and the u value at the corners
+	int index[4] = {(jj-1)*(nx-1)+ii-1,   (jj-1)*(nx-1)+ii,   jj*(nx-1)+ii-1,   jj*(nx-1)+ii};
+	double q[4] = {u[index[0]], u[index[1]], u[index[2]], u[index[3]]};
 
-	//find q1,q2,q3,q4
-	q1[iu] = u[(jj-1)*(nx-1)+ii-1];
-	q2[iu] = u[(jj-1)*(nx-1)+ii];
-	q3[iu] = u[jj*(nx-1)+ii-1];
-	q4[iu] = u[jj*(nx-1)+ii];
-	//check if any points are inside of the body, then move them to the body intercept
+	//find the closest corner to the body intercept
+	double min = 1.0;
+	double s;
+	int close_index;
+	bool inflag = false; //a boolean that is true if there is a node inside the body
+	for (int l=0;l<4;l++)
+	{
+		//find the closest node to the BI
+		s = sqrt(pow(x[l]-body_intercept_x[iu],2) + pow(y[l]-body_intercept_y[iu],2));
+		if (s<min)
+		{
+			min = s;
+			close_index = index[l];
+		}
+		//check if any of the points are inside the body
+		if (ghostTagsUV[index[l]]>0)
+				inflag = true;
+	}
+
+	//if point is inside of the body
+	//or if no points are inside the body and the node is the closest to the BI
+	//	then move them to the body intercept
 	//point 1
-	if (ghostTagsUV[(jj-1)*(nx-1)+ii-1] > 0)
+	for (int l=0;l<4;l++)
 	{
-		x1[iu] = body_intercept_x[(jj-1)*(nx-1)+ii-1];
-		y1[iu] = body_intercept_y[(jj-1)*(nx-1)+ii-1];
-		q1[iu] = uB[0];
-	}
-	if (ghostTagsUV[(jj-1)*(nx-1)+ii] > 0)
+	if ( ghostTagsUV[index[l]] > 0)
 	{
-		x2[iu] = body_intercept_x[(jj-1)*(nx-1)+ii];
-		y2[iu] = body_intercept_y[(jj-1)*(nx-1)+ii];
-		q2[iu] = uB[0];
+		x[l] = body_intercept_x[index[l]];
+		y[l] = body_intercept_y[index[l]];
+		q[l] = uB[0];
 	}
-	if (ghostTagsUV[jj*(nx-1)+ii-1] > 0)
+	/*else if ( index[l]==close_index && !inflag ) //uncomment this if you want to move the closest node outside of the body to the body
 	{
-		x3[iu] = body_intercept_x[jj*(nx-1)+ii-1];
-		y3[iu] = body_intercept_y[jj*(nx-1)+ii-1];
-		q3[iu] = uB[0];
+		x[l] = body_intercept_x[iu];
+		y[l] = body_intercept_y[iu];
+		q[l] = uB[0];
+	}*/
 	}
-	if (ghostTagsUV[jj*(nx-1)+ii] > 0)
-	{
-		x4[iu] = body_intercept_x[jj*(nx-1)+ii];
-		y4[iu] = body_intercept_y[jj*(nx-1)+ii];
-		q4[iu] = uB[0];
-	}
+
+	x1[iu] = x[0];
+	x2[iu] = x[1];
+	x3[iu] = x[2];
+	x4[iu] = x[3];
+	y1[iu] = y[0];
+	y2[iu] = y[1];
+	y3[iu] = y[2];
+	y4[iu] = y[3];
+	q1[iu] = q[0];
+	q2[iu] = q[1];
+	q3[iu] = q[2];
+	q4[iu] = q[3];
+
 	//solve equation for bilinear interpolation of values to image point
 	//http://www.cg.info.hiroshima-cu.ac.jp/~miyazaki/knowledge/teche23.html
 	//solve for a
@@ -181,48 +199,66 @@ void interpolateVelocityToGhostNodeY(double *u, int *ghostTagsUV, double *bx, do
 	//find x and y of nodes that bound the image point
 	while (xv[ii] < image_point_x[iv])
 		ii++;
-	x1[iv] = xv[ii-1];
-	x2[iv] = xv[ii];
-	x3[iv] = x1[iv];
-	x4[iv] = x2[iv];
 	while (yv[jj] <image_point_y[iv])
 		jj++;
-	y1[iv] = yv[jj-1];
-	y2[iv] = y1[iv];
-	y3[iv] = yv[jj];
-	y4[iv] = y3[iv];
+	double x[4] = {xv[ii-1], xv[ii], xv[ii-1], xv[ii]};
+	double y[4] = {yv[jj-1], yv[jj-1], yv[jj], yv[jj]};
+	//find index at corners and the u value at the corners
+	int index[4] = {(jj-1)*nx+ii-1 + (nx-1)*ny,   (jj-1)*nx+ii + (nx-1)*ny,   jj*nx+ii-1 + (nx-1)*ny,   jj*nx+ii + (nx-1)*ny};
+	double q[4] = {u[index[0]], u[index[1]], u[index[2]], u[index[3]]};
 
-	//find q1,q2,q3,q4
-	q1[iv] = u[(jj-1)*nx+ii-1+ (nx-1)*ny];
-	q2[iv] = u[(jj-1)*nx+ii+ (nx-1)*ny];
-	q3[iv] = u[jj*nx+ii-1+ (nx-1)*ny];
-	q4[iv] = u[jj*nx+ii+ (nx-1)*ny];
-	//check if any points are inside of the body, then move them to the body intercept
+	//find the closest corner to the body intercept
+	double min = 1.0;
+	double s;
+	int close_index;
+	bool inflag = false; //a boolean that is true if there is a node inside the body
+	for (int l=0;l<4;l++)
+	{
+		//find the closest node to the BI
+		s = sqrt(pow(x[l]-body_intercept_x[iv],2) + pow(y[l]-body_intercept_y[iv],2));
+		if (s<min)
+		{
+			min = s;
+			close_index = index[l];
+		}
+		//check if any of the points are inside the body
+		if (ghostTagsUV[index[l]]>0)
+				inflag = true;
+	}
+
+	//if point is inside of the body
+	//or if no points are inside the body and the node is the closest to the BI
+	//	then move them to the body intercept
 	//point 1
-	if (ghostTagsUV[(jj-1)*nx+ii-1 + (nx-1)*ny] > 0)
+	for (int l=0;l<4;l++)
 	{
-		x1[iv] = body_intercept_x[(jj-1)*nx+ii-1+ (nx-1)*ny];
-		y1[iv] = body_intercept_y[(jj-1)*nx+ii-1+ (nx-1)*ny];
-		q1[iv] = vB[0];
-	}
-	if (ghostTagsUV[(jj-1)*nx+ii+ (nx-1)*ny] > 0)
+	if ( ghostTagsUV[index[l]] > 0)
 	{
-		x2[iv] = body_intercept_x[(jj-1)*nx+ii+ (nx-1)*ny];
-		y2[iv] = body_intercept_y[(jj-1)*nx+ii+ (nx-1)*ny];
-		q2[iv] = vB[0];
+		x[l] = body_intercept_x[index[l]];
+		y[l] = body_intercept_y[index[l]];
+		q[l] = vB[0];
 	}
-	if (ghostTagsUV[jj*nx+ii-1+ (nx-1)*ny] > 0)
+	/*else if ( index[l]==close_index && !inflag ) //uncomment this if you want to move the closest node outside of the body to the body
 	{
-		x3[iv] = body_intercept_x[jj*nx+ii-1+ (nx-1)*ny];
-		y3[iv] = body_intercept_y[jj*nx+ii-1+ (nx-1)*ny];
-		q3[iv] = vB[0];
+		x[l] = body_intercept_x[iv];
+		y[l] = body_intercept_y[iv];
+		q[l] = vB[0];
+	}*/
 	}
-	if (ghostTagsUV[jj*nx+ii+ (nx-1)*ny] > 0)
-	{
-		x4[iv] = body_intercept_x[jj*nx+ii+ (nx-1)*ny];
-		y4[iv] = body_intercept_y[jj*nx+ii+ (nx-1)*ny];
-		q4[iv] = vB[0];
-	}
+
+	x1[iv] = x[0];
+	x2[iv] = x[1];
+	x3[iv] = x[2];
+	x4[iv] = x[3];
+	y1[iv] = y[0];
+	y2[iv] = y[1];
+	y3[iv] = y[2];
+	y4[iv] = y[3];
+	q1[iv] = q[0];
+	q2[iv] = q[1];
+	q3[iv] = q[2];
+	q4[iv] = q[3];
+
 	//solve equation for bilinear interpolation of values to image point
 	//http://www.cg.info.hiroshima-cu.ac.jp/~miyazaki/knowledge/teche23.html
 	//solve for a
