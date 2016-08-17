@@ -69,7 +69,10 @@ Create a local copy of the CUSP library using the following commands:
 
     > mkdir -p $/scratch/src/lib
     > cd /scratch/src/lib
-    > wget https://github.com/cusplibrary/cusplibrary/archive/0.5.1.zip
+
+Download cusp 0.5.1 from [here](https://github.com/cusplibrary/cusplibrary/releases/tag/v0.5.1).
+Copy the zip to /scratch/src/lib then:
+
     > unzip 0.5.1.zip
 
 The folder `/scratch/src/lib/cusplibrary-0.5.1` is now created.
