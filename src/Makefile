@@ -4,8 +4,7 @@
 
 
 # compiler: nvcc is NVIDIA's CUDA compiler
-#CC = /usr/local/apps/cuda/cuda-7.0.28/bin/nvcc $(OSXOPTS)
-CC = /usr/local/apps/cuda/cuda-7.5.18/bin/nvcc $(OSXOPTS)
+CC = /usr/local/cuda-7.5/bin/nvcc $(OSXOPTS)
 
 # compiler options
 # -O3: optimization flag
