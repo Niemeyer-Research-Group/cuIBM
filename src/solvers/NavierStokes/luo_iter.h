@@ -1,22 +1,20 @@
 /***************************************************************************//**
- * \file  oscCylinder.h
+ * \file  luo_iter.h
  * \author Christopher Minar (minarc@oregonstate.edu)
  * \based on code by Anush Krishnan (anush@bu.edu)
- * \brief Declaration of the class oscCylinder.
+ * \brief Declaration of the class luo_iter.
  */
 
 #pragma once
 
 #include "NavierStokesSolver.h"
-#include "luoIBM.h"
+#include "luo_base.h"
 
-class oscCylinder : public luoIBM
+class luo_iter: public luo_base
 {
 protected:
-	std::ofstream midPositionFile;
-
 	//////////////////////////
-	//oscCylinder.h
+	//luo_iter.h
 	//////////////////////////
 	void updateSolver();
 	void moveBody();
@@ -26,12 +24,11 @@ protected:
 	//////////////////////////
 	void setVelocityInside();
 
-
 public:
 	//////////////////////////
-	//oscCylinder.cu
+	//luo_iter.cu
 	//////////////////////////
-	oscCylinder(parameterDB *pDB=NULL, domain *dInfo=NULL);
+	luo_iter(parameterDB *pDB=NULL, domain *dInfo=NULL);
 	virtual void initialise();
 	virtual void stepTime();
 	virtual void writeData();

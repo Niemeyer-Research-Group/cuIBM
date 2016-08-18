@@ -1,11 +1,11 @@
 /***************************************************************************//**
- * \file  luoIBM.cu
+ * \file  luo_base.cu
  * \author Christopher Minar (minarc@oregonstate.edu)
  * \based on code by Anush Krishnan (anush@bu.edu)
  * \brief Declaration of the class oscCylinder.
  */
 
-#include "luoIBM.h"
+#include "luo_base.h"
 #include <sys/stat.h>
 
 /**
@@ -14,7 +14,7 @@
  * \param pDB database that contains all the simulation parameters
  * \param dInfo information related to the computational grid
  */
-luoIBM::luoIBM(parameterDB *pDB, domain *dInfo)
+luo_base::luo_base(parameterDB *pDB, domain *dInfo)
 {
 	paramDB = pDB;
 	domInfo = dInfo;
@@ -23,7 +23,7 @@ luoIBM::luoIBM(parameterDB *pDB, domain *dInfo)
 /*
  * Initialise the solver
  */
-void luoIBM::initialise()
+void luo_base::initialise()
 {
 	NavierStokesSolver::initialiseNoBody();
 	logger.startTimer("initialise");
@@ -31,9 +31,9 @@ void luoIBM::initialise()
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	//Cast Luo
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	luoIBM::cast();
+	luo_base::cast();
+	std::cout << "Luo_base resized and cast!" << std::endl;
 
-	std::cout << "Luo IBM resized and cast!" << std::endl;
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	//Initialize Bodies
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -45,18 +45,6 @@ void luoIBM::initialise()
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	tagPoints();
 	std::cout << "Tagged points!" << std::endl;
-
-	////////////////////////////////////////////////////////////////////////////////////////////////
-	//Initialize Velocity
-	////////////////////////////////////////////////////////////////////////////////////////////////
-	zeroVelocity();//sets the velocity inside the body to 0
-	std::cout << "Inside velocity set to body velocity!" << std::endl;
-
-	/////////////////////////////////////////////////////////////////////////////////////////////////
-	//LHS
-	/////////////////////////////////////////////////////////////////////////////////////////////////
-	initialiseLHS();
-	std::cout << "LHS Initialised!" << std::endl;
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	//OUTPUT
@@ -73,41 +61,92 @@ void luoIBM::initialise()
 /*
  * Initialise the LHS matricies
  */
-void luoIBM::initialiseLHS()
+void luo_base::initialiseLHS()
 {
-	generateLHS1();
-	generateLHS2();
-
-	PC.generate(LHS1,LHS2, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>(), (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
-	std::cout << "Assembled LUO LHS matrices!" << std::endl;
 }
 
 /**
  * \brief Writes data into files.
  */
-void luoIBM::writeData()
+void luo_base::writeData()
 {
 	logger.startTimer("output");
 	writeCommon();
-	logger.stopTimer("output");
 
-	logger.startTimer("calculateForce");
-	calculateForce();
-	//luoForce();
-	logger.stopTimer("calculateForce");
-
-	logger.startTimer("output");
 	if (NavierStokesSolver::timeStep == 1)
 		forceFile<<"timestep\tFx\tFy\n";
 	forceFile << timeStep*dt << '\t' << B.forceX << '\t'<< B.forceY << std::endl;
 	logger.stopTimer("output");
 }
 
+/*
+ * Calculates new cell indices
+ * Calculates new body bounding boxes
+ * Tags Points
+ * Remakes LHS matricies
+ * updates Preconditioners
+ */
+void luo_base::updateSolver()
+{
+	logger.startTimer("Bounding Boxes");
+	B.calculateBoundingBoxes(*paramDB, *domInfo);//flag this isn't really needed because the body never moves out of the bounding box
+	logger.stopTimer("Bounding Boxes");
+
+	tagPoints();
+	generateLHS1();//is this needed?
+	generateLHS2();
+
+	logger.startTimer("Preconditioner");
+	if (iterationCount2 > 100)
+	{
+		PC.update(LHS1, LHS2);
+	}
+	logger.stopTimer("Preconditioner");
+}
+
+/*
+ * Calculates Force
+ * Moves body
+ */
+//flag this could probably be done with B.update
+void luo_base::moveBody()
+{
+	calculateForce();
+	//luoForce();
+
+	logger.startTimer("moveBody");
+	double	t = dt*timeStep,
+			f = B.frequency,
+			xCoeff = B.xCoeff,
+			uCoeff = B.uCoeff,
+			xPhase = B.xPhase,
+			uPhase = B.uPhase,
+			totalPoints=B.totalPoints,
+			xold= B.midX,
+			unew,
+			xnew;
+
+	//xnew = -1/(2*M_PI)*sin(2*M_PI*f*t);
+	//unew = -f*cos(2*M_PI*f*t);
+	xnew = xCoeff*sin(2*M_PI*f*t + xPhase);
+	unew = uCoeff*cos(2*M_PI*f*t + uPhase);
+
+	B.centerVelocityU = unew;
+	B.midX = xnew;
+
+	const int blocksize = 256;
+	dim3 grid( int( (totalPoints)/blocksize ) +1, 1);
+	dim3 block(blocksize, 1);
+	B.uBk = B.uB;
+	kernels::update_body_viv<<<grid,block>>>(B.x_r, B.uB_r, xnew-xold, unew, totalPoints);
+	logger.stopTimer("moveBody");
+}
+
 /**
  * \brief Writes numerical solution at current time-step,
  *        as well as the number of iterations performed in each solver.
  */
-void luoIBM::writeCommon()
+void luo_base::writeCommon()
 {
 	NavierStokesSolver::writeCommon();
 	parameterDB  &db = *NavierStokesSolver::paramDB;
@@ -122,25 +161,65 @@ void luoIBM::writeCommon()
 
 	// write the number of iterations for each solve
 	iterationsFile << timeStep << '\t' << iterationCount1 << '\t' << iterationCount2 << std::endl;
+	if (timeStep == 1)
+	{
+		midPositionFile << "timeStep"
+						<< "\t" << "X"
+						<< "\t" << "Y"
+						<< "\t" << "U"
+						<< "\t" << "V" << std::endl; //flag this is formatted quite properly
+	}
+	midPositionFile << timeStep
+					<< "\t" << B.midX
+					<< "\t" << B.midY
+					<< "\t" << B.centerVelocityU
+					<< "\t" << B.centerVelocityV <<std::endl;
+}
+
+void luo_base::stepTime()
+{
+	_intermediate_velocity();
+
+	_pressure();
+
+	_project_velocity();
+
+	_post_step();
 }
 
 void luo_base::_intermediate_velocity()
-{
-	generateRHS1();
-	solveIntermediateVelocity();
-	weightUhat();
-}
+{}
 void luo_base::_pressure()
+{}
+void luo_base::_post_step()
 {
-	generateRHS2();
-	solvePoisson();
-	weightPressure();
+	//Release the body after a certain timestep
+	if (timeStep >= (*paramDB)["simulation"]["startStep"].get<int>())
+	{
+		moveBody();
+		updateSolver();
+		CFL();
+	}
+
+	//update time
+	timeStep++;
+	std::cout<<timeStep<<std::endl;
+
+	//print stuff if its done
+	if (timeStep%(*paramDB)["simulation"]["nt"].get<int>() == 0)
+	{
+		std::cout<<"Maximun CFL: " << cfl_max << std::endl;
+		std::cout<<"Expected CFL: " << (*paramDB)["simulation"]["dt"].get<double>()*bc[XMINUS][0]/domInfo->mid_h << std::endl;
+		std::cout<<"CFL I: " << cfl_I << std::endl;
+		std::cout<<"CFL J: " << cfl_J << std::endl;
+		std::cout<<"CFL ts: " << cfl_ts << std::endl;
+	}
 }
 
 /**
  * \brief Prints timing information and closes the different files.
  */
-void luoIBM::shutDown()
+void luo_base::shutDown()
 {
 	NavierStokesSolver::shutDown();
 	forceFile.close();

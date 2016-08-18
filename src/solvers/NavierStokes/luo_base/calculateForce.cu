@@ -4,10 +4,10 @@
  * \author Christopher Minar (minarc@oregonstate.edu)
  * \brief functions to invoke kernels that will calculate the force on the immersed body
  */
-#include <solvers/NavierStokes/luoIBM.h>
+#include <solvers/NavierStokes/luo_base.h>
 
 #include <solvers/NavierStokes/FadlunModified/kernels/calculateForce.h>
-#include <solvers/NavierStokes/luoIBM/kernels/calculateForce.h>
+#include <solvers/NavierStokes/luo_baseIBM/kernels/calculateForce.h>
 
 /**
  * \brief Calculates forces acting on an immersed body (on the device).
@@ -18,7 +18,7 @@
  * does not involve any body forces on the immersed boundary.
  * Currently works only for one body.
  */
-void luoIBM::calculateForce()
+void luo_base::calculateForce()
 {
 	// Calculating drag
 	cusp::array1d<double, cusp::device_memory>
@@ -74,7 +74,7 @@ void luoIBM::calculateForce()
 	B.forceY = thrust::reduce(FyX.begin(), FyX.end()) + thrust::reduce(FyY.begin(), FyY.end()) + thrust::reduce(FyU.begin(), FyU.end());
 }
 
-void luoIBM::luoForce()
+void luo_base::luoForce()
 {
 	const int blocksize = 256;
 	dim3 grid( int( (B.totalPoints-0.5)/blocksize ) +1, 1);

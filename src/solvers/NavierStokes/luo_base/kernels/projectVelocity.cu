@@ -22,7 +22,7 @@ void project_velocity_luo_X(double *u, double *uhat, double *uold, double *press
 	if (i >= numU)
 		return;
 
-	//uold[i] = u[i];
+	uold[i] = u[i];
 
 	u[i] = uhat[i] - dt*(pressure[ip+1]-pressure[ip]) / (0.5*dx[I+1]+0.5*dx[I]);
 }
@@ -42,7 +42,7 @@ void project_velocity_luo_Y(double *u, double *uhat, double *uold, double *press
 	if (i >= numUV)
 		return;
 
-	//uold[i] = u[i];
+	uold[i] = u[i];
 
 	u[i] = uhat[i] - dt*(pressure[ip+nx]-pressure[ip]) / (0.5*dy[J+1]+0.5*dy[J]);
 }

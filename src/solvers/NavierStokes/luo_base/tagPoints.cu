@@ -9,12 +9,12 @@
  * \brief Tags the forcing nodes among the velocity nodes, i.e. the nodes at
  *        which the velocity interpolation is performed.
  */
-#include <solvers/NavierStokes/luoIBM.h>
+#include <solvers/NavierStokes/luo_base.h>
 
-#include <solvers/NavierStokes/luoIBM/kernels/tagPoints.h>
+#include <solvers/NavierStokes/luo_base/kernels/tagPoints.h>
 #include <cusp/print.h>
 
-void luoIBM::tagPoints()
+void luo_base::tagPoints()
 {
 	logger.startTimer("tagPoints");
 	double	i_start = B.startI[0],

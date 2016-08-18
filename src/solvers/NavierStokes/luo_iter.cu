@@ -1,12 +1,12 @@
 /***************************************************************************//**
- * \file  oscCylinder.cu
+ * \file  luo_iter.cu
  * \author Christopher Minar (minarc@oregonstate.edu)
  * \based on code by Anush Krishnan (anush@bu.edu)
- * \brief Declaration of the class oscCylinder.
+ * \brief Declaration of the class luo_iter.
  */
 
-#include <solvers/NavierStokes/oscCylinder/kernels/structure.h>
-#include "oscCylinder.h"
+#include <solvers/NavierStokes/luo_base/kernels/structure.h>
+#include "luo_iter.h"
 #include <sys/stat.h>
 
 /**
@@ -15,47 +15,10 @@
  * \param pDB database that contains all the simulation parameters
  * \param dInfo information related to the computational grid
  */
-oscCylinder::oscCylinder(parameterDB *pDB, domain *dInfo)
+luo_iter::luo_iter(parameterDB *pDB, domain *dInfo)
 {
 	paramDB = pDB;
 	domInfo = dInfo;
-}
-
-/**
- * \brief Writes data into files.
- */
-void oscCylinder::writeData()
-{
-	logger.startTimer("output");
-	writeCommon();
-	if (timeStep == 0)
-		forceFile<<"timestep\tFx\tFy\n";
-	forceFile << timeStep*dt << '\t' << B.forceX << '\t' << B.forceY << std::endl;
-	logger.stopTimer("output");
-}
-
-/**
- * \brief Writes numerical solution at current time-step,
- *        as well as the number of iterations performed in each solver,
- *        the force,
- *        and the middle position of the body (calculated as an average of all the nodes)
- */
-void oscCylinder::writeCommon()
-{
-	luoIBM::writeCommon();
-	if (timeStep == 1)
-	{
-		midPositionFile << "timeStep"
-						<< std::setw(16) << "X"
-						<< std::setw(16) << "Y"
-						<< std::setw(16) << "U"
-						<< std::setw(16) << "V" << std::endl; //flag this is formatted quite properly
-	}
-	midPositionFile << timeStep << "\t"
-					<< std::setw(16) << std::setprecision(4) << std::fixed << B.midX << "\t"
-					<< std::setw(16) << std::setprecision(4) << std::fixed << B.midY << "\t"
-					<< std::setw(16) << std::setprecision(4) << std::fixed << B.centerVelocityU << "\t"
-					<< std::setw(16) << std::setprecision(4) << std::fixed << B.centerVelocityV <<std::endl;
 }
 
 /*
@@ -65,7 +28,7 @@ void oscCylinder::writeCommon()
  * Remakes LHS matricies
  * updates Preconditioners
  */
-void oscCylinder::updateSolver()
+void luo_iter::updateSolver()
 {
 	logger.startTimer("Bounding Boxes");
 	B.calculateBoundingBoxes(*paramDB, *domInfo);//flag this isn't really needed because the body never moves out of the bounding box
@@ -88,7 +51,7 @@ void oscCylinder::updateSolver()
  * Moves body
  */
 //flag this could probably be done with B.update
-void oscCylinder::moveBody()
+void luo_iter::moveBody()
 {
 	calculateForce();
 	//luoForce();
@@ -124,10 +87,10 @@ void oscCylinder::moveBody()
 /*
  * initialise the simulation
  */
-void oscCylinder::initialise()
+void luo_iter::initialise()
 {
 	luoIBM::initialise();
-	oscCylinder::cast();
+	luo_iter::cast();
 
 	//output
 	parameterDB  &db = *paramDB;
@@ -177,7 +140,7 @@ void oscCylinder::initialise()
 /**
  * \brief Calculates the variables at the next time step.
  */
-void oscCylinder::stepTime()
+void luo_iter::stepTime()
 {
 	int val = 1;
 	for (int i=0; i<val; i++)
@@ -217,7 +180,7 @@ void oscCylinder::stepTime()
 /**
  * \brief Prints timing information and closes the different files.
  */
-void oscCylinder::shutDown()
+void luo_iter::shutDown()
 {
 	luoIBM::shutDown();
 	midPositionFile.close();
