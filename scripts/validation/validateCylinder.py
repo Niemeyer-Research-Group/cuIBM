@@ -42,7 +42,6 @@ print "-"*80
 print "Plotting the drag coefficient for flow over an impulsively started circular cylinder at Reynolds number %s" % Re
 print "-"*80
 
-gnuplotFile    = caseFolder + '/cylinderRe' + Re + '.plt'
 outFile        = caseFolder + '/cylRe' + Re + 'Drag.pdf'
 
 my_data = genfromtxt('%s/forces' % caseFolder,dtype=float,delimiter='\t')

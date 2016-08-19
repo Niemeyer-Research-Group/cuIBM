@@ -21,6 +21,17 @@ luo_iter::luo_iter(parameterDB *pDB, domain *dInfo)
 	domInfo = dInfo;
 }
 
+void luo_iter::writeData()
+{
+	luo_base::writeData();
+}
+
+void luo_iter::writeCommon()
+{
+	luo_base::writeCommon();
+}
+
+
 /*
  * Calculates new cell indices
  * Calculates new body bounding boxes

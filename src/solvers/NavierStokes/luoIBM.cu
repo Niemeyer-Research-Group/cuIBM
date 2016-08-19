@@ -25,7 +25,7 @@ luoIBM::luoIBM(parameterDB *pDB, domain *dInfo)
  */
 void luoIBM::initialise()
 {
-	NavierStokesSolver::initialiseNoBody();
+	luo_base::initialise();
 	logger.startTimer("initialise");
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -33,39 +33,19 @@ void luoIBM::initialise()
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	luoIBM::cast();
 
-	std::cout << "Luo IBM resized and cast!" << std::endl;
-	////////////////////////////////////////////////////////////////////////////////////////////////
-	//Initialize Bodies
-	////////////////////////////////////////////////////////////////////////////////////////////////
-	B.initialise((*paramDB), *domInfo);
-	std::cout << "Initialised bodies!" << std::endl;
-
-	/////////////////////////////////////////////////////////////////////////////////////////////////
-	//TAG POINTS
-	/////////////////////////////////////////////////////////////////////////////////////////////////
-	tagPoints();
-	std::cout << "Tagged points!" << std::endl;
+	std::cout << "luoIBM: resized and cast!" << std::endl;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	//Initialize Velocity
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	zeroVelocity();//sets the velocity inside the body to 0
-	std::cout << "Inside velocity set to body velocity!" << std::endl;
+	std::cout << "luoIBM: Inside velocity set to body velocity!" << std::endl;
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	//LHS
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	initialiseLHS();
-	std::cout << "LHS Initialised!" << std::endl;
-
-	/////////////////////////////////////////////////////////////////////////////////////////////////
-	//OUTPUT
-	/////////////////////////////////////////////////////////////////////////////////////////////////
-	parameterDB  &db = *NavierStokesSolver::paramDB;
-	std::string folder = db["inputs"]["caseFolder"].get<std::string>();
-	std::stringstream out;
-	out << folder << "/forces";
-	forceFile.open(out.str().c_str());
+	std::cout << "luoIBM: LHS Initialised!" << std::endl;
 
 	logger.stopTimer("initialise");
 }
@@ -79,7 +59,6 @@ void luoIBM::initialiseLHS()
 	generateLHS2();
 
 	PC.generate(LHS1,LHS2, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>(), (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
-	std::cout << "Assembled LUO LHS matrices!" << std::endl;
 }
 
 /**
@@ -109,19 +88,7 @@ void luoIBM::writeData()
  */
 void luoIBM::writeCommon()
 {
-	NavierStokesSolver::writeCommon();
-	parameterDB  &db = *NavierStokesSolver::paramDB;
-	int nsave = db["simulation"]["nsave"].get<int>();
-	std::string folder = db["inputs"]["caseFolder"].get<std::string>();
-
-	// write body output
-	if (timeStep % nsave == 0)
-	{
-		B.writeToFile(folder, NavierStokesSolver::timeStep);
-	}
-
-	// write the number of iterations for each solve
-	iterationsFile << timeStep << '\t' << iterationCount1 << '\t' << iterationCount2 << std::endl;
+	luo_base::writeCommon();
 }
 
 void luoIBM::_intermediate_velocity()
@@ -142,6 +109,5 @@ void luoIBM::_pressure()
  */
 void luoIBM::shutDown()
 {
-	NavierStokesSolver::shutDown();
-	forceFile.close();
+	luo_base::shutDown();
 }

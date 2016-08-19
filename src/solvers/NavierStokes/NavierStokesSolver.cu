@@ -43,13 +43,13 @@ void NavierStokesSolver::initialise()
  */
 void NavierStokesSolver::initialiseNoBody()
 {
-	printf("NS initalising\n");
+	printf("Initalising...\n");
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	//Resize and Cast
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	NavierStokesSolver::cast();
 
-	std::cout << "Arrays resized and cast!" << std::endl;
+	std::cout << "NavierStokesSolver: Arrays resized and cast!" << std::endl;
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	//COMMON STUFF
 	//////////////////////////////////////////////////////////////////////////////////////////////////
@@ -63,7 +63,7 @@ void NavierStokesSolver::initialiseNoBody()
 	// writes the grids information to a file
 	io::writeGrid(folder, *domInfo);
 
-	std::cout << "Initialised common stuff!" << std::endl;
+	std::cout << "NavierStokesSolver: Initialised common stuff!" << std::endl;
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	//ARRAYS
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -71,7 +71,7 @@ void NavierStokesSolver::initialiseNoBody()
 	cusp::blas::fill(uhat, 0);//flag
 	cusp::blas::fill(Nold, 0);//flag
 	cusp::blas::fill(N, 0);//flag
-	std::cout<<"Initialised Arrays!" <<std::endl;
+	std::cout<<"NavierStokesSolver: Initialised Arrays!" <<std::endl;
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	//Initialise velocity arrays
@@ -95,7 +95,7 @@ void NavierStokesSolver::initialiseNoBody()
 
 	uhat=u;
 
-	std::cout<<"Initialised Velocities!" <<std::endl;
+	std::cout<<"NavierStokesSolver: Initialised Velocities!" <<std::endl;
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//Initialise boundary condition arrays
@@ -126,7 +126,7 @@ void NavierStokesSolver::initialiseNoBody()
 	bc[XMINUS][ny-1] = bcInfo[XMINUS][0].value;
 	bc[XPLUS][ny-1]  = bcInfo[XPLUS][0].value;
 
-	std::cout << "Initialised boundary conditions!" << std::endl;
+	std::cout << "NavierStokesSolver: Initialised boundary conditions!" << std::endl;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	//OUTPUT
@@ -147,7 +147,7 @@ void NavierStokesSolver::initialiseLHS()
 	generateLHS2();
 
 	PC.generate(LHS1,LHS2, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>(), (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
-	std::cout << "Assembled LHS matrices!" << std::endl;
+	std::cout << "NavierStokesSolver: Assembled LHS matrices!" << std::endl;
 }
 
 //##############################################################################
