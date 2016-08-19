@@ -11,7 +11,7 @@
 #include <solvers/NavierStokes/luoIBM/kernels/LHS1.h> //generatelhs_luo _mid
 #include <solvers/NavierStokes/NavierStokes/kernels/LHS1.h> //lhs_bc
 #include <solvers/NavierStokes/FadlunModified/kernels/intermediateVelocity.h> //updateboundary
-#include <solvers/NavierStokes/luoIBM/kernels/biLinearInterpolation.h> //interpolate
+#include <solvers/NavierStokes/luo_base/kernels/biLinearInterpolation.h> //interpolate
 #include <solvers/NavierStokes/luoIBM/kernels/weight.h>//weighting function
 
 void luoIBM::generateRHS1()
@@ -50,22 +50,6 @@ void luoIBM::generateRHS1()
 	//sum rhs components
 	kernels::generateRHS<<<dimGridUV,dimBlockUV>>>(rhs1_r, L_r, Nold_r, N_r, u_r, bc1_r, dt, nx, ny);
 	logger.stopTimer("RHS1 Setup");
-}
-
-void luoIBM::updateRobinBoundary()
-{
-	NavierStokesSolver::logger.startTimer("update Boundary");
-	double 	Uinf = 1, //need a better way to enforce these, ie read from yaml file
-			Vinf = 1;
-
-	const int blocksize = 256;
-	dim3 dimGridBCX( int(ny/blocksize) + 1, 1);
-	dim3 dimGridBCY( int(nx/blocksize) + 1, 1);
-	dim3 dimBlockBC(blocksize, 1);
-
-	kernels::updateBoundaryX<<<dimGridBCX,dimBlockBC>>>(u_r, xp_r, dx_r, dt, Uinf, nx, ny);
-	kernels::updateBoundaryY<<<dimGridBCY,dimBlockBC>>>(u_r, xp_r, dx_r, dt, Vinf, nx, ny);
-	NavierStokesSolver::logger.stopTimer("update Boundary");
 }
 
 void luoIBM::generateLHS1()

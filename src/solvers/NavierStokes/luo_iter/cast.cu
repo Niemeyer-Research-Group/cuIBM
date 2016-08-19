@@ -1,6 +1,6 @@
-#include <solvers/NavierStokes/oscCylinder.h>
+#include <solvers/NavierStokes/luo_iter.h>
 
-void oscCylinder::cast()
+void luo_iter::cast()
 {
 
 }

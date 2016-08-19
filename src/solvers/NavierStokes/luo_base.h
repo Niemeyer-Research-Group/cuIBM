@@ -192,6 +192,7 @@ public:
 	virtual void writeData();
 	virtual void writeCommon();
 	virtual void shutDown();
+	virtual void stepTime();
 	virtual void _intermediate_velocity();
 	virtual void _pressure();
 	virtual void _post_step();

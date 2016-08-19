@@ -124,13 +124,13 @@ void luoIBM::writeCommon()
 	iterationsFile << timeStep << '\t' << iterationCount1 << '\t' << iterationCount2 << std::endl;
 }
 
-void luo_base::_intermediate_velocity()
+void luoIBM::_intermediate_velocity()
 {
 	generateRHS1();
 	solveIntermediateVelocity();
 	weightUhat();
 }
-void luo_base::_pressure()
+void luoIBM::_pressure()
 {
 	generateRHS2();
 	solvePoisson();

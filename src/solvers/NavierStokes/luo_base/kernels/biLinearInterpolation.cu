@@ -618,7 +618,6 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 									double *uB, double *uB0, double *vB, double  *vB0, double *yu, double *yv, double *xu, double *xv,
 									double *body_intercept_p_x, double *body_intercept_p_y, double *image_point_p_x, double *image_point_p_y,
 									int *i_start, int *j_start, int width, int nx, int ny, double dt,
-									double *dudt, double *ududx, double *vdudy, double *dvdt, double *udvdx, double *vdvdy,
 									double *a0, double *a1, double *a2, double *a3,
 									double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4, int timeStep)//test
 {
@@ -1126,7 +1125,6 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 		a42 = n_x/nl;
 		a43 = n_y/nl;
 		a44 = a43*x4[ip]+a42*y4[ip];
-		vdvdy[ip] = 4;
 	}
 	//solve equation for bilinear interpolation of values to image point
 	//http://www.cg.info.hiroshima-cu.ac.jp/~miyazaki/knowledge/teche23.html  //for solving a 4x4 matrix exactly
@@ -1187,13 +1185,7 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 	 a2[ip] = b31/detA*q1[ip]  +  b32/detA*q2[ip]  +  b33/detA*q3[ip]  +  b34/detA*q4[ip];
 	 a3[ip] = b41/detA*q1[ip]  +  b42/detA*q2[ip]  +  b43/detA*q3[ip]  +  b44/detA*q4[ip];
 
-	//dudt[ip] = du_dt;
-	//ududx[ip] = u_du_dx;
 	pressureStar[ip] = a0[ip] + a1[ip]*xv[I] + a2[ip]*yu[J] + a3[ip]*xv[I]*yu[J];
-	dudt[ip] = a0[ip] + a1[ip]*image_point_p_x[ip] + a2[ip]*image_point_p_y[ip] + a3[ip]*image_point_p_x[ip]*image_point_p_y[ip];
-	ududx[ip] = a0[ip] + a1[ip]*body_intercept_p_x[ip] + a2[ip]*body_intercept_p_y[ip] + a3[ip]*body_intercept_p_x[ip]*body_intercept_p_y[ip];
-	vdudy[ip] = xv[I];
-	dvdt[ip] = yu[J];
 }
 
 //flag this function is a mess
@@ -1202,7 +1194,6 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 									double *uB, double *uB0, double *vB, double  *vB0, double *yu, double *yv, double *xu, double *xv,
 									double *body_intercept_p_x, double *body_intercept_p_y, double *image_point_p_x, double *image_point_p_y, double *body_intercept_p,
 									int *i_start, int *j_start, int width, int nx, int ny, double dt,
-									double *dudt, double *ududx, double *vdudy, double *dvdt, double *udvdx, double *vdvdy,
 									double *a0, double *a1, double *a2, double *a3,
 									double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4)//test
 {
@@ -1589,13 +1580,6 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 	double image_point_pressure = a0[ip] + a1[ip]*image_point_p_x[ip]    + a2[ip]*image_point_p_y[ip]    + a3[ip] * image_point_p_y[ip]   *image_point_p_x[ip];
 	body_intercept_p[ip]        = a0[ip] + a1[ip]*body_intercept_p_x[ip] + a2[ip]*body_intercept_p_y[ip] + a3[ip] * body_intercept_p_x[ip]*body_intercept_p_y[ip]; //used for force calc
 
-	/*dudt[ip] = du_dt;
-	ududx[ip] = u_du_dx;
-	vdudy[ip] = v_du_dy;
-	dvdt[ip] = dv_dt;
-	udvdx[ip] = u_dv_dx;
-	vdvdy[ip] = v_dv_dy;
-	dudt[ip] = matDClose;*/
 	//extrapolate pressure to the ghost node
 	pressure[ip] = image_point_pressure + sqrt(pow(image_point_p_x[ip]-xv[I],2)+pow(image_point_p_y[ip]-yu[J],2))*matDClose;
 }

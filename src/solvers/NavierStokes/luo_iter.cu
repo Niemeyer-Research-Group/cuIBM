@@ -89,7 +89,7 @@ void luo_iter::moveBody()
  */
 void luo_iter::initialise()
 {
-	luoIBM::initialise();
+	luo_base::initialise();
 	luo_iter::cast();
 
 	//output
@@ -147,11 +147,11 @@ void luo_iter::stepTime()
 	{
 	generateRHS1();
 	solveIntermediateVelocity();
-	weightUhat();
+	//weightUhat();
 
 	generateRHS2();
 	solvePoisson();
-	weightPressure();
+	//weightPressure();
 
 	if (i == val-1)
 		uold = u;
@@ -182,6 +182,6 @@ void luo_iter::stepTime()
  */
 void luo_iter::shutDown()
 {
-	luoIBM::shutDown();
+	luo_iter::shutDown();
 	midPositionFile.close();
 }

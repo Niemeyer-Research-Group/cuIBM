@@ -18,7 +18,7 @@
 #include "io/io.h"
 #include "solvers/NavierStokes/NavierStokesSolver.h"
 #include "solvers/NavierStokes/FSI.h"
-#include "solvers/NavierStokes/oscCylinder.h"
+#include "solvers/NavierStokes/luo_iter.h"
 #include "solvers/NavierStokes/fadlunModified.h"
 #include "solvers/NavierStokes/luoIBM.h"
 #include "types.h"
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
 		solver = new fadlunModified(&paramDB, &dom_info);
 		break;
 	case OSC:
-		solver = new oscCylinder(&paramDB, &dom_info);
+		solver = new luo_iter(&paramDB, &dom_info);
 		break;
 	case LUO:
 		solver = new luoIBM(&paramDB, &dom_info);

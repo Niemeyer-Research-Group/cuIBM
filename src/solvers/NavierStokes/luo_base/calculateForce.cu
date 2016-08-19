@@ -7,7 +7,7 @@
 #include <solvers/NavierStokes/luo_base.h>
 
 #include <solvers/NavierStokes/FadlunModified/kernels/calculateForce.h>
-#include <solvers/NavierStokes/luo_baseIBM/kernels/calculateForce.h>
+#include <solvers/NavierStokes/luo_base/kernels/calculateForce.h>
 
 /**
  * \brief Calculates forces acting on an immersed body (on the device).

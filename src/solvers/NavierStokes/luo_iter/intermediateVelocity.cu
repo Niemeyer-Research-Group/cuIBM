@@ -3,13 +3,13 @@
  * \author Christopher Minar (minarc@oregonstate.edu)
  * \brief functions to invoke the kernels that setup the intermediate velocity solve
  */
-#include <solvers/NavierStokes/oscCylinder.h>
+#include <solvers/NavierStokes/luo_iter.h>
 
-#include <solvers/NavierStokes/oscCylinder/kernels/intermediateVelocity.h>
-#include <solvers/NavierStokes/luoIBM/kernels/biLinearInterpolation.h> //interpolate
+#include <solvers/NavierStokes/luo_iter/kernels/intermediateVelocity.h>
+#include <solvers/NavierStokes/luo_base/kernels/biLinearInterpolation.h> //interpolate
 
 
-void oscCylinder::preRHS1Interpolation()
+void luo_iter::preRHS1Interpolation()
 {
 	logger.startTimer("RHS1 Interpolation");
 
@@ -43,7 +43,7 @@ void oscCylinder::preRHS1Interpolation()
 	logger.stopTimer("RHS1 Interpolation");
 }
 
-void oscCylinder::setVelocityInside()
+void luo_iter::setVelocityInside()
 {
 	const int blocksize = 256;
 	dim3 grid( int( ((nx-1)*ny-0.5)/blocksize ) +1, 1);

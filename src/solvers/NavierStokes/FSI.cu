@@ -5,7 +5,7 @@
  * \brief Declaration of the class FSI.
  */
 
-#include <solvers/NavierStokes/oscCylinder/kernels/structure.h>
+#include <solvers/NavierStokes/luo_base/kernels/structure.h>
 #include "FSI.h"
 #include <solvers/NavierStokes/NavierStokes/kernels/intermediatePressure.h>
 #include <sys/stat.h>

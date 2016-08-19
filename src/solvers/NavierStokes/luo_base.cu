@@ -7,6 +7,7 @@
 
 #include "luo_base.h"
 #include <sys/stat.h>
+#include <solvers/NavierStokes/luo_base/kernels/structure.h>
 
 /**
  * \brief Constructor. Copies the database and information about the computational grid.

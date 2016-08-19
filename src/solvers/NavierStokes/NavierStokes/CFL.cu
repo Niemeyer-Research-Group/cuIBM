@@ -3,9 +3,9 @@
  * \author Christopher Minar (minarc@oregonstate.edu)
  * \brief functions to invoke the kernels that setup the intermediate velocity solve
  */
-#include <solvers/NavierStokes/oscCylinder.h>
+#include <solvers/NavierStokes/NavierStokesSolver.h>
 
-#include <solvers/NavierStokes/oscCylinder/kernels/CFL.h>
+#include <solvers/NavierStokes/NavierStokes/kernels/CFL.h>
 
 void NavierStokesSolver::CFL()
 {
