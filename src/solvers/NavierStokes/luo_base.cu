@@ -55,6 +55,10 @@ void luo_base::initialise()
 	std::stringstream out;
 	out << folder << "/forces";
 	forceFile.open(out.str().c_str());
+	std::string folder2 = db["inputs"]["caseFolder"].get<std::string>();
+	std::stringstream outPosition2;
+	outPosition2 << folder2 <<"/midPosition";
+	midPositionFile.open(outPosition2.str().c_str());
 
 	logger.stopTimer("initialise");
 }
@@ -225,5 +229,4 @@ void luo_base::shutDown()
 	NavierStokesSolver::shutDown();
 	forceFile.close();
 	midPositionFile.close();
-	std::cout<<"closing forcefile\n\n";
 }

@@ -22,93 +22,17 @@ luo_iter::luo_iter(parameterDB *pDB, domain *dInfo)
 }
 
 void luo_iter::writeData()
-{
-	luo_base::writeData();
-}
+{luo_base::writeData();}
 
 void luo_iter::writeCommon()
-{
-	luo_base::writeCommon();
-}
+{luo_base::writeCommon();}
 
-
-/*
- * Calculates new cell indices
- * Calculates new body bounding boxes
- * Tags Points
- * Remakes LHS matricies
- * updates Preconditioners
- */
-void luo_iter::updateSolver()
-{
-	logger.startTimer("Bounding Boxes");
-	B.calculateBoundingBoxes(*paramDB, *domInfo);//flag this isn't really needed because the body never moves out of the bounding box
-	logger.stopTimer("Bounding Boxes");
-
-	tagPoints();
-	generateLHS1();//is this needed?
-	generateLHS2();
-
-	logger.startTimer("Preconditioner");
-	if (iterationCount2 > 100)
-	{
-		PC.update(LHS1, LHS2);
-	}
-	logger.stopTimer("Preconditioner");
-}
-
-/*
- * Calculates Force
- * Moves body
- */
-//flag this could probably be done with B.update
-void luo_iter::moveBody()
-{
-	calculateForce();
-	//luoForce();
-
-	logger.startTimer("moveBody");
-	double	t = dt*timeStep,
-			f = B.frequency,
-			xCoeff = B.xCoeff,
-			uCoeff = B.uCoeff,
-			xPhase = B.xPhase,
-			uPhase = B.uPhase,
-			totalPoints=B.totalPoints,
-			xold= B.midX,
-			unew,
-			xnew;
-
-	//xnew = -1/(2*M_PI)*sin(2*M_PI*f*t);
-	//unew = -f*cos(2*M_PI*f*t);
-	xnew = xCoeff*sin(2*M_PI*f*t + xPhase);
-	unew = uCoeff*cos(2*M_PI*f*t + uPhase);
-
-	B.centerVelocityU = unew;
-	B.midX = xnew;
-
-	const int blocksize = 256;
-	dim3 grid( int( (totalPoints)/blocksize ) +1, 1);
-	dim3 block(blocksize, 1);
-	B.uBk = B.uB;
-	kernels::update_body_viv<<<grid,block>>>(B.x_r, B.uB_r, xnew-xold, unew, totalPoints);
-	logger.stopTimer("moveBody");
-}
-
-/*
- * initialise the simulation
- */
 void luo_iter::initialise()
 {
 	luo_base::initialise();
 	luo_iter::cast();
 
-	//output
 	parameterDB  &db = *paramDB;
-	std::string folder = db["inputs"]["caseFolder"].get<std::string>();
-	std::stringstream outPosition;
-	outPosition << folder <<"/midPosition";
-	midPositionFile.open(outPosition.str().c_str());
 
 	double	dt	= db["simulation"]["dt"].get<double>(),
 			nu	= db["flow"]["nu"].get<double>(),
@@ -148,51 +72,13 @@ void luo_iter::initialise()
 																	//it effects du/dt for the calcualtion of the material derivative in the bilinear interp functions, its overall effect is pretty minimal
 }
 
-/**
- * \brief Calculates the variables at the next time step.
- */
-void luo_iter::stepTime()
+void luo_iter::_intermediate_velocity()
 {
-	int val = 1;
-	for (int i=0; i<val; i++)
-	{
-	generateRHS1();
+	intermediate_velocity_setup();
 	solveIntermediateVelocity();
-	//weightUhat();
-
-	generateRHS2();
-	solvePoisson();
-	//weightPressure();
-
-	if (i == val-1)
-		uold = u;
-	velocityProjection();
-	}
-	//Release the body after a certain timestep
-	if (timeStep >= (*paramDB)["simulation"]["startStep"].get<int>())
-	{
-		moveBody();
-		updateSolver();
-		CFL();
-	}
-
-	timeStep++;
-	std::cout<<timeStep<<std::endl;
-	if (timeStep%(*paramDB)["simulation"]["nt"].get<int>() == 0)
-	{
-		std::cout<<"Maximun CFL: " << cfl_max << std::endl;
-		std::cout<<"Expected CFL: " << (*paramDB)["simulation"]["dt"].get<double>()*bc[XMINUS][0]/domInfo->mid_h << std::endl;
-		std::cout<<"CFL I: " << cfl_I << std::endl;
-		std::cout<<"CFL J: " << cfl_J << std::endl;
-		std::cout<<"CFL ts: " << cfl_ts << std::endl;
-	}
 }
-
-/**
- * \brief Prints timing information and closes the different files.
- */
-void luo_iter::shutDown()
+void luo_iter::_pressure()
 {
-	luo_iter::shutDown();
-	midPositionFile.close();
+	//poisson_setup();
+	solvePoisson();
 }

@@ -13,16 +13,6 @@
 class luo_iter: public luo_base
 {
 protected:
-	//////////////////////////
-	//luo_iter.h
-	//////////////////////////
-	void updateSolver();
-	void moveBody();
-
-	//////////////////////////
-	//IntermediateVelocity
-	//////////////////////////
-	void setVelocityInside();
 
 public:
 	//////////////////////////
@@ -30,15 +20,25 @@ public:
 	//////////////////////////
 	luo_iter(parameterDB *pDB=NULL, domain *dInfo=NULL);
 	virtual void initialise();
-	virtual void stepTime();
 	virtual void writeData();
 	virtual void writeCommon();
-	virtual void shutDown();
+	virtual void _intermediate_velocity();
+	virtual void _pressure();
 
 	//////////////////////////
-	//IntermediateVelocity
+	//IntermediateVelocity.cu
 	//////////////////////////
-	virtual void preRHS1Interpolation();
+	void intermediate_velocity_setup();
+		void intermediate_velocity_alpha();
+		void intermediate_velocity_interpolation_setup();
+		void intermediate_velocity_size_lhs();
+		void intermediate_velocity_calculate_lhs();
+		void intermediate_velocity_update_rhs();
+
+	//////////////////////////
+	//Poisson.cu
+	//////////////////////////
+	void poisson_setup();
 
 	virtual void cast();
 };
