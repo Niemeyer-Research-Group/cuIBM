@@ -18,7 +18,12 @@ protected:
 		ghostTagsP,			///< pressure nodes just inside the boundary  (tagsP)
 		hybridTagsUV,		///< velocity nodes just outside the boundary (tags)
 		hybridTagsUV2,		///< velocity nodes 2 outside the boundary    (tags2)
-		hybridTagsP;		///< pressure nodes just outside the boundary (tagsPout)
+		hybridTagsP,		///< pressure nodes just outside the boundary (tagsPout)
+		index1,
+		index2,
+		index3,
+		index4,
+		count;
 
 
 	cusp::array1d<double, cusp::device_memory>
@@ -78,6 +83,26 @@ protected:
 		a1,
 		a2,
 		a3,
+		alpha,
+		detA,
+		b11,
+		b12,
+		b13,
+		b14,
+		b21,
+		b22,
+		b23,
+		b24,
+		b31,
+		b32,
+		b33,
+		b34,
+		b41,
+		b42,
+		b43,
+		b44,
+		ns_rhs,
+		interp_rhs,
 		dudt,
 		ududx,
 		vdudy,
@@ -89,7 +114,12 @@ protected:
 		*ghostTagsP_r,
 		*hybridTagsUV_r,
 		*hybridTagsP_r,
-		*hybridTagsUV2_r;
+		*hybridTagsUV2_r,
+		*index1_r,
+		*index2_r,
+		*index3_r,
+		*index4_r,
+		*count_r;
 
 	double	*pressureStar_r,
 			*ustar_r,
@@ -106,7 +136,8 @@ protected:
 			*distance_between_nodes_at_IB_r,
 			*distance_from_u_to_body_r,
 			*distance_from_v_to_body_r,
-			*uv_r;
+			*uv_r,
+			*alpha_r;
 
 	double	*x1_ip_r,
 			*x2_ip_r,
@@ -144,7 +175,26 @@ protected:
 			*a0_r,
 			*a1_r,
 			*a2_r,
-			*a3_r;
+			*a3_r,
+			*b11_r,
+			*b12_r,
+			*b13_r,
+			*b14_r,
+			*b21_r,
+			*b22_r,
+			*b23_r,
+			*b24_r,
+			*b31_r,
+			*b32_r,
+			*b33_r,
+			*b34_r,
+			*b41_r,
+			*b42_r,
+			*b43_r,
+			*b44_r,
+			*detA_r,
+			*ns_rhs_r,
+			*interp_rhs_r;
 
 	bodies 	B;		///< bodies in the flow
 

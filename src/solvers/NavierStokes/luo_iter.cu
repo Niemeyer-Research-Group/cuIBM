@@ -75,7 +75,9 @@ void luo_iter::initialise()
 void luo_iter::_intermediate_velocity()
 {
 	intermediate_velocity_setup();
+	arrayprint(ghostTagsUV,"gtuv","y",-1);
 	solveIntermediateVelocity();
+	arrayprint(uhat, "uhat","x",-1);
 }
 void luo_iter::_pressure()
 {

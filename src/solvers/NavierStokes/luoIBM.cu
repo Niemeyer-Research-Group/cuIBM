@@ -58,7 +58,8 @@ void luoIBM::initialiseLHS()
 	generateLHS1();
 	generateLHS2();
 
-	PC.generate(LHS1,LHS2, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>(), (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
+	PC.generate1(LHS1, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>());
+	PC.generate1(LHS2, (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
 }
 
 /**
@@ -94,6 +95,7 @@ void luoIBM::writeCommon()
 void luoIBM::_intermediate_velocity()
 {
 	generateRHS1();
+	//arrayprint(rhs1,"rhs1","x",-1);
 	solveIntermediateVelocity();
 	weightUhat();
 }

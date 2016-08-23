@@ -79,7 +79,8 @@ void fadlunModified::initialiseLHS()
 	generateLHS1();
 	generateLHS2();
 
-	NavierStokesSolver::PC.generate(NavierStokesSolver::LHS1,NavierStokesSolver::LHS2, db["velocitySolve"]["preconditioner"].get<preconditionerType>(), db["PoissonSolve"]["preconditioner"].get<preconditionerType>());
+	NavierStokesSolver::PC.generate1(NavierStokesSolver::LHS1, db["velocitySolve"]["preconditioner"].get<preconditionerType>());
+	NavierStokesSolver::PC.generate2(NavierStokesSolver::LHS2, db["PoissonSolve"]["preconditioner"].get<preconditionerType>());
 	std::cout << "Assembled FADLUN LHS matrices!" << std::endl;
 }
 

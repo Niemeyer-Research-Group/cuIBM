@@ -104,7 +104,8 @@ void luo_base::updateSolver()
 	logger.startTimer("Preconditioner");
 	if (iterationCount2 > 100)
 	{
-		PC.update(LHS1, LHS2);
+		PC.update1(LHS1);
+		PC.update2(LHS2);
 	}
 	logger.stopTimer("Preconditioner");
 }

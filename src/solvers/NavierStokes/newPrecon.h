@@ -16,6 +16,12 @@ class newPrecon
 		*PC2;		///< preconditioner for the Poisson solver
 
 	newPrecon();
-	void generate(cusp::coo_matrix<int, double, cusp::device_memory>LHS1, cusp::coo_matrix<int, double, cusp::device_memory>LHS2, preconditionerType type1, preconditionerType type2);
-	void update(cusp::coo_matrix<int, double, cusp::device_memory>LHS1, cusp::coo_matrix<int, double, cusp::device_memory>LHS2);
+	void generate1(cusp::coo_matrix<int, double, cusp::device_memory>LHS1, preconditionerType type1);
+
+	void generate2(cusp::coo_matrix<int, double, cusp::device_memory>LHS2, preconditionerType type2);
+
+	void update1(cusp::coo_matrix<int, double, cusp::device_memory>LHS1);
+
+	void update2(cusp::coo_matrix<int, double, cusp::device_memory>LHS2);
+
 };

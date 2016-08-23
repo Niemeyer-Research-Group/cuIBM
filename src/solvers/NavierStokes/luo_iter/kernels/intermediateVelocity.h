@@ -13,5 +13,9 @@
 namespace kernels
 {
 __global__
-void setInsideVelocity(int *ghostTags, double *u, double *uB, double *vB, int nx, int ny);
+void size_LHS1(int *hybridTagsUV, int *count, int *startI, int *startJ, int width, int height, int nx, int ny);
+__global__
+void update_rhs1_x(double *rhs1, double *ns_rhs, double *interp_rhs, int nx, int ny);
+__global__
+void update_rhs1_y(double *rhs1, double *ns_rhs, double *interp_rhs, int nx, int ny);
 }

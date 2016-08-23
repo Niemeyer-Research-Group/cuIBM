@@ -6,9 +6,13 @@
 #include <solvers/NavierStokes/luo_iter.h>
 
 //kernels
-#include <solvers/NavierStokes/NavierStokes/kernels/intermediateVelocity.h> //generateRHS
-#include <solvers/NavierStokes/luo_base/kernels/intermediateVelocity.h>
+#include <solvers/NavierStokes/NavierStokes/kernels/intermediateVelocity.h> //rhs init
+#include <solvers/NavierStokes/luo_base/kernels/intermediateVelocity.h> //set inside velocity
+#include <solvers/NavierStokes/luo_iter/kernels/intermediateVelocity.h> //size lhs1, update rhs1
 #include <solvers/NavierStokes/luo_base/kernels/biLinearInterpolation.h> //interpolate
+#include <solvers/NavierStokes/luo_iter/kernels/weight.h> //alpha
+#include <solvers/NavierStokes/NavierStokes/kernels/LHS1.h> //lhs_bc
+#include <solvers/NavierStokes/luo_iter/kernels/LHS1.h> //lhs mid
 
 void luo_iter::intermediate_velocity_setup()
 {
@@ -19,7 +23,7 @@ void luo_iter::intermediate_velocity_setup()
 
 	dim3 grid( int( ((nx-1)*ny+nx*(ny-1)-0.5)/blocksize ) + 1, 1);
 	dim3 block(blocksize, 1);
-	dim3 grid_inside( int( ((nx-1)*ny-0.5)/blocksize ) +1, 1);
+	dim3 grid_inside( int( (numUV-0.5)/blocksize ) +1, 1);
 	dim3 block_inside(blocksize, 1);
 
 	//update right boundary of the domain for the convective boundary condition
@@ -44,26 +48,46 @@ void luo_iter::intermediate_velocity_setup()
 	kernels::generateRHS<<<grid,block>>>(rhs1_r, L_r, Nold_r, N_r, u_r, bc1_r, dt, nx, ny);
 
 	//calculate alpha
-	intermediate_velocity_alpha();
+	intermediate_velocity_alpha(); //done
 
 	//interpolate u and v to image points, then again to ghost nodes
-	intermediate_velocity_interpolation_setup();//here
+	intermediate_velocity_interpolation_setup();//done
 
 	//size lhs
-	intermediate_velocity_size_lhs();
+	intermediate_velocity_size_lhs();//done
 
 	//calculate lhs
-	intermediate_velocity_calculate_lhs();
+	intermediate_velocity_calculate_lhs();//done
+
+	//sort
+	LHS1.sort_by_row_and_column();
+
+	//update preconditioner
+	if (timeStep == 0)
+		PC.generate1(LHS1, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>());
+	else
+		PC.update1(LHS1);
 
 	//update rhs
-	intermediate_velocity_update_rhs();
+	intermediate_velocity_update_rhs();//done
 
 	logger.stopTimer("Intermediate Velocity Setup");
 }
 
 void luo_iter::intermediate_velocity_alpha()
 {
+	const int blocksize = 256;
 
+	dim3 grid( int( ((nx-1)*ny-0.5)/blocksize ) +1, 1);
+	dim3 block(blocksize, 1);
+
+	kernels::alpha_u<<<grid,block>>>(alpha_r, ghostTagsUV_r, hybridTagsUV_r, yu_r, xu_r,
+										body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
+										B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny);
+
+	kernels::alpha_v<<<grid,block>>>(alpha_r, ghostTagsUV_r, hybridTagsUV_r, yv_r, xv_r,
+										body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
+										B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny);
 }
 
 void luo_iter::intermediate_velocity_interpolation_setup()
@@ -82,32 +106,92 @@ void luo_iter::intermediate_velocity_interpolation_setup()
 													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
 													B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny,
 													x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r,image_point_u_r);
-
-	cusp::blas::fill(ustar,0.0);//flag not needed?
-	kernels::interpolateVelocityToHybridNodeX<<<grid,block>>>(u_r, ustar_r, hybridTagsUV_r, B.x_r, B.y_r, B.uB_r, yu_r, xu_r,
-													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
-													B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny,
-													x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r, image_point_u_r);
-	kernels::interpolateVelocityToHybridNodeY<<<grid,block>>>(u_r, ustar_r, hybridTagsUV_r, B.x_r, B.y_r, B.vB_r, yv_r, xv_r,
-													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
-													B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny,
-													x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r, image_point_u_r);
-	//testInterpX();
-	//testInterpY();
+	kernels::interpolateVelocityToHybridNodeX<<<grid,block>>>(u_r, ustar_r, hybridTagsUV_r, detA_r,
+																B.x_r, B.y_r, B.uB_r, yu_r, xu_r,
+																body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
+																B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny,
+																index1_r, index2_r, index3_r, index4_r,
+																b11_r, b12_r, b13_r, b14_r,
+																b21_r, b22_r, b23_r, b24_r,
+																b31_r, b32_r, b33_r, b34_r,
+																b41_r, b42_r, b43_r, b44_r,
+																x1_r, x2_r ,x3_r ,x4_r,
+																y1_r, y2_r, y3_r, y4_r,
+																q1_r, q2_r, q3_r, q4_r, image_point_u_r);
+	kernels::interpolateVelocityToHybridNodeY<<<grid,block>>>(u_r, ustar_r, hybridTagsUV_r, detA_r,
+																B.x_r, B.y_r, B.vB_r, yv_r, xv_r,
+																body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
+																B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny,
+																index1_r, index2_r, index3_r, index4_r,
+																b11_r, b12_r, b13_r, b14_r,
+																b21_r, b22_r, b23_r, b24_r,
+																b31_r, b32_r, b33_r, b34_r,
+																b41_r, b42_r, b43_r, b44_r,
+																x1_r, x2_r ,x3_r ,x4_r,
+																y1_r, y2_r, y3_r, y4_r,
+																q1_r, q2_r, q3_r, q4_r, image_point_u_r);
 }
 
 
 void luo_iter::intermediate_velocity_size_lhs()
 {
+	cusp::blas::fill(count, 0);
 
+	dim3 grid( 1, 1);
+	dim3 block(1, 1);
+	kernels::size_LHS1<<<grid,block>>>(hybridTagsUV_r, count_r, B.startI_r, B.startJ_r, B.numCellsXHost, B.numCellsYHost, nx, ny);
+
+	thrust::device_vector<int>::iterator iter = thrust::max_element(count.begin(),count.end());
+	unsigned int position = iter - count.begin();
+	double max_val = *iter;
+
+	LHS1.resize(numUV,numUV, (nx-1)*ny*5 - 2*(nx-1)-ny*2 + nx*(ny-1)*5 - 2*nx - 2*(ny-1) + max_val);
+
+	LHS1_row_r = thrust::raw_pointer_cast( &(LHS1.row_indices[0]) );
+	LHS1_col_r = thrust::raw_pointer_cast( &(LHS1.column_indices[0]) );
+	LHS1_val_r = thrust::raw_pointer_cast( &(LHS1.values[0]) );
 }
 
 void luo_iter::intermediate_velocity_calculate_lhs()
 {
+	const int blocksize = 256;
+	dim3 gridU( int( ((nx-1)*ny-0.5)/blocksize ) +1, 1);
+	dim3 blockU(blocksize, 1);
+	dim3 gridV( int( (nx*(ny-1)-0.5)/blocksize ) +1, 1);
+	dim3 blockV(blocksize, 1);
 
+	kernels::LHS1_mid_iter_X<<<gridU,blockU>>>(LHS1_row_r, LHS1_col_r, LHS1_val_r, dx_r, dy_r, dt, nu, nx, ny,
+													hybridTagsUV_r, ghostTagsUV_r, ns_rhs_r, interp_rhs_r, count_r,
+													index1_r, index2_r, index3_r, index4_r,
+													xu_r, yu_r, detA_r, alpha_r,
+													b11_r, b12_r, b13_r, b14_r,
+													b21_r, b22_r, b23_r, b24_r,
+													b31_r, b32_r, b33_r, b34_r,
+													b41_r, b42_r, b43_r, b44_r,
+													q1_r, q2_r, q3_r, q4_r
+													);
+
+	kernels::LHS1_mid_iter_Y<<<gridV,blockV>>>(LHS1_row_r, LHS1_col_r, LHS1_val_r, dx_r, dy_r, dt, nu, nx, ny,
+													hybridTagsUV_r, ghostTagsUV_r, ns_rhs_r, interp_rhs_r, count_r,
+													index1_r, index2_r, index3_r, index4_r,
+													xv_r, yv_r, detA_r, alpha_r,
+													b11_r, b12_r, b13_r, b14_r,
+													b21_r, b22_r, b23_r, b24_r,
+													b31_r, b32_r, b33_r, b34_r,
+													b41_r, b42_r, b43_r, b44_r,
+													q1_r, q2_r, q3_r, q4_r
+													);
+	kernels::LHS_BC_X<<<gridU,blockU>>>(LHS1_row_r, LHS1_col_r, LHS1_val_r, dx_r, dy_r, dt, nu, nx, ny);
+	kernels::LHS_BC_Y<<<gridV,blockV>>>(LHS1_row_r, LHS1_col_r, LHS1_val_r, dx_r, dy_r, dt, nu, nx, ny);
 }
 
 void luo_iter::intermediate_velocity_update_rhs()
 {
+	const int blocksize = 256;
+	dim3 gridU( int( ((nx-1)*ny-0.5)/blocksize ) +1, 1);
+	dim3 block(blocksize, 1);
+	dim3 gridV( int( (nx*(ny-1)-0.5)/blocksize ) +1, 1);
 
+	kernels::update_rhs1_x<<<gridU, block>>>(rhs1_r, ns_rhs_r, interp_rhs_r, nx, ny);
+	kernels::update_rhs1_y<<<gridU, block>>>(rhs1_r, ns_rhs_r, interp_rhs_r, nx, ny);
 }
