@@ -75,8 +75,25 @@ void luo_iter::initialise()
 void luo_iter::_intermediate_velocity()
 {
 	intermediate_velocity_setup();
-	arrayprint(ghostTagsUV,"gtuv","y",-1);
+	/*int index = 0;
+	for (int i = 0; i < numUV*5; i++)
+	{
+		if (ghostTagsUV[LHS1.row_indices[i]]>0)
+		{
+			if (LHS1.row_indices[i]>index)
+			{
+				std::cout<<"\n";
+				index = LHS1.row_indices[i];
+			}
+			std::cout<<LHS1.row_indices[i]<<"\t";
+			std::cout<<LHS1.column_indices[i]<<"\t";
+			std::cout<<LHS1.values[i]<<std::endl;
+		}
+		if (LHS1.row_indices[i]>70532)
+			break;
+	}*/
 	solveIntermediateVelocity();
+	arrayprint(ghostTagsUV,"ghostu","x",-1);
 	arrayprint(uhat, "uhat","x",-1);
 }
 void luo_iter::_pressure()

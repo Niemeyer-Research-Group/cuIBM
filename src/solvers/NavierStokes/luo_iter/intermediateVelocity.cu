@@ -48,16 +48,16 @@ void luo_iter::intermediate_velocity_setup()
 	kernels::generateRHS<<<grid,block>>>(rhs1_r, L_r, Nold_r, N_r, u_r, bc1_r, dt, nx, ny);
 
 	//calculate alpha
-	intermediate_velocity_alpha(); //done
+	intermediate_velocity_alpha();//not needed for GN
 
-	//interpolate u and v to image points, then again to ghost nodes
-	intermediate_velocity_interpolation_setup();//done
+	//interpolation setup
+	intermediate_velocity_interpolation_setup();//done for GN
 
 	//size lhs
-	intermediate_velocity_size_lhs();//done
+	intermediate_velocity_size_lhs();//not needed for GN
 
 	//calculate lhs
-	intermediate_velocity_calculate_lhs();//done
+	intermediate_velocity_calculate_lhs();//you're here
 
 	//sort
 	LHS1.sort_by_row_and_column();
@@ -98,35 +98,38 @@ void luo_iter::intermediate_velocity_interpolation_setup()
 	dim3 block(blocksize, 1);
 
 	//interpolate velocity to image point and ghost node
-	kernels::interpolateVelocityToGhostNodeX<<<grid,block>>>(u_r, ghostTagsUV_r, B.x_r, B.y_r, B.uB_r, yu_r, xu_r,
+	kernels::interpolateVelocityToGhostNodeX<<<grid,block>>>(u_r, false, ghostTagsUV_r, B.x_r, B.y_r, B.uB_r, yu_r, xu_r,
 													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
 													B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny,
-													x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r,image_point_u_r);
-	kernels::interpolateVelocityToGhostNodeY<<<grid,block>>>(u_r, ghostTagsUV_r, B.x_r, B.y_r, B.vB_r, yv_r, xv_r,
+													index1_r, index2_r, index3_r, index4_r,
+													q1coef_r, q2coef_r, q3coef_r, q4coef_r,
+													x1_r, x2_r, x3_r, x4_r,
+													y1_r, y2_r, y3_r, y4_r,
+													q1_r, q2_r, q3_r, q4_r, image_point_u_r);
+	testInterpX();
+	kernels::interpolateVelocityToGhostNodeY<<<grid,block>>>(u_r, false, ghostTagsUV_r, B.x_r, B.y_r, B.vB_r, yv_r, xv_r,
 													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
 													B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny,
-													x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r,image_point_u_r);
-	kernels::interpolateVelocityToHybridNodeX<<<grid,block>>>(u_r, ustar_r, hybridTagsUV_r, detA_r,
+													index1_r, index2_r, index3_r, index4_r,
+													q1coef_r, q2coef_r, q3coef_r, q4coef_r,
+													x1_r, x2_r, x3_r, x4_r,
+													y1_r, y2_r, y3_r, y4_r,
+													q1_r, q2_r, q3_r, q4_r, image_point_u_r);
+	kernels::interpolateVelocityToHybridNodeX<<<grid,block>>>(u_r, ustar_r, hybridTagsUV_r,
 																B.x_r, B.y_r, B.uB_r, yu_r, xu_r,
 																body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
 																B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny,
 																index1_r, index2_r, index3_r, index4_r,
-																b11_r, b12_r, b13_r, b14_r,
-																b21_r, b22_r, b23_r, b24_r,
-																b31_r, b32_r, b33_r, b34_r,
-																b41_r, b42_r, b43_r, b44_r,
+																q1coef_r, q2coef_r, q3coef_r, q4coef_r,
 																x1_r, x2_r ,x3_r ,x4_r,
 																y1_r, y2_r, y3_r, y4_r,
 																q1_r, q2_r, q3_r, q4_r, image_point_u_r);
-	kernels::interpolateVelocityToHybridNodeY<<<grid,block>>>(u_r, ustar_r, hybridTagsUV_r, detA_r,
+	kernels::interpolateVelocityToHybridNodeY<<<grid,block>>>(u_r, ustar_r, hybridTagsUV_r,
 																B.x_r, B.y_r, B.vB_r, yv_r, xv_r,
 																body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
 																B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny,
 																index1_r, index2_r, index3_r, index4_r,
-																b11_r, b12_r, b13_r, b14_r,
-																b21_r, b22_r, b23_r, b24_r,
-																b31_r, b32_r, b33_r, b34_r,
-																b41_r, b42_r, b43_r, b44_r,
+																q1coef_r, q2coef_r, q3coef_r, q4coef_r,
 																x1_r, x2_r ,x3_r ,x4_r,
 																y1_r, y2_r, y3_r, y4_r,
 																q1_r, q2_r, q3_r, q4_r, image_point_u_r);
@@ -163,22 +166,16 @@ void luo_iter::intermediate_velocity_calculate_lhs()
 	kernels::LHS1_mid_iter_X<<<gridU,blockU>>>(LHS1_row_r, LHS1_col_r, LHS1_val_r, dx_r, dy_r, dt, nu, nx, ny,
 													hybridTagsUV_r, ghostTagsUV_r, ns_rhs_r, interp_rhs_r, count_r,
 													index1_r, index2_r, index3_r, index4_r,
-													xu_r, yu_r, detA_r, alpha_r,
-													b11_r, b12_r, b13_r, b14_r,
-													b21_r, b22_r, b23_r, b24_r,
-													b31_r, b32_r, b33_r, b34_r,
-													b41_r, b42_r, b43_r, b44_r,
+													xu_r, yu_r, alpha_r, B.uB_r,
+													q1coef_r, q2coef_r, q3coef_r, q4coef_r,
 													q1_r, q2_r, q3_r, q4_r
 													);
 
 	kernels::LHS1_mid_iter_Y<<<gridV,blockV>>>(LHS1_row_r, LHS1_col_r, LHS1_val_r, dx_r, dy_r, dt, nu, nx, ny,
 													hybridTagsUV_r, ghostTagsUV_r, ns_rhs_r, interp_rhs_r, count_r,
 													index1_r, index2_r, index3_r, index4_r,
-													xv_r, yv_r, detA_r, alpha_r,
-													b11_r, b12_r, b13_r, b14_r,
-													b21_r, b22_r, b23_r, b24_r,
-													b31_r, b32_r, b33_r, b34_r,
-													b41_r, b42_r, b43_r, b44_r,
+													xv_r, yv_r, alpha_r, B.vB_r,
+													q1coef_r, q2coef_r, q3coef_r, q4coef_r,
 													q1_r, q2_r, q3_r, q4_r
 													);
 	kernels::LHS_BC_X<<<gridU,blockU>>>(LHS1_row_r, LHS1_col_r, LHS1_val_r, dx_r, dy_r, dt, nu, nx, ny);

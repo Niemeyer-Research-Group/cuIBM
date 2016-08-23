@@ -81,12 +81,20 @@ void luoIBM::preRHS2Interpolation()
 	dim3 block(blocksize, 1);
 
 	//interpolate uhat to image point and ghost node
-	kernels::interpolateVelocityToGhostNodeX<<<grid,block>>>(uhat_r, ghostTagsUV_r, B.x_r, B.y_r, B.uB_r, yu_r, xu_r,
-																body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
-																B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny,
-																x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r,image_point_u_r);
-	kernels::interpolateVelocityToGhostNodeY<<<grid,block>>>(uhat_r, ghostTagsUV_r, B.x_r, B.y_r, B.vB_r, yv_r, xv_r,
-																body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
-																B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny,
-																x1_r,x2_r,x3_r,x4_r,y1_r,y2_r,y3_r,y4_r,q1_r,q2_r,q3_r,q4_r,image_point_u_r);
+	kernels::interpolateVelocityToGhostNodeX<<<grid,block>>>(uhat_r, true, ghostTagsUV_r, B.x_r, B.y_r, B.uB_r, yu_r, xu_r,
+													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
+													B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny,
+													index1_r, index2_r, index3_r, index4_r,
+													q1coef_r, q2coef_r, q3coef_r, q4coef_r,
+													x1_r, x2_r, x3_r, x4_r,
+													y1_r, y2_r, y3_r, y4_r,
+													q1_r, q2_r, q3_r, q4_r, image_point_u_r);
+	kernels::interpolateVelocityToGhostNodeY<<<grid,block>>>(uhat_r, true, ghostTagsUV_r, B.x_r, B.y_r, B.vB_r, yv_r, xv_r,
+													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
+													B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny,
+													index1_r, index2_r, index3_r, index4_r,
+													q1coef_r, q2coef_r, q3coef_r, q4coef_r,
+													x1_r, x2_r, x3_r, x4_r,
+													y1_r, y2_r, y3_r, y4_r,
+													q1_r, q2_r, q3_r, q4_r, image_point_u_r);
 }

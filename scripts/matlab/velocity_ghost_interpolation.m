@@ -2,13 +2,13 @@
 clc
 clear
 close all
-M = dlmread('/scratch/src/cuIBM/validation/luo/test/interp_testX.csv','\t',1,0); %start on second row to avoid headers
+M = dlmread('/scratch/src/cuIBM/validation/osc/gh/interp_testX.csv','\t',1,0); %start on second row to avoid headers
 % 1     2       3       4       5       6       7       8       9       10      11  12  13  14  15  16  17  18  19  20  21  22  23  24
 % BN_X1	BN_Y1   BN_X2	BN_Y2	GN_X    GN_Y	BI_X	BI_Y    IP_X	IP_Y	x1	x2	x3  x4	y1	y2	y3	y4	q1	q2	q3	q4	GN_Uip_u
 X = zeros(1,7);
 Y = zeros(1,7);
 Z = zeros(1,7);
-for i =1:length(M)
+for i =38%1:length(M)
 %     close
     X(1) = M(i,5); %ghost node
     X(2) = M(i,7); %body intercept
@@ -32,8 +32,8 @@ for i =1:length(M)
     Z(6) = M(i,22);
     z1 = [0,0];
 
-    Q = interpolate([X(3) X(4) X(5) X(6)], [Y(3) Y(4) Y(5) Y(6)], [Z(3) Z(4) Z(5) Z(6)]);
-    ip_u = Q(X(7),Y(7));
+%     Q = interpolate([X(3) X(4) X(5) X(6)], [Y(3) Y(4) Y(5) Y(6)], [Z(3) Z(4) Z(5) Z(6)]);
+%     ip_u = Q(X(7),Y(7));
     
     scatter3(X(1),Y(1),Z(1),'ks'), hold on %ghost node
     scatter3(X(2),Y(2),Z(2),'ko') %body intercept
@@ -47,8 +47,8 @@ legend('Ghost node', 'Body Intercept', 'Corners')
 clc
 clear
 close all
-% M = dlmread('/scratch/src/cuIBM/validation/luo/test/interp_testX.csv','\t',1,0); %start on second row to avoid headers
-M = dlmread('/scratch/src/cuIBM/validation/cylinder/Re40/interp_testY.csv','\t',1,0); %start on second row to avoid headers
+M = dlmread('/scratch/src/cuIBM/validation/osc/gh/interp_testX.csv','\t',1,0); %start on second row to avoid headers
+% M = dlmread('/scratch/src/cuIBM/validation/cylinder/Re40/interp_testY.csv','\t',1,0); %start on second row to avoid headers
 % 1     2       3       4       5       6       7       8       9       10      11  12  13  14  15  16  17  18  19  20  21  22  23  24
 % BN_X1	BN_Y1   BN_X2	BN_Y2	GN_X    GN_Y	BI_X	BI_Y    IP_X	IP_Y	x1	x2	x3  x4	y1	y2	y3	y4	q1	q2	q3	q4	GN_Uip_u
 X = zeros(1,7);

@@ -7,7 +7,7 @@
 
 #include <solvers/NavierStokes/luo_base/kernels/projectVelocity.h>
 #include <solvers/NavierStokes/luo_base/kernels/biLinearInterpolation.h>
-#include <solvers/NavierStokes/luo_iter/kernels/intermediateVelocity.h>//set inside
+#include <solvers/NavierStokes/luo_base/kernels/intermediateVelocity.h>//set inside
 void luo_base::_project_velocity()
 {
 	logger.startTimer("Velocity Projection");

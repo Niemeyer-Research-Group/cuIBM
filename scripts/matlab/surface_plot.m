@@ -4,15 +4,15 @@ clear
 close all
 % figure
 %change these
-number = '100';
+number = '0';
 type = 'u'; %p or u
-suffix = ''; %u: 0, star, hat, hatfinal, empty. p: 0, star, empty
-view = 'out';
+suffix = 'hat'; %u: 0, star, hat, hatfinal, empty. p: 0, star, empty
+view = 'in';
 
 %load data
 % caseFolder = '/scratch/src/cuIBM/validation/luo/test/output/'
 % caseFolder = '/scratch/src/cuIBM/validation/cylinder/Re40/output/';
-caseFolder = '/scratch/src/cuIBM/validation/osc/flow/output/';
+caseFolder = '/scratch/src/cuIBM/validation/osc/gh/output/';
 path = strcat(caseFolder,number,type,suffix,'.csv');
 ghostpath = strcat(caseFolder,number,'ghost',type,'.csv');
 delim = '\t';
@@ -37,8 +37,9 @@ end
 %plot area round body
 midy = round(length(u(:,1))/2);
 midx = round(length(u(1,:))/2);
-% surf(M((midy-50):(midy+50),(midx-50):(midx+50)))
-surf(u(60:100,1:127)), hold on
+surf(u((midy-50):(midy+50),(midx-50):(midx+50)))
+% surf(u(60:100,1:127)), hold on
+% surf(u)
 title(strcat(type,suffix))
 xlabel('x')
 ylabel('y')

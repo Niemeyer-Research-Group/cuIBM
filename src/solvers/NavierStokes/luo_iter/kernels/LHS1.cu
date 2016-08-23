@@ -12,11 +12,8 @@ __global__
 void LHS1_mid_iter_X(int *row, int *col, double *val, double *dx, double *dy, double dt, double nu, int nx, int ny,
 					int *hybridTagsUV, int *ghostTagsUV, double *ns_rhs, double *interp_rhs, int *count,
 					int *index1, int *index2, int *index3, int *index4,
-					double *xu, double *yu, double *detA, double *alpha,
-					double *b11, double *b12, double *b13, double *b14,
-					double *b21, double *b22, double *b23, double *b24,
-					double *b31, double *b32, double *b33, double *b34,
-					double *b41, double *b42, double *b43, double *b44,
+					double *xu, double *yu, double *alpha, double *uB,
+					double *q1coef, double *q2coef, double *q3coef, double *q4coef,
 					double *q1, double *q2, double *q3, double *q4
 					)
 {
@@ -41,17 +38,15 @@ void LHS1_mid_iter_X(int *row, int *col, double *val, double *dx, double *dy, do
 		double q[4] = {q1[iu], q2[iu], q3[iu], q4[iu]};
 		double CInterp[4];
 		double Cns[5];
-		double	x=xu[I],
-				y=yu[J];
 		Cns[0] = -dt*nu/(dy[J+1]*(dy[J]+dy[J+1]));
 		Cns[1] = -dt*nu/(dx[I]  *(dx[I]+dx[I+1]));
 		Cns[2] = -dt*nu/(dy[J]  *(dy[J]+dy[J+1]));
 		Cns[3] = -dt*nu/(dx[I]  *(dx[I]+dx[I-1]));
 		Cns[4] = 1-Cns[0] - Cns[1] - Cns[2] - Cns[3];
-		CInterp[0] = (b11[iu] + b21[iu]*x + b31[iu]*y + b41[iu]*x*y)/detA[iu];
-		CInterp[1] = (b12[iu] + b22[iu]*x + b32[iu]*y + b42[iu]*x*y)/detA[iu];
-		CInterp[2] = (b13[iu] + b23[iu]*x + b33[iu]*y + b43[iu]*x*y)/detA[iu];
-		CInterp[3] = (b14[iu] + b24[iu]*x + b34[iu]*y + b44[iu]*x*y)/detA[iu];
+		CInterp[0] = q1coef[iu];
+		CInterp[1] = q2coef[iu];
+		CInterp[2] = q3coef[iu];
+		CInterp[3] = q4coef[iu];
 		for (int l=0; l<4; l++)
 		{
 			Cns[l] = Cns[l]*(1-alpha[iu])/Cns[4];
@@ -108,10 +103,73 @@ void LHS1_mid_iter_X(int *row, int *col, double *val, double *dx, double *dy, do
 			}
 		}
 	}
-	/*else if (ghostTagsUV[iu]>0)
+	else if (ghostTagsUV[iu]>0)
 	{
-
-	}*/
+		int interp_index[4] = {index1[iu], index2[iu], index3[iu], index4[iu]};
+		bool interp_in[4] = {false, false, false, false};
+		int ns_index[5] = {iu + (nx-1), iu + 1, iu - (nx-1), iu -1, iu}; //n e s w p
+		bool ns_overlap[5] = {false, false, false, false, true};
+		double q[4] = {q1[iu], q2[iu], q3[iu], q4[iu]};
+		double CInterp[4];
+		CInterp[0] = q1coef[iu];
+		CInterp[1] = q2coef[iu];
+		CInterp[2] = q3coef[iu];
+		CInterp[3] = q4coef[iu];
+		//count the number of nodes the interp is using
+		//find how which ns nodes are occupied
+		int counter = 0;
+		temp = 0;
+		for (int l=0; l<4; l++)
+		{
+			if (ghostTagsUV[interp_index[l]]>0)
+			{
+				counter +=1;
+				interp_in[l] = true;
+			}
+			for (int n=0; n<5; n++)
+			{
+				if (interp_index[l] == ns_index[n])
+					ns_overlap[n] = true;
+			}
+		}
+		//add center to matrix
+		row[numE] = iu;
+		col[numE] = iu;
+		val[numE] = 1;
+		numE++;
+		//add real interp values to matrix
+		for (int i=0; i<4; i++)
+		{
+			if (!interp_in[i] && interp_index[i] != iu)
+			{
+				row[numE] = iu;
+				col[numE] = interp_index[i];
+				val[numE] = CInterp[i];
+				numE++;
+			}
+			else
+			{
+				temp += CInterp[i] * q[i];
+			}
+		}
+		//fill remainder of values
+		int counter2 = 0;
+		for (int i=0; i<5; i++)
+		{
+			if (counter2>=counter)
+				break;
+			if (ns_overlap[i]==false)
+			{
+				row[numE] = iu;
+				col[numE] = ns_index[i];
+				val[numE] = 0;
+				numE++;
+				counter2++;
+			}
+		}
+		ns_rhs[iu] = 0;
+		interp_rhs[iu] = 2*uB[0] - temp;//flag this doesn't account for the interpolation part
+	}
 	else
 	{
 	temp = 1 + 0.5*dt*nu*(1/(dx[I+1]*(dx[I+1]+dx[I])*0.5)) + 0.5*dt*nu*(1/(dx[I]*(dx[I+1]+dx[I])*0.5)) + 0.5*dt*nu*(1/(dy[J]*(dy[J+1]+dy[J])*0.5)) + 0.5*dt*nu*(1/(dy[J]*(dy[J-1]+dy[J])*0.5));
@@ -153,11 +211,8 @@ __global__
 void LHS1_mid_iter_Y(int *row, int *col, double *val, double *dx, double *dy, double dt, double nu, int nx, int ny,
 						int *hybridTagsUV, int *ghostTagsUV, double *ns_rhs, double *interp_rhs, int *count,
 						int *index1, int *index2, int *index3, int *index4,
-						double *xv, double *yv, double *detA, double *alpha,
-						double *b11, double *b12, double *b13, double *b14,
-						double *b21, double *b22, double *b23, double *b24,
-						double *b31, double *b32, double *b33, double *b34,
-						double *b41, double *b42, double *b43, double *b44,
+						double *xv, double *yv, double *alpha, double *vB,
+						double *q1coef, double *q2coef, double *q3coef, double *q4coef,
 						double *q1, double *q2, double *q3, double *q4
 						)
 {
@@ -187,10 +242,10 @@ void LHS1_mid_iter_Y(int *row, int *col, double *val, double *dx, double *dy, do
 		Cns[2] = -dt*nu/(dy[J]*(dy[J]+dy[J+1]));
 		Cns[3] = -dt*nu/(dx[I]*(dx[I]+dx[I-1]));
 		Cns[4] = 1-Cns[0] - Cns[1] - Cns[2] - Cns[3];
-		CInterp[0] = (b11[iv] + b21[iv]*x + b31[iv]*y + b41[iv]*x*y)/detA[iv];
-		CInterp[1] = (b12[iv] + b22[iv]*x + b32[iv]*y + b42[iv]*x*y)/detA[iv];
-		CInterp[2] = (b13[iv] + b23[iv]*x + b33[iv]*y + b43[iv]*x*y)/detA[iv];
-		CInterp[3] = (b14[iv] + b24[iv]*x + b34[iv]*y + b44[iv]*x*y)/detA[iv];
+		CInterp[0] = q1coef[iv];
+		CInterp[1] = q2coef[iv];
+		CInterp[2] = q3coef[iv];
+		CInterp[3] = q4coef[iv];
 		for (int l=0; l<4; l++)
 		{
 			Cns[l] = Cns[l]*(1-alpha[iv])/Cns[4];
@@ -247,10 +302,73 @@ void LHS1_mid_iter_Y(int *row, int *col, double *val, double *dx, double *dy, do
 			}
 		}
 	}
-	/*else if (ghostTagsUV[iv]>0)
+	else if (ghostTagsUV[iv]>0)
 	{
-
-	}*/
+		int interp_index[4] = {index1[iv], index2[iv], index3[iv], index4[iv]};
+		bool interp_in[4] = {false, false, false, false};
+		int ns_index[5] = {iv+nx, iv+1, iv-nx, iv-1, iv}; //n e s w p
+		bool ns_overlap[5] = {false, false, false, false, true};
+		double q[4] = {q1[iv], q2[iv], q3[iv], q4[iv]};
+		double CInterp[4];
+		CInterp[0] = q1coef[iv];
+		CInterp[1] = q2coef[iv];
+		CInterp[2] = q3coef[iv];
+		CInterp[3] = q4coef[iv];
+		//count the number of nodes the interp is using
+		//find how which ns nodes are occupied
+		int counter = 0;
+		temp = 0;
+		for (int l=0; l<4; l++)
+		{
+			if (ghostTagsUV[interp_index[l]]>0)
+			{
+				counter +=1;
+				interp_in[l] = true;
+			}
+			for (int n=0; n<5; n++)
+			{
+				if (interp_index[l] == ns_index[n])
+					ns_overlap[n] = true;
+			}
+		}
+		//add center to matrix
+		row[numE] = iv;
+		col[numE] = iv;
+		val[numE] = 1;
+		numE++;
+		//add real interp values to matrix
+		for (int i=0; i<4; i++)
+		{
+			if (!interp_in[i] && interp_index[i] != iv)
+			{
+				row[numE] = iv;
+				col[numE] = interp_index[i];
+				val[numE] = CInterp[i];
+				numE++;
+			}
+			else
+			{
+				temp += CInterp[i] * q[i];
+			}
+		}
+		//fill remainder of values
+		int counter2 = 0;
+		for (int i=0; i<5; i++)
+		{
+			if (counter2>=counter)
+				break;
+			if (ns_overlap[i]==false)
+			{
+				row[numE] = iv;
+				col[numE] = ns_index[i];
+				val[numE] = 0;
+				numE++;
+				counter2++;
+			}
+		}
+		ns_rhs[iv] = 0;
+		interp_rhs[iv] = 2*vB[0] - temp;//flag this doesn't account for the interpolation part
+	}
 	else
 	{
 	temp = 1 + 0.5*dt*nu*(1/(dx[I]*(dx[I]+dx[I+1])*0.5)) + 0.5*dt*nu*(1/(dx[I]*(dx[I]+dx[I-1])*0.5)) + 0.5*dt*nu*(1/(dy[J+1]*(dy[J]+dy[J+1])*0.5)) + 0.5*dt*nu*(1/(dy[J]*(dy[J]+dy[J+1])*0.5));

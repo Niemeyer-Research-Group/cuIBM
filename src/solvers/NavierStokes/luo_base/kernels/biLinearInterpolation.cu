@@ -11,10 +11,14 @@
 namespace kernels
 {
 __global__
-void interpolateVelocityToGhostNodeX(double *u, int *ghostTagsUV, double *bx, double *by, double *uB, double *yu, double *xu,
+void interpolateVelocityToGhostNodeX(double *u, bool set, int *ghostTagsUV, double *bx, double *by, double *uB, double *yu, double *xu,
 							double *body_intercept_x, double *body_intercept_y, double *image_point_x, double *image_point_y,
 							int *i_start, int *j_start, int width, int nx, int ny,
-							double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4, double *image_point_u)//testing variables
+							int *index1, int *index2, int *index3, int *index4,
+							double *q1coef, double *q2coef, double *q3coef, double *q4coef,
+							double *x1, double *x2, double *x3, double *x4,
+							double *y1, double *y2, double *y3, double *y4,
+							double *q1, double *q2, double *q3, double *q4, double *image_point_u)//testing variables
 {//In the luo et al method they only move corners coincident to the GN to the boundary. We are moving all corners inside to the boundary
 	int idx	= threadIdx.x + blockDim.x * blockIdx.x,
 		i	= idx % (width),
@@ -101,6 +105,10 @@ void interpolateVelocityToGhostNodeX(double *u, int *ghostTagsUV, double *bx, do
 	q2[iu] = q[1];
 	q3[iu] = q[2];
 	q4[iu] = q[3];
+	index1[iu] = index[0];
+	index2[iu] = index[1];
+	index3[iu] = index[2];
+	index4[iu] = index[3];
 
 	//solve equation for bilinear interpolation of values to image point
 	//http://www.cg.info.hiroshima-cu.ac.jp/~miyazaki/knowledge/teche23.html
@@ -163,15 +171,24 @@ void interpolateVelocityToGhostNodeX(double *u, int *ghostTagsUV, double *bx, do
 	 double a1 = b21/detA*q1[iu]  +  b22/detA*q2[iu]  +  b23/detA*q3[iu]  +  b24/detA*q4[iu];
 	 double a2 = b31/detA*q1[iu]  +  b32/detA*q2[iu]  +  b33/detA*q3[iu]  +  b34/detA*q4[iu];
 	 double a3 = b41/detA*q1[iu]  +  b42/detA*q2[iu]  +  b43/detA*q3[iu]  +  b44/detA*q4[iu];
+	 q1coef[iu] = (b11+b21*image_point_x[iu]+b31*image_point_y[iu]+b41*image_point_x[iu]*image_point_y[iu])/detA;
+	 q2coef[iu] = (b12+b22*image_point_x[iu]+b32*image_point_y[iu]+b42*image_point_x[iu]*image_point_y[iu])/detA;
+	 q3coef[iu] = (b13+b23*image_point_x[iu]+b33*image_point_y[iu]+b43*image_point_x[iu]*image_point_y[iu])/detA;
+	 q4coef[iu] = (b14+b24*image_point_x[iu]+b34*image_point_y[iu]+b44*image_point_x[iu]*image_point_y[iu])/detA;
 	 image_point_u[iu] = a0 + a1*image_point_x[iu] + a2*image_point_y[iu] + a3*image_point_x[iu]*image_point_y[iu];
-	 u[iu] =  2*uB[0] - image_point_u[iu]; //u_gn = 2*u_BI  - u_IP //flag doesn't currently work with a rotating body because of uB[0], need to use the actual u at the body intercept
+	 if (set)
+		 u[iu] =  2*uB[0] - image_point_u[iu]; //u_gn = 2*u_BI  - u_IP //flag doesn't currently work with a rotating body because of uB[0], need to use the actual u at the body intercept
 }
 
 __global__
-void interpolateVelocityToGhostNodeY(double *u, int *ghostTagsUV, double *bx, double *by, double *vB, double *yv, double *xv,
+void interpolateVelocityToGhostNodeY(double *u, bool set, int *ghostTagsUV, double *bx, double *by, double *vB, double *yv, double *xv,
 							double *body_intercept_x, double *body_intercept_y, double *image_point_x, double *image_point_y,
 							int *i_start, int *j_start, int width, int nx, int ny,
-							double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4, double *image_point_u)//testing variables
+							int *index1, int *index2, int *index3, int *index4,
+							double *q1coef, double *q2coef, double *q3coef, double *q4coef,
+							double *x1, double *x2, double *x3, double *x4,
+							double *y1, double *y2, double *y3, double *y4,
+							double *q1, double *q2, double *q3, double *q4, double *image_point_u)//testing variables
 {
 	int idx	= threadIdx.x + blockDim.x * blockIdx.x,
 		i	= idx % (width),
@@ -258,6 +275,10 @@ void interpolateVelocityToGhostNodeY(double *u, int *ghostTagsUV, double *bx, do
 	q2[iv] = q[1];
 	q3[iv] = q[2];
 	q4[iv] = q[3];
+	index1[iv] = index[0];
+	index2[iv] = index[1];
+	index3[iv] = index[2];
+	index4[iv] = index[3];
 
 	//solve equation for bilinear interpolation of values to image point
 	//http://www.cg.info.hiroshima-cu.ac.jp/~miyazaki/knowledge/teche23.html
@@ -320,20 +341,22 @@ void interpolateVelocityToGhostNodeY(double *u, int *ghostTagsUV, double *bx, do
 	 double a1 = b21/detA*q1[iv]  +  b22/detA*q2[iv]  +  b23/detA*q3[iv]  +  b24/detA*q4[iv];
 	 double a2 = b31/detA*q1[iv]  +  b32/detA*q2[iv]  +  b33/detA*q3[iv]  +  b34/detA*q4[iv];
 	 double a3 = b41/detA*q1[iv]  +  b42/detA*q2[iv]  +  b43/detA*q3[iv]  +  b44/detA*q4[iv];
+	 q1coef[iv] = (b11+b21*image_point_x[iv]+b31*image_point_y[iv]+b41*image_point_x[iv]*image_point_y[iv])/detA;
+	 q2coef[iv] = (b12+b22*image_point_x[iv]+b32*image_point_y[iv]+b42*image_point_x[iv]*image_point_y[iv])/detA;
+	 q3coef[iv] = (b13+b23*image_point_x[iv]+b33*image_point_y[iv]+b43*image_point_x[iv]*image_point_y[iv])/detA;
+	 q4coef[iv] = (b14+b24*image_point_x[iv]+b34*image_point_y[iv]+b44*image_point_x[iv]*image_point_y[iv])/detA;
 	 image_point_u[iv] = a0 + a1*image_point_x[iv] + a2*image_point_y[iv] + a3*image_point_x[iv]*image_point_y[iv];
-	 u[iv] =  2*vB[0] - image_point_u[iv]; //u_gn = 2*u_BI  - u_IP //flag doesn't currently work with a rotating body because of uB[0], need to use the actual u at the body intercept
+	 if (set)
+		 u[iv] =  2*vB[0] - image_point_u[iv]; //u_gn = 2*u_BI  - u_IP //flag doesn't currently work with a rotating body because of uB[0], need to use the actual u at the body intercept
 }
 
 __global__
-void interpolateVelocityToHybridNodeX(double *u, double *ustar, int *hybridTagsUV, double *detA,
+void interpolateVelocityToHybridNodeX(double *u, double *ustar, int *hybridTagsUV,
 										double *bx, double *by, double *uB, double *yu, double *xu,
 										double *body_intercept_x, double *body_intercept_y, double *image_point_x, double *image_point_y,
 										int *i_start, int *j_start, int width, int nx, int ny,
 										int *index1, int *index2, int *index3, int *index4,
-										double *b11, double *b12, double *b13, double *b14,
-										double *b21, double *b22, double *b23, double *b24,
-										double *b31, double *b32, double *b33, double *b34,
-										double *b41, double *b42, double *b43, double *b44,
+										double *q1coef, double *q2coef, double *q3coef, double *q4coef,
 										double *x1, double *x2, double *x3, double *x4,
 										double *y1, double *y2, double *y3, double *y4,
 										double *q1, double *q2, double *q3, double *q4, double *image_point_u)
@@ -434,7 +457,7 @@ void interpolateVelocityToHybridNodeX(double *u, double *ustar, int *hybridTagsU
 	double a32 = x3[iu],  a33 = y3[iu], a34 = x3[iu]*y3[iu];
 	double a42 = x4[iu],  a43 = y4[iu], a44 = x4[iu]*y4[iu];
 
-	detA[iu] = 1*a22*a33*a44 + 1*a23*a34*a42 + 1*a24*a32*a43
+	double detA = 1*a22*a33*a44 + 1*a23*a34*a42 + 1*a24*a32*a43
 		  +a12*1*a34*a43 + a12*a23*1*a44 + a12*a24*a33*1
 		  +a13*1*a32*a44 + a13*a22*a34*1 + a13*a24*1*a42
 		  +a14*1*a33*a42 + a14*a22*1*a43 + a14*a23*a32*1
@@ -443,22 +466,22 @@ void interpolateVelocityToHybridNodeX(double *u, double *ustar, int *hybridTagsU
 		  -a13*1*a34*a42 - a13*a22*1*a44 - a13*a24*a32*1
 		  -a14*1*a32*a43 - a14*a22*a33*1 - a14*a23*1*a42;
 
-	b11[iu] = a22*a33*a44 + a23*a34*a42 + a24*a32*a43 - a22*a34*a43 - a23*a32*a44 - a24*a33*a42;
-	b12[iu] = a12*a34*a43 + a13*a32*a44 + a14*a33*a42 - a12*a33*a44 - a13*a34*a42 - a14*a32*a43;
-	b13[iu] = a12*a23*a44 + a13*a24*a42 + a14*a22*a43 - a12*a24*a43 - a13*a22*a44 - a14*a23*a42;
-	b14[iu] = a12*a24*a33 + a13*a22*a34 + a14*a23*a32 - a12*a23*a34 - a13*a24*a32 - a14*a22*a33;
-	b21[iu] = 1*a34*a43 + a23*1*a44 + a24*a33*1 - 1*a33*a44 - a23*a34*1 - a24*1*a43;
-	b22[iu] = 1*a33*a44 + a13*a34*1 + a14*1*a43 - 1*a34*a43 - a13*1*a44 - a14*a33*1;
-	b23[iu] = 1*a24*a43 + a13*1*a44 + a14*a23*1 - 1*a23*a44 - a13*a24*1 - a14*1*a43;
-	b24[iu] = 1*a23*a34 + a13*a24*1 + a14*1*a33 - 1*a24*a33 - a13*1*a34 - a14*a23*1;
-	b31[iu] = 1*a32*a44 + a22*a34*1 + a24*1*a42 - 1*a34*a42 - a22*1*a44 - a24*a32*1;
-	b32[iu] = 1*a34*a42 + a12*1*a44 + a14*a32*1 - 1*a32*a44 - a12*a34*1 - a14*1*a42;
-	b33[iu] = 1*a22*a44 + a12*a24*1 + a14*1*a42 - 1*a24*a42 - a12*1*a44 - a14*a22*1;
-	b34[iu] = 1*a24*a32 + a12*1*a34 + a14*a22*1 - 1*a22*a34 - a12*a24*1 - a14*1*a32;
-	b41[iu] = 1*a33*a42 + a22*1*a43 + a23*a32*1 - 1*a32*a43 - a22*a33*1 - a23*1*a42;
-	b42[iu] = 1*a32*a43 + a12*a33*1 + a13*1*a42 - 1*a33*a42 - a12*1*a43 - a13*a32*1;
-	b43[iu] = 1*a23*a42 + a12*1*a43 + a13*a22*1 - 1*a22*a43 - a12*a23*1 - a13*1*a42;
-	b44[iu] = 1*a22*a33 + a12*a23*1 + a13*1*a32 - 1*a23*a32 - a12*1*a33 - a13*a22*1;
+	double b11 = a22*a33*a44 + a23*a34*a42 + a24*a32*a43 - a22*a34*a43 - a23*a32*a44 - a24*a33*a42;
+	double b12 = a12*a34*a43 + a13*a32*a44 + a14*a33*a42 - a12*a33*a44 - a13*a34*a42 - a14*a32*a43;
+	double b13 = a12*a23*a44 + a13*a24*a42 + a14*a22*a43 - a12*a24*a43 - a13*a22*a44 - a14*a23*a42;
+	double b14 = a12*a24*a33 + a13*a22*a34 + a14*a23*a32 - a12*a23*a34 - a13*a24*a32 - a14*a22*a33;
+	double b21 = 1*a34*a43 + a23*1*a44 + a24*a33*1 - 1*a33*a44 - a23*a34*1 - a24*1*a43;
+	double b22 = 1*a33*a44 + a13*a34*1 + a14*1*a43 - 1*a34*a43 - a13*1*a44 - a14*a33*1;
+	double b23 = 1*a24*a43 + a13*1*a44 + a14*a23*1 - 1*a23*a44 - a13*a24*1 - a14*1*a43;
+	double b24 = 1*a23*a34 + a13*a24*1 + a14*1*a33 - 1*a24*a33 - a13*1*a34 - a14*a23*1;
+	double b31 = 1*a32*a44 + a22*a34*1 + a24*1*a42 - 1*a34*a42 - a22*1*a44 - a24*a32*1;
+	double b32 = 1*a34*a42 + a12*1*a44 + a14*a32*1 - 1*a32*a44 - a12*a34*1 - a14*1*a42;
+	double b33 = 1*a22*a44 + a12*a24*1 + a14*1*a42 - 1*a24*a42 - a12*1*a44 - a14*a22*1;
+	double b34 = 1*a24*a32 + a12*1*a34 + a14*a22*1 - 1*a22*a34 - a12*a24*1 - a14*1*a32;
+	double b41 = 1*a33*a42 + a22*1*a43 + a23*a32*1 - 1*a32*a43 - a22*a33*1 - a23*1*a42;
+	double b42 = 1*a32*a43 + a12*a33*1 + a13*1*a42 - 1*a33*a42 - a12*1*a43 - a13*a32*1;
+	double b43 = 1*a23*a42 + a12*1*a43 + a13*a22*1 - 1*a22*a43 - a12*a23*1 - a13*1*a42;
+	double b44 = 1*a22*a33 + a12*a23*1 + a13*1*a32 - 1*a23*a32 - a12*1*a33 - a13*a22*1;
 
 	/*	       B
 	 * |b11 b12 b13 b14|
@@ -470,24 +493,26 @@ void interpolateVelocityToHybridNodeX(double *u, double *ustar, int *hybridTagsU
 	 * a = Ainv*q';
 	 * f= @(X,Y) a(1) + a(2)*X + a(3)*Y + a(4)*X*Y;
 	 */
-	 double a0 = (b11[iu]*q1[iu]  +  b12[iu]*q2[iu]  +  b13[iu]*q3[iu]  +  b14[iu]*q4[iu])/detA[iu];
-	 double a1 = (b21[iu]*q1[iu]  +  b22[iu]*q2[iu]  +  b23[iu]*q3[iu]  +  b24[iu]*q4[iu])/detA[iu];
-	 double a2 = (b31[iu]*q1[iu]  +  b32[iu]*q2[iu]  +  b33[iu]*q3[iu]  +  b34[iu]*q4[iu])/detA[iu];
-	 double a3 = (b41[iu]*q1[iu]  +  b42[iu]*q2[iu]  +  b43[iu]*q3[iu]  +  b44[iu]*q4[iu])/detA[iu];
+	 double a0 = (b11*q1[iu]  +  b12*q2[iu]  +  b13*q3[iu]  +  b14*q4[iu])/detA;
+	 double a1 = (b21*q1[iu]  +  b22*q2[iu]  +  b23*q3[iu]  +  b24*q4[iu])/detA;
+	 double a2 = (b31*q1[iu]  +  b32*q2[iu]  +  b33*q3[iu]  +  b34*q4[iu])/detA;
+	 double a3 = (b41*q1[iu]  +  b42*q2[iu]  +  b43*q3[iu]  +  b44*q4[iu])/detA;
+	 q1coef[iu] = (b11+b21*xu[I]+b31*yu[J]+b41*xu[I]*yu[J])/detA;
+	 q2coef[iu] = (b12+b22*xu[I]+b32*yu[J]+b42*xu[I]*yu[J])/detA;
+	 q3coef[iu] = (b13+b23*xu[I]+b33*yu[J]+b43*xu[I]*yu[J])/detA;
+	 q4coef[iu] = (b14+b24*xu[I]+b34*yu[J]+b44*xu[I]*yu[J])/detA;
+
 	 ustar[iu] = a0 + a1*xu[I] + a2*yu[J] + a3*yu[J]*xu[I];
 	 image_point_u[iu] = a0 + a1*image_point_x[iu] + a2*image_point_y[iu] + a3*image_point_x[iu]*image_point_y[iu];
 }
 
 __global__
-void interpolateVelocityToHybridNodeY(double *u, double *ustar, int *hybridTagsUV, double *detA,
+void interpolateVelocityToHybridNodeY(double *u, double *ustar, int *hybridTagsUV,
 										double *bx, double *by, double *vB, double *yv, double *xv,
 										double *body_intercept_x, double *body_intercept_y, double *image_point_x, double *image_point_y,
 										int *i_start, int *j_start, int width, int nx, int ny,
 										int *index1, int *index2, int *index3, int *index4,
-										double *b11, double *b12, double *b13, double *b14,
-										double *b21, double *b22, double *b23, double *b24,
-										double *b31, double *b32, double *b33, double *b34,
-										double *b41, double *b42, double *b43, double *b44,
+										double *q1coef, double *q2coef, double *q3coef, double *q4coef,
 										double *x1, double *x2, double *x3, double *x4,
 										double *y1, double *y2, double *y3, double *y4,
 										double *q1, double *q2, double *q3, double *q4, double *image_point_u)
@@ -589,7 +614,7 @@ void interpolateVelocityToHybridNodeY(double *u, double *ustar, int *hybridTagsU
 	double a32 = x3[iv],  a33 = y3[iv], a34 = x3[iv]*y3[iv];
 	double a42 = x4[iv],  a43 = y4[iv], a44 = x4[iv]*y4[iv];
 
-	detA[iv] = 1*a22*a33*a44 + 1*a23*a34*a42 + 1*a24*a32*a43
+	double detA = 1*a22*a33*a44 + 1*a23*a34*a42 + 1*a24*a32*a43
 		  +a12*1*a34*a43 + a12*a23*1*a44 + a12*a24*a33*1
 		  +a13*1*a32*a44 + a13*a22*a34*1 + a13*a24*1*a42
 		  +a14*1*a33*a42 + a14*a22*1*a43 + a14*a23*a32*1
@@ -598,22 +623,22 @@ void interpolateVelocityToHybridNodeY(double *u, double *ustar, int *hybridTagsU
 		  -a13*1*a34*a42 - a13*a22*1*a44 - a13*a24*a32*1
 		  -a14*1*a32*a43 - a14*a22*a33*1 - a14*a23*1*a42;
 
-	b11[iv] = a22*a33*a44 + a23*a34*a42 + a24*a32*a43 - a22*a34*a43 - a23*a32*a44 - a24*a33*a42;
-	b12[iv] = a12*a34*a43 + a13*a32*a44 + a14*a33*a42 - a12*a33*a44 - a13*a34*a42 - a14*a32*a43;
-	b13[iv] = a12*a23*a44 + a13*a24*a42 + a14*a22*a43 - a12*a24*a43 - a13*a22*a44 - a14*a23*a42;
-	b14[iv] = a12*a24*a33 + a13*a22*a34 + a14*a23*a32 - a12*a23*a34 - a13*a24*a32 - a14*a22*a33;
-	b21[iv] = 1*a34*a43 + a23*1*a44 + a24*a33*1 - 1*a33*a44 - a23*a34*1 - a24*1*a43;
-	b22[iv] = 1*a33*a44 + a13*a34*1 + a14*1*a43 - 1*a34*a43 - a13*1*a44 - a14*a33*1;
-	b23[iv] = 1*a24*a43 + a13*1*a44 + a14*a23*1 - 1*a23*a44 - a13*a24*1 - a14*1*a43;
-	b24[iv] = 1*a23*a34 + a13*a24*1 + a14*1*a33 - 1*a24*a33 - a13*1*a34 - a14*a23*1;
-	b31[iv] = 1*a32*a44 + a22*a34*1 + a24*1*a42 - 1*a34*a42 - a22*1*a44 - a24*a32*1;
-	b32[iv] = 1*a34*a42 + a12*1*a44 + a14*a32*1 - 1*a32*a44 - a12*a34*1 - a14*1*a42;
-	b33[iv] = 1*a22*a44 + a12*a24*1 + a14*1*a42 - 1*a24*a42 - a12*1*a44 - a14*a22*1;
-	b34[iv] = 1*a24*a32 + a12*1*a34 + a14*a22*1 - 1*a22*a34 - a12*a24*1 - a14*1*a32;
-	b41[iv] = 1*a33*a42 + a22*1*a43 + a23*a32*1 - 1*a32*a43 - a22*a33*1 - a23*1*a42;
-	b42[iv] = 1*a32*a43 + a12*a33*1 + a13*1*a42 - 1*a33*a42 - a12*1*a43 - a13*a32*1;
-	b43[iv] = 1*a23*a42 + a12*1*a43 + a13*a22*1 - 1*a22*a43 - a12*a23*1 - a13*1*a42;
-	b44[iv] = 1*a22*a33 + a12*a23*1 + a13*1*a32 - 1*a23*a32 - a12*1*a33 - a13*a22*1;
+	double b11 = a22*a33*a44 + a23*a34*a42 + a24*a32*a43 - a22*a34*a43 - a23*a32*a44 - a24*a33*a42;
+	double b12 = a12*a34*a43 + a13*a32*a44 + a14*a33*a42 - a12*a33*a44 - a13*a34*a42 - a14*a32*a43;
+	double b13 = a12*a23*a44 + a13*a24*a42 + a14*a22*a43 - a12*a24*a43 - a13*a22*a44 - a14*a23*a42;
+	double b14 = a12*a24*a33 + a13*a22*a34 + a14*a23*a32 - a12*a23*a34 - a13*a24*a32 - a14*a22*a33;
+	double b21 = 1*a34*a43 + a23*1*a44 + a24*a33*1 - 1*a33*a44 - a23*a34*1 - a24*1*a43;
+	double b22 = 1*a33*a44 + a13*a34*1 + a14*1*a43 - 1*a34*a43 - a13*1*a44 - a14*a33*1;
+	double b23 = 1*a24*a43 + a13*1*a44 + a14*a23*1 - 1*a23*a44 - a13*a24*1 - a14*1*a43;
+	double b24 = 1*a23*a34 + a13*a24*1 + a14*1*a33 - 1*a24*a33 - a13*1*a34 - a14*a23*1;
+	double b31 = 1*a32*a44 + a22*a34*1 + a24*1*a42 - 1*a34*a42 - a22*1*a44 - a24*a32*1;
+	double b32 = 1*a34*a42 + a12*1*a44 + a14*a32*1 - 1*a32*a44 - a12*a34*1 - a14*1*a42;
+	double b33 = 1*a22*a44 + a12*a24*1 + a14*1*a42 - 1*a24*a42 - a12*1*a44 - a14*a22*1;
+	double b34 = 1*a24*a32 + a12*1*a34 + a14*a22*1 - 1*a22*a34 - a12*a24*1 - a14*1*a32;
+	double b41 = 1*a33*a42 + a22*1*a43 + a23*a32*1 - 1*a32*a43 - a22*a33*1 - a23*1*a42;
+	double b42 = 1*a32*a43 + a12*a33*1 + a13*1*a42 - 1*a33*a42 - a12*1*a43 - a13*a32*1;
+	double b43 = 1*a23*a42 + a12*1*a43 + a13*a22*1 - 1*a22*a43 - a12*a23*1 - a13*1*a42;
+	double b44 = 1*a22*a33 + a12*a23*1 + a13*1*a32 - 1*a23*a32 - a12*1*a33 - a13*a22*1;
 
 	/*	       B
 	 * |b11 b12 b13 b14|
@@ -625,10 +650,15 @@ void interpolateVelocityToHybridNodeY(double *u, double *ustar, int *hybridTagsU
 	 * a = Ainv*q';
 	 * f= @(X,Y) a(1) + a(2)*X + a(3)*Y + a(4)*X*Y;
 	 */
-	 double a0 = (b11[iv]*q1[iv]  +  b12[iv]*q2[iv]  +  b13[iv]*q3[iv]  +  b14[iv]*q4[iv])/detA[iv];
-	 double a1 = (b21[iv]*q1[iv]  +  b22[iv]*q2[iv]  +  b23[iv]*q3[iv]  +  b24[iv]*q4[iv])/detA[iv];
-	 double a2 = (b31[iv]*q1[iv]  +  b32[iv]*q2[iv]  +  b33[iv]*q3[iv]  +  b34[iv]*q4[iv])/detA[iv];
-	 double a3 = (b41[iv]*q1[iv]  +  b42[iv]*q2[iv]  +  b43[iv]*q3[iv]  +  b44[iv]*q4[iv])/detA[iv];
+	 double a0 = (b11*q1[iv]  +  b12*q2[iv]  +  b13*q3[iv]  +  b14*q4[iv])/detA;
+	 double a1 = (b21*q1[iv]  +  b22*q2[iv]  +  b23*q3[iv]  +  b24*q4[iv])/detA;
+	 double a2 = (b31*q1[iv]  +  b32*q2[iv]  +  b33*q3[iv]  +  b34*q4[iv])/detA;
+	 double a3 = (b41*q1[iv]  +  b42*q2[iv]  +  b43*q3[iv]  +  b44*q4[iv])/detA;
+	 q1coef[iv] = (b11+b21*xv[I]+b31*yv[J]+b41*xv[I]*yv[J])/detA;
+	 q2coef[iv] = (b12+b22*xv[I]+b32*yv[J]+b42*xv[I]*yv[J])/detA;
+	 q3coef[iv] = (b13+b23*xv[I]+b33*yv[J]+b43*xv[I]*yv[J])/detA;
+	 q4coef[iv] = (b14+b24*xv[I]+b34*yv[J]+b44*xv[I]*yv[J])/detA;
+
 	 ustar[iv] = a0 + a1*xv[I] + a2*yv[J] + a3*yv[J]*xv[I];
 	 image_point_u[iv] = a0 + a1*image_point_x[iv] + a2*image_point_y[iv] + a3*image_point_x[iv]*image_point_y[iv];
 }
