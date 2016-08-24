@@ -72,8 +72,8 @@ void luoIBM::writeData()
 	logger.stopTimer("output");
 
 	logger.startTimer("calculateForce");
-	calculateForce();
-	//luoForce();
+	//calculateForce();
+	luoForce();
 	logger.stopTimer("calculateForce");
 
 	logger.startTimer("output");

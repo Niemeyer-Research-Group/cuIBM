@@ -87,7 +87,7 @@ void luo_base::luoForce()
 	kernels::force_velocity_x<<<grid,block>>>(B.force_dudn_r, B.uB_r, u_r,
 												B.x_r, B.y_r, xu_r, yu_r,
 												B.startI_r, B.startJ_r, B.numCellsXHost, B.numCellsYHost, B.totalPoints, nx, ny, B.midX, B.midY, domInfo->mid_h);
-	kernels::force_velocity_x<<<grid,block>>>(B.force_dudn_r, B.vB_r, u_r,
+	kernels::force_velocity_y<<<grid,block>>>(B.force_dvdn_r, B.vB_r, u_r,
 												B.x_r, B.y_r, xv_r, yv_r,
 												B.startI_r, B.startJ_r, B.numCellsXHost, B.numCellsYHost, B.totalPoints, nx, ny, B.midX, B.midY, domInfo->mid_h);
 	kernels::force<<<grid,block>>>(B.force_x_r, B.force_y_r, B.force_pressure_r, B.force_dudn_r, B.force_dvdn_r,
