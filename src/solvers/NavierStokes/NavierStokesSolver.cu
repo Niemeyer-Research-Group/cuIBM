@@ -145,11 +145,9 @@ void NavierStokesSolver::initialiseLHS()
 {
 	generateLHS1();
 	generateLHS2();
+
 	PC.generate1(LHS1, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>());
-	std::cout<<"before PC.\n";
-	PC.generate2(LHS2, SMOOTHED_AGGREGATION);//(*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
-	//PC.generate(LHS1,LHS2, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>(), (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
-	std::cout << "NavierStokesSolver: Assembled LHS matrices!" << std::endl;
+	PC.generate2(LHS2, (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
 }
 
 //##############################################################################
