@@ -58,8 +58,10 @@ void luoIBM::weightPressure()
 									B.uB_r, B.uBk_r, B.vB_r, B.vBk_r, yu_r, yv_r, xu_r, xv_r,
 									body_intercept_p_x_r, body_intercept_p_y_r, image_point_p_x_r, image_point_p_y_r,
 									B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny, dt,
+									index1_r, index2_r, index3_r, index4_r,
+									q1coef_r, q2coef_r, q3coef_r, q4coef_r,
 									a0_r, a1_r, a2_r, a3_r,
-									x1_p_r, x2_p_r, x3_p_r, x4_p_r, y1_p_r, y2_p_r, y3_p_r, y4_p_r, q1_p_r, q2_p_r, q3_p_r, q4_p_r, timeStep);
+									x1_p_r, x2_p_r, x3_p_r, x4_p_r, y1_p_r, y2_p_r, y3_p_r, y4_p_r, q1_p_r, q2_p_r, q3_p_r, q4_p_r);
 	kernels::weightP<<<grid,block>>>(pressure_r, pressureStar_r, ghostTagsP_r, hybridTagsP_r, yu_r, xv_r,
 									body_intercept_p_x_r, body_intercept_p_y_r, image_point_p_x_r, image_point_p_y_r,
 									B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny);

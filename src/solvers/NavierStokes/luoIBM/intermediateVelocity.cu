@@ -50,6 +50,7 @@ void luoIBM::generateRHS1()
 	//sum rhs components
 	kernels::generateRHS<<<dimGridUV,dimBlockUV>>>(rhs1_r, L_r, Nold_r, N_r, u_r, bc1_r, dt, nx, ny);
 	logger.stopTimer("RHS1 Setup");
+
 }
 
 void luoIBM::generateLHS1()

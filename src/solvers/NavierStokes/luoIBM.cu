@@ -95,13 +95,15 @@ void luoIBM::writeCommon()
 void luoIBM::_intermediate_velocity()
 {
 	generateRHS1();
-	//arrayprint(rhs1,"rhs1","x",-1);
+	std::cout<<"1.1\n";
 	solveIntermediateVelocity();
+	std::cout<<"1.2\n";
 	weightUhat();
 }
 void luoIBM::_pressure()
 {
 	generateRHS2();
+	std::cout<<"4\n";
 	solvePoisson();
 	weightPressure();
 }
