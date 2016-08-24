@@ -300,13 +300,7 @@ void luo_base::testInterpP()
 				body_nodes << a1[ip] <<"\t";
 				body_nodes << a2[ip] <<"\t";
 				body_nodes << a3[ip] <<"\t";
-				body_nodes << body_intercept_p[ip] << "\t";
-				body_nodes << dudt[ip] <<"\t";
-				body_nodes << ududx[ip] <<"\t";
-				body_nodes << vdudy[ip] <<"\t";
-				body_nodes << dvdt[ip] <<"\t";
-				body_nodes << udvdx[ip] <<"\t";
-				body_nodes << vdvdy[ip] <<"\n";
+				body_nodes << body_intercept_p[ip] << "\n";
 			}
 		}
 	}

@@ -21,7 +21,6 @@ void newPrecon::generate1(cusp::coo_matrix<int, double, cusp::device_memory>LHS1
 
 void newPrecon::generate2(cusp::coo_matrix<int, double, cusp::device_memory>LHS2, preconditionerType type2)
 {
-	std::cout<<"before PC2->gen2\n";
 	PC2 = new preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >(LHS2, type2);
 }
 

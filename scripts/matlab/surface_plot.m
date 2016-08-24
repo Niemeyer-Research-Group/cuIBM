@@ -5,14 +5,14 @@ close all
 % figure
 %change these
 number = '0';
-type = 'u'; %p or u
-suffix = 'hat'; %u: 0, star, hat, hatfinal, empty. p: 0, star, empty
-view = 'in';
+type = 'p'; %p or u
+suffix = ''; %u: 0, star, hat, hatfinal, empty. p: 0, star, empty
+view = 'outt';
 
 %load data
 % caseFolder = '/scratch/src/cuIBM/validation/luo/test/output/'
-% caseFolder = '/scratch/src/cuIBM/validation/cylinder/Re40/output/';
-caseFolder = '/scratch/src/cuIBM/validation/osc/gh/output/';
+caseFolder = '/scratch/src/cuIBM/validation/cylinder/Re40/output/';
+% caseFolder = '/scratch/src/cuIBM/validation/osc/gh/output/';
 path = strcat(caseFolder,number,type,suffix,'.csv');
 ghostpath = strcat(caseFolder,number,'ghost',type,'.csv');
 delim = '\t';

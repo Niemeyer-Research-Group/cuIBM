@@ -98,10 +98,7 @@ preconditioner<Matrix>::preconditioner(const Matrix &A, preconditionerType _type
 	else
 	if (type == SMOOTHED_AGGREGATION)
 	{
-		//LO = new cusp::precond::aggregation::smoothed_aggregation<IndexType, ValueType, MemorySpace>(A);
-		std::cout<<"before make new precond\n";
-		LO = new cusp::precond::aggregation::smoothed_aggregation<int, double, cusp::device_memory>(A);
-		std::cout<<"after make new precond\n";
+		LO = new cusp::precond::aggregation::smoothed_aggregation<IndexType, ValueType, MemorySpace>(A);
 	}
 	else
 	if (type == AINV)
