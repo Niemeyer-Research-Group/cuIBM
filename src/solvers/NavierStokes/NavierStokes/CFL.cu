@@ -30,21 +30,3 @@ void NavierStokesSolver::CFL()
 	}
 	logger.stopTimer("CFL");
 }
-
-/*
-void NavierStokesSolver::calcDistance()
-{
-
-	int width_i = B.numCellsXHost, //flag this value is only moved to the host once (in B.initialise) if the body is moving too much this could break
-		height_j=B.numCellsYHost;  //this is done because we need the value on the host to calculate the grid size, but copying it to the host every TS is expensive
-
-	const int blocksize = 256;
-
-	dim3 grid( int( (width_i*height_j-0.5)/blocksize ) +1, 1);
-	dim3 block(blocksize, 1);
-
-	kernels::testDistance<<<grid,block>>>(distance_r, ghostTagsUV_r, ghostTagsP_r, xu_r, xv_r, yu_r, yv_r, B.midX, B.midY,
-											B.startI_r, B.startJ_r, width_i, nx, ny);
-	arrayprint(distance,"distance","p",-1);
-}
-*/

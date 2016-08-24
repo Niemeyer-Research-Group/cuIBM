@@ -90,8 +90,8 @@ void NavierStokesSolver::initialiseNoBody()
 	dim3 dimBlock(blocksize, 1);
 	dim3 dimGridV( int( (nx*(ny-1)-0.5)/blocksize ) +1, 1);
 
-	kernels::initialiseU<<<dimGridU,dimBlock>>>(u_r, xu_r, yu_r, uInitial, uPerturb, M_PI, xmax, xmin, ymax, ymin, nx, ny);
-	kernels::initialiseV<<<dimGridV,dimBlock>>>(u_r, xv_r, yv_r, vInitial, vPerturb, M_PI, xmax, xmin, ymax, ymin, nx, ny);
+	//kernels::initialiseU<<<dimGridU,dimBlock>>>(u_r, xu_r, yu_r, uInitial, uPerturb, M_PI, xmax, xmin, ymax, ymin, nx, ny);
+	//kernels::initialiseV<<<dimGridV,dimBlock>>>(u_r, xv_r, yv_r, vInitial, vPerturb, M_PI, xmax, xmin, ymax, ymin, nx, ny);
 
 	uhat=u;
 
@@ -145,9 +145,10 @@ void NavierStokesSolver::initialiseLHS()
 {
 	generateLHS1();
 	generateLHS2();
-
 	PC.generate1(LHS1, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>());
-	PC.generate2(LHS1, (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
+	std::cout<<"before PC.\n";
+	PC.generate2(LHS2, SMOOTHED_AGGREGATION);//(*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
+	//PC.generate(LHS1,LHS2, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>(), (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
 	std::cout << "NavierStokesSolver: Assembled LHS matrices!" << std::endl;
 }
 

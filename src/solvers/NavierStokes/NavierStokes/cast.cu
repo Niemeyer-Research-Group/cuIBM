@@ -22,7 +22,7 @@ void NavierStokesSolver::cast()
 
 	//resize arrays
 	LHS1.resize(numUV, numUV, (nx-1)*ny*5 - 2*ny-2*(nx-1)       +        (ny-1)*nx*5 - 2*(ny-1) - 2*nx);
-	LHS2.resize(nx*ny, nx*ny, 5*nx*ny - 2*ny-2*nx);
+	LHS2.resize(numP, numP, 5*nx*ny - 2*ny-2*nx);
 
 	//numUV
 	u.resize(numUV);
