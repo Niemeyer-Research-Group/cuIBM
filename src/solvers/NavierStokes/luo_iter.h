@@ -39,6 +39,11 @@ public:
 	//Poisson.cu
 	//////////////////////////
 	void poisson_setup();
+		void poisson_alpha();
+		void poisson_interpolation_setup();
+		void poisson_size_lhs();
+		void poisson_calculate_lhs();
+		void poisson_update_rhs();
 
 	virtual void cast();
 };

@@ -12,7 +12,7 @@ __global__
 void LHS1_mid_iter_X(int *row, int *col, double *val, double *dx, double *dy, double dt, double nu, int nx, int ny,
 					int *hybridTagsUV, int *ghostTagsUV, double *ns_rhs, double *interp_rhs, int *count,
 					int *index1, int *index2, int *index3, int *index4,
-					double *xu, double *yu, double *alpha, double *uB,
+					double *xu, double *yu, double *alpha, double *uB, //xu, yu not used
 					double *q1coef, double *q2coef, double *q3coef, double *q4coef,
 					double *q1, double *q2, double *q3, double *q4
 					)
@@ -34,7 +34,6 @@ void LHS1_mid_iter_X(int *row, int *col, double *val, double *dx, double *dy, do
 	if (hybridTagsUV[iu]>0)
 	{
 		int interp_index[4] = {index1[iu], index2[iu], index3[iu], index4[iu]};
-		int ns_index[5] = {iu + (nx-1), iu + 1, iu - (nx-1), iu -1, iu}; //n e s w p
 		double q[4] = {q1[iu], q2[iu], q3[iu], q4[iu]};
 		double CInterp[4];
 		double Cns[5];
@@ -231,12 +230,9 @@ void LHS1_mid_iter_Y(int *row, int *col, double *val, double *dx, double *dy, do
 	if (hybridTagsUV[iv]>0)
 	{
 		int interp_index[4] = {index1[iv], index2[iv], index3[iv], index4[iv]};
-		int ns_index[5] = {iv + nx, iv + 1, iv - nx, iv -1, iv}; //n e s w p
 		double q[4] = {q1[iv], q2[iv], q3[iv], q4[iv]};
 		double CInterp[4];
 		double Cns[5];
-		double	x=xv[I],
-				y=yv[J];
 		Cns[0] = -dt*nu/(dy[J+1]*(dy[J]+dy[J+1]));
 		Cns[1] = -dt*nu/(dx[I]*(dx[I]+dx[I+1]));
 		Cns[2] = -dt*nu/(dy[J]*(dy[J]+dy[J+1]));

@@ -93,11 +93,11 @@ void luo_iter::_intermediate_velocity()
 			break;
 	}*/
 	solveIntermediateVelocity();
-	arrayprint(ghostTagsUV,"ghostu","x",-1);
-	arrayprint(uhat, "uhat","x",-1);
 }
 void luo_iter::_pressure()
 {
-	//poisson_setup();
+	poisson_setup();
 	solvePoisson();
+	arrayprint(ghostTagsP,"ghostp","p",-1);
+	arrayprint(pressure, "p","p",-1);
 }

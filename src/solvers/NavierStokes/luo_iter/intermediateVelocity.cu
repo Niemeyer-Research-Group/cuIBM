@@ -48,16 +48,16 @@ void luo_iter::intermediate_velocity_setup()
 	kernels::generateRHS<<<grid,block>>>(rhs1_r, L_r, Nold_r, N_r, u_r, bc1_r, dt, nx, ny);
 
 	//calculate alpha
-	intermediate_velocity_alpha();//not needed for GN
+	intermediate_velocity_alpha();
 
 	//interpolation setup
-	intermediate_velocity_interpolation_setup();//done for GN
+	intermediate_velocity_interpolation_setup();
 
 	//size lhs
-	intermediate_velocity_size_lhs();//not needed for GN
+	intermediate_velocity_size_lhs();
 
 	//calculate lhs
-	intermediate_velocity_calculate_lhs();//you're here
+	intermediate_velocity_calculate_lhs();
 
 	//sort
 	LHS1.sort_by_row_and_column();
@@ -81,6 +81,8 @@ void luo_iter::intermediate_velocity_alpha()
 	dim3 grid( int( ((nx-1)*ny-0.5)/blocksize ) +1, 1);
 	dim3 block(blocksize, 1);
 
+	cusp::blas::fill(alpha,0);//I don't think this is needed but it cleans up the alpha array
+
 	kernels::alpha_u<<<grid,block>>>(alpha_r, ghostTagsUV_r, hybridTagsUV_r, yu_r, xu_r,
 										body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
 										B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny);
@@ -96,7 +98,8 @@ void luo_iter::intermediate_velocity_interpolation_setup()
 
 	dim3 grid( int( (B.numCellsXHost*B.numCellsYHost-0.5)/blocksize ) +1, 1);
 	dim3 block(blocksize, 1);
-
+	cusp::blas::fill(ns_rhs,0);
+	cusp::blas::fill(interp_rhs,0);
 	//interpolate velocity to image point and ghost node
 	kernels::interpolateVelocityToGhostNodeX<<<grid,block>>>(u_r, false, ghostTagsUV_r, B.x_r, B.y_r, B.uB_r, yu_r, xu_r,
 													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
@@ -106,7 +109,6 @@ void luo_iter::intermediate_velocity_interpolation_setup()
 													x1_r, x2_r, x3_r, x4_r,
 													y1_r, y2_r, y3_r, y4_r,
 													q1_r, q2_r, q3_r, q4_r, image_point_u_r);
-	testInterpX();
 	kernels::interpolateVelocityToGhostNodeY<<<grid,block>>>(u_r, false, ghostTagsUV_r, B.x_r, B.y_r, B.vB_r, yv_r, xv_r,
 													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
 													B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny,
