@@ -4,7 +4,8 @@ clear
 % close all
 figure
 % M = dlmread('/scratch/src/cuIBM/validation/osc/flow/interp_testP.csv','\t',1,0); %start on second row to avoid headers
-M = dlmread('/scratch/src/cuIBM/validation/cylinder/Re40/interp_testP.csv','\t',1,0); %start on second row to avoid headers
+% M = dlmread('/scratch/src/cuIBM/validation/cylinder/Re40/interp_testP.csv','\t',1,0); %start on second row to avoid headers
+M = dlmread('/scratch/src/cuIBM/validation/osc/gh/interp_testP.csv','\t',1,0); %start on second row to avoid headers
 % 1     2       3       4       5       6       7       8       9       10      11  12  13  14  15  16  17  18  19  20  21  22  23
 % BN_X1	BN_Y1   BN_X2	BN_Y2	GN_X    GN_Y	BI_X	BI_Y    IP_X	IP_Y	x1	x2	x3  x4	y1	y2	y3	y4	q1	q2	q3	q4	p*
 X = zeros(1,7);
@@ -57,7 +58,7 @@ for i =1:length(M)
 end
     
 set(gca,'Color',[0.8 0.8 0.8]);
-legend('Ghost Node','Boundary Intercept','Body','Image Point','Interpolation corner')
+legend('Body','Ghost Node','Boundary Intercept','Image Point','Interpolation corner')
 axis square
 
 %% 3d pressure interpolation

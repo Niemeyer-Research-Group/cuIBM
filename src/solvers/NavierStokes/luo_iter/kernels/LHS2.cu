@@ -44,7 +44,7 @@ void LHS2_mid_iter(int *row, int *col, double *val, double *dx, double *dy, int 
 		Cns[3] = -dt/(dx[I]*(dx[I]+dx[I-1])*0.5); //w
 		Cns[4] = -Cns[0] - Cns[1] - Cns[2] - Cns[3]; //P
 
-		//calculate pressure coefficients for the interpolation pressure calculation	//is multiplied by pressure from corner:
+		//set pressure coefficients for the interpolation pressure calculation
 		CInterp[0] = q1coef[ip];
 		CInterp[1] = q2coef[ip];
 		CInterp[2] = q3coef[ip];
@@ -56,7 +56,6 @@ void LHS2_mid_iter(int *row, int *col, double *val, double *dx, double *dy, int 
 			Cns[i] = (1-alpha[ip])*Cns[i]/Cns[4];
 			CInterp[i] = alpha[ip]*CInterp[i];
 		}
-
 
 		/*   0  1  2		NW  N   NE
 		 *   3  4  5		W   P   E
@@ -74,7 +73,7 @@ void LHS2_mid_iter(int *row, int *col, double *val, double *dx, double *dy, int 
 			{
 				if (stencil_index[m] == interp_index[n] && m != 4)
 				{
-					stencil[m] += CInterp[n]; //flag should this be minus?
+					stencil[m] -= CInterp[n]; //this should be minus
 				}
 			}
 		}
@@ -102,46 +101,45 @@ void LHS2_mid_iter(int *row, int *col, double *val, double *dx, double *dy, int 
 				{
 					row[numE] = ip;
 					col[numE] = interp_index[n];
-					val[numE] = CInterp[n];
+					val[numE] = -CInterp[n];//this should also be minus
 				}
 				else if(stencil_index[m] == interp_index[n] && stencil_used[m])
-					interp_rhs[ip] += CInterp[n]*q[n];
+					interp_rhs[ip] += CInterp[n]*q[n]; //this should be addition
 			}
 		}
 	}
 	else //if were not at a hybrid node
 	{
+		temp = dt/(dx[I]*(dx[I]+dx[I+1])*0.5) + dt/(dx[I]*(dx[I]+dx[I-1])*0.5) + dt/(dy[J]*(dy[J]+dy[J+1])*0.5) + dt/(dy[J]*(dy[J]+dy[J-1])*0.5);
 		//EAST
 		row[numE] = ip;
 		col[numE] = ip + 1;
-		val[numE] = -dt/(dx[I]*(dx[I]+dx[I+1])*0.5);
+		val[numE] = -dt/(dx[I]*(dx[I]+dx[I+1])*0.5)/temp;
 		numE++;
-		temp 	  += dt/(dx[I]*(dx[I]+dx[I+1])*0.5);
 
 		//WEST
 		row[numE] = ip;
 		col[numE] = ip - 1;
-		val[numE] = -dt/(dx[I]*(dx[I]+dx[I-1])*0.5);
-		temp 	  += dt/(dx[I]*(dx[I]+dx[I-1])*0.5);
+		val[numE] = -dt/(dx[I]*(dx[I]+dx[I-1])*0.5)/temp;
 		numE++;
 
 		//NORTH
 		row[numE] = ip;
 		col[numE] = ip + nx;
-		val[numE] = -dt/(dy[J]*(dy[J]+dy[J+1])*0.5);
-		temp += dt/(dy[J]*(dy[J]+dy[J+1])*0.5);
+		val[numE] = -dt/(dy[J]*(dy[J]+dy[J+1])*0.5)/temp;
 		numE++;
 
 		//SOUTH
 		row[numE] = ip;
 		col[numE] = ip - nx;
-		val[numE] = -dt/(dy[J]*(dy[J]+dy[J-1])*0.5);
-		temp 	  += dt/(dy[J]*(dy[J]+dy[J-1])*0.5);
+		val[numE] = -dt/(dy[J]*(dy[J]+dy[J-1])*0.5)/temp;
 		numE++;
 		//MID
 		row[numE] = ip;
 		col[numE] = ip;
-		val[numE] = temp;
+		val[numE] = 1;
+		ns_rhs[ip] = 1/temp;
+		interp_rhs[ip] = 0;
 	}
 }
 }

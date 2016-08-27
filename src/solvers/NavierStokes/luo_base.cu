@@ -207,6 +207,9 @@ void luo_base::_post_step()
 		CFL();
 	}
 
+	//arrayprint(u,"u","x",-1);
+	//arrayprint(ghostTagsUV,"ghostu","x",-1);
+
 	//update time
 	timeStep++;
 	std::cout<<timeStep<<std::endl;

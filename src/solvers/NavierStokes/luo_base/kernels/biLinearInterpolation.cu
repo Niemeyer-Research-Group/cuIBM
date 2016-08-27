@@ -665,7 +665,7 @@ void interpolateVelocityToHybridNodeY(double *u, double *ustar, int *hybridTagsU
 
 __global__
 void interpolatePressureToHybridNode(double *pressure, double *pressureStar, double *u, int *hybridTagsP, double *bx, double *by,
-									double *uB, double *uB0, double *vB, double  *vB0, double *yu, double *yv, double *xu, double *xv,
+									double *uB, double *uB0, double *vB, double  *vB0, double *yu, double *yv, double *xu, double *xv, //yv xu not used?
 									double *body_intercept_p_x, double *body_intercept_p_y, double *image_point_p_x, double *image_point_p_y,
 									int *i_start, int *j_start, int width, int nx, int ny, double dt,
 									int *index1, int *index2, int *index3, int *index4,

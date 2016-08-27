@@ -91,15 +91,19 @@ void luo_base::testInterpX()//flag split this into ghost node and hybrid node fu
 					"q3\t"
 					"q4\t"
 					"GN_U\t"
-					"image_point_u\n"
+					"image_point_u\t"
+					"q1coef\t"
+					"q2coef\t"
+					"q3coef\t"
+					"q4coef\n"
 			;
 	for (int J=j_start;  J<j_end;  J++)
 	{
 		for (int I=i_start;  I<i_end;  I++)
 		{
 			iu = J*(nx-1) + I;
-			if (ghostTagsUV[iu] >0)//for inside
-			//if (hybridTagsUV[iu] >0)//for outside
+			//if (ghostTagsUV[iu] >0)//for inside
+			if (hybridTagsUV[iu] >0)//for outside
 			{
 				body_nodes << x1_ip[iu]<<"\t";
 				body_nodes << y1_ip[iu]<<"\t";
@@ -123,9 +127,13 @@ void luo_base::testInterpX()//flag split this into ghost node and hybrid node fu
 				body_nodes << q2[iu] <<"\t";
 				body_nodes << q3[iu] <<"\t";
 				body_nodes << q4[iu] <<"\t";
-				body_nodes << u[iu] <<"\t";//inside
-				//body_nodes << ustar[iu] <<"\t";//outside
-				body_nodes << image_point_u[iu]<<"\n";
+				//body_nodes << u[iu] <<"\t";//inside
+				body_nodes << ustar[iu] <<"\t";//outside
+				body_nodes << image_point_u[iu]<<"\t";
+				body_nodes << q1coef[iu] << "\t";
+				body_nodes << q2coef[iu] << "\t";
+				body_nodes << q3coef[iu] << "\t";
+				body_nodes << q4coef[iu] << "\n";
 			}
 		}
 	}
@@ -256,20 +264,18 @@ void luo_base::testInterpP()
 					"a2\t"
 					"a3\t"
 					"BI_p\t"
-					"dudt\t"
-					"ududx\t"
-					"vdudy\t"
-					"dvdt\t"
-					"udvdx\t"
-					"vdvdy\n"
+					"q1coef\t"
+					"q2coef\t"
+					"q3coef\t"
+					"q4coef\n"
 					;
 	for (int J=j_start;  J<j_end;  J++)
 	{
 		for (int I=i_start;  I<i_end;  I++)
 		{
 			ip = J*nx + I;
-			if (ghostTagsP[ip] >0)//for inside
-			//if (hybridTagsP[ip] >0)//for outside
+			//if (ghostTagsP[ip] >0)//for inside
+			if (hybridTagsP[ip] >0)//for outside
 			{
 				//std::cout<<I<<"\t"<<J<<"\t"<<iv<<"\n";
 				body_nodes << x1_ip_p[ip]<<"\t";
@@ -294,13 +300,17 @@ void luo_base::testInterpP()
 				body_nodes << q2_p[ip] <<"\t";
 				body_nodes << q3_p[ip] <<"\t";
 				body_nodes << q4_p[ip] <<"\t";
-				//body_nodes << pressureStar[ip] <<"\t";//outside
-				body_nodes << pressure[ip] <<"\t";//inside
+				body_nodes << pressureStar[ip] <<"\t";//outside
+				//body_nodes << pressure[ip] <<"\t";//inside
 				body_nodes << a0[ip] <<"\t";
 				body_nodes << a1[ip] <<"\t";
 				body_nodes << a2[ip] <<"\t";
 				body_nodes << a3[ip] <<"\t";
-				body_nodes << body_intercept_p[ip] << "\n";
+				body_nodes << body_intercept_p[ip] << "\t";
+				body_nodes << q1coef[ip] << "\t";
+				body_nodes << q2coef[ip] << "\t";
+				body_nodes << q3coef[ip] << "\t";
+				body_nodes << q4coef[ip] << "\n";
 			}
 		}
 	}

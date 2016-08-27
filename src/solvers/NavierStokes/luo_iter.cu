@@ -93,11 +93,34 @@ void luo_iter::_intermediate_velocity()
 			break;
 	}*/
 	solveIntermediateVelocity();
+	testInterpX();
 }
+
 void luo_iter::_pressure()
 {
 	poisson_setup();
 	solvePoisson();
+	int index = 0, ip, I;
+	for (int i = 0; i < numUV*5; i++)
+	{
+		ip = LHS2.row_indices[i];
+		I = ip%nx;
+		if (hybridTagsP[LHS2.row_indices[i]]>0 && I <160)
+		{
+			if (LHS2.row_indices[i] >index)
+			{
+				std::cout<<"\n";
+				index = LHS2.row_indices[i];
+			}
+			std::cout<<LHS2.row_indices[i]<<"\t";
+			std::cout<<LHS2.column_indices[i]<<"\t";
+			std::cout<<LHS2.values[i]<<std::endl;
+		}
+		if (LHS2.row_indices[i]>70000)
+			break;
+	}
+	arrayprint(rhs2,"rhs2","p",-1);
 	arrayprint(ghostTagsP,"ghostp","p",-1);
+	arrayprint(hybridTagsP,"hybridP","p",-1);
 	arrayprint(pressure, "p","p",-1);
 }
