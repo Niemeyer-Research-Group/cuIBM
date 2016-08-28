@@ -169,17 +169,21 @@ void luo_base::writeCommon()
 	iterationsFile << timeStep << '\t' << iterationCount1 << '\t' << iterationCount2 << std::endl;
 	if (timeStep == 1)
 	{
-		midPositionFile << "timeStep"
+		midPositionFile << "ts"
 						<< "\t" << "X"
 						<< "\t" << "Y"
 						<< "\t" << "U"
-						<< "\t" << "V" << std::endl; //flag this is formatted quite properly
+						<< "\t" << "V"
+						<< "\t" << "DuDt"
+						<< "\t" << "DvDt" << std::endl;
 	}
 	midPositionFile << timeStep
 					<< "\t" << B.midX
 					<< "\t" << B.midY
 					<< "\t" << B.centerVelocityU
-					<< "\t" << B.centerVelocityV <<std::endl;
+					<< "\t" << B.centerVelocityV
+					<< "\t" << (B.uB[0]-B.uBk[0])/dt
+					<< "\t" << (B.vB[0]-B.vBk[0])/dt <<std::endl;
 }
 
 void luo_base::stepTime()
@@ -199,6 +203,17 @@ void luo_base::_pressure()
 {}
 void luo_base::_post_step()
 {
+	/*arrayprint(u,"u","x",-1);
+	arrayprint(u,"v","y",-1);
+	arrayprint(uhat,"uhat","x",-1);
+	arrayprint(uhat,"vhat","y",-1);
+	arrayprint(ghostTagsUV,"ghostu","x",-1);
+	arrayprint(ghostTagsUV,"ghostv","y",-1);*/
+
+	//update time
+	timeStep++;
+	std::cout<<timeStep<<std::endl;
+
 	//Release the body after a certain timestep
 	if (timeStep >= (*paramDB)["simulation"]["startStep"].get<int>())
 	{
@@ -206,13 +221,6 @@ void luo_base::_post_step()
 		updateSolver();
 		CFL();
 	}
-
-	//arrayprint(u,"u","x",-1);
-	//arrayprint(ghostTagsUV,"ghostu","x",-1);
-
-	//update time
-	timeStep++;
-	std::cout<<timeStep<<std::endl;
 
 	//print stuff if its done
 	if (timeStep%(*paramDB)["simulation"]["nt"].get<int>() == 0)

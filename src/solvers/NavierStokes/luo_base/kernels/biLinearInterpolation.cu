@@ -759,7 +759,7 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 			a[l*4] = 0;
 			a[l*4+1] = n_x/nl;
 			a[l*4+2] = n_y/nl;
-			a[l*4+3] = n_y/nl*x[l] + n_y/nl*y[l];
+			a[l*4+3] = n_y/nl*x[l] + n_x/nl*y[l];
 		}
 	}
 

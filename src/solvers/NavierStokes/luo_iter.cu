@@ -49,12 +49,16 @@ void luo_iter::initialise()
 			totalPoints=B.totalPoints,
 			xold= B.midX,
 			unew,
+			uold,
 			xnew;
 
 	//xnew = -1/(2*M_PI)*sin(2*M_PI*f*t);
 	//unew = -f*cos(2*M_PI*f*t);
 	xnew = xCoeff*sin(2*M_PI*f*t + xPhase);
 	unew = uCoeff*cos(2*M_PI*f*t + uPhase);
+	uold = uCoeff*cos(2*M_PI*f*(t-dt)+uPhase);
+	std::cout<<unew<<"\n";
+	std::cout<<uold<<"\n";
 
 	B.centerVelocityU0 = unew;
 	B.midX0 = xnew;
@@ -64,12 +68,10 @@ void luo_iter::initialise()
 	const int blocksize = 256;
 	dim3 grid( int( (totalPoints)/blocksize ) +1, 1);
 	dim3 block(blocksize, 1);
-	B.uBk = B.uB;
 	//update position/velocity for current values
 	kernels::update_body_viv<<<grid,block>>>(B.x_r, B.uB_r, xnew-xold, unew, totalPoints);
 	//set position/velocity for old values
-	kernels::initialise_old<<<grid,block>>>(B.uBk_r,unew,totalPoints);//flag not sure if this should be done or not, as it is it simulates the body being in motion before we actually start, and it is technically more like an impulsivly started motion
-																	//it effects du/dt for the calcualtion of the material derivative in the bilinear interp functions, its overall effect is pretty minimal
+	kernels::initialise_old<<<grid,block>>>(B.uBk_r,uold,totalPoints);
 }
 
 void luo_iter::_intermediate_velocity()
@@ -100,7 +102,7 @@ void luo_iter::_pressure()
 {
 	poisson_setup();
 	solvePoisson();
-	int index = 0, ip, I;
+	/*int index = 0, ip, I;
 	for (int i = 0; i < numUV*5; i++)
 	{
 		ip = LHS2.row_indices[i];
@@ -118,7 +120,8 @@ void luo_iter::_pressure()
 		}
 		if (LHS2.row_indices[i]>70000)
 			break;
-	}
+	}*/
+
 	arrayprint(rhs2,"rhs2","p",-1);
 	arrayprint(ghostTagsP,"ghostp","p",-1);
 	arrayprint(hybridTagsP,"hybridP","p",-1);

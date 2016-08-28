@@ -26,7 +26,8 @@ void calculateCFL(double *cfl, double *u, double *dx, double *dy,
 		J	= ip / nx,
 		iu	= (nx-1)*J + I,
 		iv	= (nx-1)*ny  +  nx*J +I;
-
+	if (I==nx-1||J==ny-1)
+		return;
 	cfl[ip] = dt*(abs(u[iu])/dx[I] + abs(u[iv])/dy[J]);
 }
 
