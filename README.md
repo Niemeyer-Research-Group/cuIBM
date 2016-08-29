@@ -77,6 +77,12 @@ Copy the zip to /scratch/src/lib then:
 
 The folder `/scratch/src/lib/cusplibrary-0.5.1` is now created.
 
+### Python Libraries
+
+If you want to use the post processing scripts, install these python libraries. You only need numpy and matplotlib.
+
+    > sudo apt-get install python-numpy python-scipy python-matplotlib ipython ipython-notebook python-pandas python-sympy python-nose
+
 ### Compiling cuIBM
 
 This version of cuIBM can be found at its [GitHub repository](https://github.com/Niemeyer-Research-Group/cuIBM).
