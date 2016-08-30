@@ -143,7 +143,7 @@ void LHS1_mid_iter_X(int *row, int *col, double *val, double *dx, double *dy, do
 			{
 				row[numE] = iu;
 				col[numE] = interp_index[i];
-				val[numE] = CInterp[i];
+				val[numE] = CInterp[i]; //flag should this be minus?
 				numE++;
 			}
 			else

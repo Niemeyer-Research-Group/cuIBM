@@ -24,13 +24,13 @@ void luo_iter::poisson_setup()
 	kernels::intermediatePressure_luo<<<grid,block>>>(rhs2_r, uhat_r, ym_r, yp_r, xm_r, xp_r, dx_r, dy_r, nx, ny);
 
 	//calculate alpha
-	poisson_alpha();
+	poisson_alpha(); //not needed
 
 	//interpolation setup
-	poisson_interpolation_setup();
+	poisson_interpolation_setup(); //done
 
 	//size lhs
-	poisson_size_lhs();
+	poisson_size_lhs(); //not needed
 
 	//calculate lhs
 	poisson_calculate_lhs();//you are here
@@ -80,7 +80,7 @@ void luo_iter::poisson_interpolation_setup()
 	cusp::blas::fill(q3coef,0);
 	cusp::blas::fill(q4coef,0);
 
-	kernels::interpolatePressureToGhostNode<<<grid,block>>>(pressure_r, true, u_r, ghostTagsP_r, B.x_r, B.y_r,
+	kernels::interpolatePressureToGhostNode<<<grid,block>>>(pressure_r, false, u_r, ghostTagsP_r, B.x_r, B.y_r, dpdn_r,
 																B.uB_r, B.uBk_r, B.vB_r, B.vBk_r, yu_r, yv_r, xu_r, xv_r,
 																body_intercept_p_x_r, body_intercept_p_y_r, image_point_p_x_r, image_point_p_y_r,  body_intercept_p_r,
 																B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny, dt,
@@ -102,7 +102,6 @@ void luo_iter::poisson_interpolation_setup()
 																y1_p_r, y2_p_r, y3_p_r, y4_p_r,
 																q1_p_r, q2_p_r, q3_p_r, q4_p_r);
 	testInterpP();
-
 }
 
 void luo_iter::poisson_size_lhs()
@@ -134,8 +133,8 @@ void luo_iter::poisson_calculate_lhs()
 	cusp::blas::fill(LHS2.values,0);
 
 	kernels::LHS2_mid_iter<<<grid,block>>>(LHS2_row_r, LHS2_col_r, LHS2_val_r, dx_r, dy_r, nx, ny, dt,
-											count_r, ns_rhs_r, interp_rhs_r, hybridTagsP_r, ghostTagsP_r, alpha_r,
-											xv_r, yu_r,
+											count_r, ns_rhs_r, interp_rhs_r, hybridTagsP_r, ghostTagsP_r,
+											alpha_r, dpdn_r,
 											index1_r, index2_r, index3_r, index4_r,
 											q1coef_r, q2coef_r, q3coef_r, q4coef_r,
 											q1_p_r, q2_p_r, q3_p_r, q4_p_r);

@@ -72,6 +72,7 @@ void luo_base::cast()
 	ns_rhs.resize(numUV);
 	interp_rhs.resize(numUV);
 	count.resize(numUV);
+	dpdn.resize(numP);
 
 	//tags
 	ghostTagsP.resize(numP);
@@ -151,4 +152,5 @@ void luo_base::cast()
 	ns_rhs_r			= thrust::raw_pointer_cast( &(ns_rhs[0]) );
 	interp_rhs_r		= thrust::raw_pointer_cast( &(interp_rhs[0]) );
 	count_r				= thrust::raw_pointer_cast( &(count[0]) );
+	dpdn_r				= thrust::raw_pointer_cast( &(dpdn[0]) );
 }

@@ -852,7 +852,7 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 }
 
 __global__
-void interpolatePressureToGhostNode(double *pressure, bool set, double *u, int *ghostTagsP, double *bx, double *by,
+void interpolatePressureToGhostNode(double *pressure, bool set, double *u, int *ghostTagsP, double *bx, double *by, double *dpdn,
 									double *uB, double *uB0, double *vB, double  *vB0, double *yu, double *yv, double *xu, double *xv,
 									double *body_intercept_p_x, double *body_intercept_p_y, double *image_point_p_x, double *image_point_p_y, double *body_intercept_p,
 									int *i_start, int *j_start, int width, int nx, int ny, double dt,
@@ -891,8 +891,6 @@ void interpolatePressureToGhostNode(double *pressure, bool set, double *u, int *
 	 *   	(x1,y1)__________(x2,y2)
 	 *
 	 *   *(BI_x,BI_y)
-	 *
-	 *
 	 */
 
 
@@ -946,7 +944,7 @@ void interpolatePressureToGhostNode(double *pressure, bool set, double *u, int *
 			a[l*4] = 0;
 			a[l*4+1] = n_x/nl;
 			a[l*4+2] = n_y/nl;
-			a[l*4+3] = n_y/nl*x[l] + n_y/nl*y[l];
+			a[l*4+3] = n_y/nl*x[l] + n_x/nl*y[l];
 		}
 		//if the node is the closest to the body, set the closeMatD
 		if (index[l] == close_index)
@@ -1056,9 +1054,10 @@ void interpolatePressureToGhostNode(double *pressure, bool set, double *u, int *
 	//pressure at the image point
 	double image_point_pressure = a0[ip] + a1[ip]*image_point_p_x[ip]    + a2[ip]*image_point_p_y[ip]    + a3[ip] * image_point_p_y[ip]   *image_point_p_x[ip];
 	body_intercept_p[ip]        = a0[ip] + a1[ip]*body_intercept_p_x[ip] + a2[ip]*body_intercept_p_y[ip] + a3[ip] * body_intercept_p_x[ip]*body_intercept_p_y[ip]; //used for force calc
+	dpdn[ip] = sqrt(pow(image_point_p_x[ip]-xv[I],2)+pow(image_point_p_y[ip]-yu[J],2))*matDClose;
 
 	//extrapolate pressure to the ghost node
 	if (set)
-		pressure[ip] = image_point_pressure ;//+ sqrt(pow(image_point_p_x[ip]-xv[I],2)+pow(image_point_p_y[ip]-yu[J],2))*matDClose;
+		pressure[ip] = image_point_pressure + dpdn[ip];
 }
 }

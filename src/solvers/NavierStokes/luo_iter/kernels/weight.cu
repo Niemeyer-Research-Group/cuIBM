@@ -43,6 +43,7 @@ void alpha_u(double *alpha, int *ghostTagsUV, int *hybridTagsUV, double *yu, dou
 		delta_2 = sqrt( pow( body_intercept_x[iu+(nx-1)]-xu[I],2 ) + pow( body_intercept_y[iu+(nx-1)]-yu[J+1], 2 ) );
 	//calculate alpha
 	alpha[iu] = sqrt( pow( delta_1/dx , 2 ) + pow( delta_2/dy , 2 ) );
+	//alpha[iu] = 0;
 }
 
 __global__
@@ -81,6 +82,7 @@ void alpha_v(double *alpha, int *ghostTagsUV, int *hybridTagsUV, double *yv, dou
 		delta_2 = sqrt( pow( body_intercept_x[iv+nx]-xv[I],2 ) + pow( body_intercept_y[iv+nx]-yv[J+1], 2 ) );
 	//calculate alpha
 	alpha[iv] = sqrt( pow( delta_1/dx , 2 ) + pow( delta_2/dy , 2 ) );
+	//alpha[iv] = 0;
 }
 
 __global__
@@ -119,7 +121,7 @@ void alpha_p(double *alpha, int *ghostTagsP, int *hybridTagsP, double *yu, doubl
 		delta_2 = sqrt( pow( body_intercept_x[ip+nx]-xv[I],2 ) + pow( body_intercept_y[ip+nx]-yu[J+1], 2 ) );
 	//calculate alpha
 	alpha[ip] = sqrt( pow( delta_1/dx , 2 ) + pow( delta_2/dy , 2 ) );
-	alpha[ip] = 1;
+	//alpha[ip] = 1;
 }
 
 }

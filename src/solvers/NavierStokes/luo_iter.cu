@@ -57,8 +57,6 @@ void luo_iter::initialise()
 	xnew = xCoeff*sin(2*M_PI*f*t + xPhase);
 	unew = uCoeff*cos(2*M_PI*f*t + uPhase);
 	uold = uCoeff*cos(2*M_PI*f*(t-dt)+uPhase);
-	std::cout<<unew<<"\n";
-	std::cout<<uold<<"\n";
 
 	B.centerVelocityU0 = unew;
 	B.midX0 = xnew;
@@ -72,30 +70,17 @@ void luo_iter::initialise()
 	kernels::update_body_viv<<<grid,block>>>(B.x_r, B.uB_r, xnew-xold, unew, totalPoints);
 	//set position/velocity for old values
 	kernels::initialise_old<<<grid,block>>>(B.uBk_r,uold,totalPoints);
+	std::cout << "luo_iter: Initialised Movement!" << std::endl;
+
+	//must retag points because we have set a new body location since tagging points
+	tagPoints();
+	std::cout << "luo_iter: Tagged points!" << std::endl;
 }
 
 void luo_iter::_intermediate_velocity()
 {
 	intermediate_velocity_setup();
-	/*int index = 0;
-	for (int i = 0; i < numUV*5; i++)
-	{
-		if (ghostTagsUV[LHS1.row_indices[i]]>0)
-		{
-			if (LHS1.row_indices[i]>index)
-			{
-				std::cout<<"\n";
-				index = LHS1.row_indices[i];
-			}
-			std::cout<<LHS1.row_indices[i]<<"\t";
-			std::cout<<LHS1.column_indices[i]<<"\t";
-			std::cout<<LHS1.values[i]<<std::endl;
-		}
-		if (LHS1.row_indices[i]>70532)
-			break;
-	}*/
 	solveIntermediateVelocity();
-	testInterpX();
 }
 
 void luo_iter::_pressure()
@@ -121,9 +106,4 @@ void luo_iter::_pressure()
 		if (LHS2.row_indices[i]>70000)
 			break;
 	}*/
-
-	arrayprint(rhs2,"rhs2","p",-1);
-	arrayprint(ghostTagsP,"ghostp","p",-1);
-	arrayprint(hybridTagsP,"hybridP","p",-1);
-	arrayprint(pressure, "p","p",-1);
 }

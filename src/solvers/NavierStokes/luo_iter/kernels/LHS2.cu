@@ -10,8 +10,8 @@ namespace kernels
 {
 __global__
 void LHS2_mid_iter(int *row, int *col, double *val, double *dx, double *dy, int nx, int ny, double dt,
-					int *count, double *ns_rhs, double *interp_rhs, int *hybridTagsP, int *ghostTagsP, double *alpha,
-					double *xv, double *yu, //xv yu not used?
+					int *count, double *ns_rhs, double *interp_rhs, int *hybridTagsP, int *ghostTagsP,
+					double *alpha, double *dpdn,
 					int *index1, int *index2, int *index3, int *index4,
 					double *q1coef, double *q2coef, double *q3coef, double *q4coef,
 					double *q1, double *q2, double *q3, double *q4)
@@ -107,6 +107,73 @@ void LHS2_mid_iter(int *row, int *col, double *val, double *dx, double *dy, int 
 					interp_rhs[ip] += CInterp[n]*q[n]; //this should be addition
 			}
 		}
+	}
+	else if (ghostTagsP[ip]>0)
+	{
+		int interp_index[4] = {index1[ip], index2[ip], index3[ip], index4[ip]};
+		bool interp_in[4] = {false, false, false, false};
+		int ns_index[5] = {ip + nx, ip + 1, ip - nx, ip -1, ip}; //n e s w p
+		bool ns_overlap[5] = {false, false, false, false, true};
+		double q[4] = {q1[ip], q2[ip], q3[ip], q4[ip]};
+		double CInterp[4];
+		CInterp[0] = q1coef[ip];
+		CInterp[1] = q2coef[ip];
+		CInterp[2] = q3coef[ip];
+		CInterp[3] = q4coef[ip];
+		//count the number of nodes the interp is using
+		//find how which ns nodes are occupied
+		int counter = 0;
+		temp = 0;
+		for (int l=0; l<4; l++)
+		{
+			if (ghostTagsP[interp_index[l]]>0)
+			{
+				counter +=1;
+				interp_in[l] = true;
+			}
+			for (int n=0; n<5; n++)
+			{
+				if (interp_index[l] == ns_index[n])
+					ns_overlap[n] = true;
+			}
+		}
+		//add center to matrix
+		row[numE] = ip;
+		col[numE] = ip;
+		val[numE] = 1;
+		numE++;
+		//add real interp values to matrix
+		for (int i=0; i<4; i++)
+		{
+			if (!interp_in[i] && interp_index[i] != ip)
+			{
+				row[numE] = ip;
+				col[numE] = interp_index[i];
+				val[numE] = -CInterp[i];
+				numE++;
+			}
+			else
+			{
+				temp += CInterp[i] * q[i];
+			}
+		}
+		//fill remainder of values
+		int counter2 = 0;
+		for (int i=0; i<5; i++)
+		{
+			if (counter2>=counter)
+				break;
+			if (ns_overlap[i]==false)
+			{
+				row[numE] = ip;
+				col[numE] = ns_index[i];
+				val[numE] = 0;
+				numE++;
+				counter2++;
+			}
+		}
+		ns_rhs[ip] = 0;
+		interp_rhs[ip] = dpdn[ip] + temp;
 	}
 	else //if were not at a hybrid node
 	{

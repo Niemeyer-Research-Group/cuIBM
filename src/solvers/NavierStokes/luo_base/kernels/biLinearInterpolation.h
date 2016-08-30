@@ -52,7 +52,7 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 										double *y1, double *y2, double *y3, double *y4,
 										double *q1, double *q2, double *q3, double *q4);
 __global__
-void interpolatePressureToGhostNode(double *pressure, bool set, double *u, int *ghostTagsP, double *bx, double *by,
+void interpolatePressureToGhostNode(double *pressure, bool set, double *u, int *ghostTagsP, double *bx, double *by, double *dpdn,
 										double *uB, double *uB0, double *vB, double  *vB0, double *yu, double *yv, double *xu, double *xv,
 										double *body_intercept_p_x, double *body_intercept_p_y, double *image_point_p_x, double *image_point_p_y, double *body_intercept_p,
 										int *i_start, int *j_start, int width, int nx, int ny, double dt,

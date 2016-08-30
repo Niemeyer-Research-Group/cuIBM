@@ -98,7 +98,7 @@ void luo_base::updateSolver()
 	logger.stopTimer("Bounding Boxes");
 
 	tagPoints();
-	generateLHS1();//is this needed?
+	/*generateLHS1();//is this needed?
 	generateLHS2();
 
 	logger.startTimer("Preconditioner");
@@ -107,7 +107,7 @@ void luo_base::updateSolver()
 		PC.update1(LHS1);
 		PC.update2(LHS2);
 	}
-	logger.stopTimer("Preconditioner");
+	logger.stopTimer("Preconditioner");*/
 }
 
 /*
@@ -203,13 +203,22 @@ void luo_base::_pressure()
 {}
 void luo_base::_post_step()
 {
-	/*arrayprint(u,"u","x",-1);
+	arrayprint(pressure, "p","p",-1);
+	arrayprint(u,"u","x",-1);
 	arrayprint(u,"v","y",-1);
 	arrayprint(uhat,"uhat","x",-1);
 	arrayprint(uhat,"vhat","y",-1);
+	arrayprint(ghostTagsP,"ghostp","p",-1);
 	arrayprint(ghostTagsUV,"ghostu","x",-1);
-	arrayprint(ghostTagsUV,"ghostv","y",-1);*/
-
+	arrayprint(ghostTagsUV,"ghostv","y",-1);
+	arrayprint(q1_p,"q1","p",-1);
+	arrayprint(q2_p,"q2","p",-1);
+	arrayprint(q3_p,"q3","p",-1);
+	arrayprint(q4_p,"q4","p",-1);
+	arrayprint(q1coef,"q1coef","p",-1);
+	arrayprint(q2coef,"q2coef","p",-1);
+	arrayprint(q3coef,"q3coef","p",-1);
+	arrayprint(q4coef,"q4coef","p",-1);
 	//update time
 	timeStep++;
 	std::cout<<timeStep<<std::endl;

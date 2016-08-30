@@ -1,13 +1,13 @@
 %plot pressure
 clc
 clear
-close all
-% figure
+% close all
+figure
 %change these
-number = '0';
+number = '1';
 type = 'p'; %p or u
 suffix = ''; %u: 0, star, hat, hatfinal, empty. p: 0, star, empty
-view = 'out';
+view = 'in';
 
 %load data
 % caseFolder = '/scratch/src/cuIBM/validation/luo/test/output/'
@@ -28,7 +28,7 @@ for i =1:length(u(:,1))
                 u(i,j) = nan;
             end
         elseif strcmp(view,'in')
-            if N(i,j)==-1
+            if N(i,j)==0
                 u(i,j) = nan;
             end
         end

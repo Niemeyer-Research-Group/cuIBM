@@ -90,12 +90,7 @@ protected:
 		q4coef,
 		ns_rhs,
 		interp_rhs,
-		dudt,
-		ududx,
-		vdudy,
-		dvdt,
-		udvdx,
-		vdvdy;
+		dpdn;
 
 	int *ghostTagsUV_r,
 		*ghostTagsP_r,
@@ -168,7 +163,8 @@ protected:
 			*q3coef_r,
 			*q4coef_r,
 			*ns_rhs_r,
-			*interp_rhs_r;
+			*interp_rhs_r,
+			*dpdn_r;
 
 	bodies 	B;		///< bodies in the flow
 
