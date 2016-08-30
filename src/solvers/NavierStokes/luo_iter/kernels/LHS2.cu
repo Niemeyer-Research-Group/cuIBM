@@ -14,7 +14,7 @@ void LHS2_mid_iter(int *row, int *col, double *val, double *dx, double *dy, int 
 					double *alpha, double *dpdn,
 					int *index1, int *index2, int *index3, int *index4,
 					double *q1coef, double *q2coef, double *q3coef, double *q4coef,
-					double *q1, double *q2, double *q3, double *q4)
+					double *q1, double *q2, double *q3, double *q4, int timeStep)
 {
 	int ip 	= threadIdx.x + blockDim.x * blockIdx.x;
 	if (ip >= nx*ny)
@@ -29,7 +29,7 @@ void LHS2_mid_iter(int *row, int *col, double *val, double *dx, double *dy, int 
 	double temp = 0;
 
 
-	if (hybridTagsP[ip]>0)//if were at hybrid node
+	/*if (hybridTagsP[ip]>0)//if were at hybrid node
 	{
 		int interp_index[4] = {index1[ip], index2[ip], index3[ip], index4[ip]};
 		//int nx_index[5] = {ip+nx, ip+1, ip-nx, ip-1, ip};//n e s w p
@@ -60,7 +60,7 @@ void LHS2_mid_iter(int *row, int *col, double *val, double *dx, double *dy, int 
 		/*   0  1  2		NW  N   NE
 		 *   3  4  5		W   P   E
 		 *   6  7  8		SW  S   SE
-		 */
+		 *
 		int stencil_index[9]    = {ip + nx - 1, ip + nx, ip + nx + 1,
 								   ip - 1     , ip     , ip + 1,
 								   ip - nx - 1, ip - nx, ip - nx + 1};
@@ -103,8 +103,9 @@ void LHS2_mid_iter(int *row, int *col, double *val, double *dx, double *dy, int 
 					col[numE] = interp_index[n];
 					val[numE] = -CInterp[n];//this should also be minus
 				}
-				else if(stencil_index[m] == interp_index[n] && stencil_used[m])
+				else if(stencil_index[m] == ip && interp_index[n] == ip)
 					interp_rhs[ip] += CInterp[n]*q[n]; //this should be addition
+
 			}
 		}
 	}
@@ -175,7 +176,7 @@ void LHS2_mid_iter(int *row, int *col, double *val, double *dx, double *dy, int 
 		ns_rhs[ip] = 0;
 		interp_rhs[ip] = dpdn[ip] + temp;
 	}
-	else //if were not at a hybrid node
+	else*/ //if were not at a hybrid node
 	{
 		temp = dt/(dx[I]*(dx[I]+dx[I+1])*0.5) + dt/(dx[I]*(dx[I]+dx[I-1])*0.5) + dt/(dy[J]*(dy[J]+dy[J+1])*0.5) + dt/(dy[J]*(dy[J]+dy[J-1])*0.5);
 		//EAST

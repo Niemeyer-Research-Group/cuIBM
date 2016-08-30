@@ -101,7 +101,7 @@ void luo_iter::poisson_interpolation_setup()
 																x1_p_r, x2_p_r, x3_p_r, x4_p_r,
 																y1_p_r, y2_p_r, y3_p_r, y4_p_r,
 																q1_p_r, q2_p_r, q3_p_r, q4_p_r);
-	testInterpP();
+	//testInterpP();
 }
 
 void luo_iter::poisson_size_lhs()
@@ -137,7 +137,7 @@ void luo_iter::poisson_calculate_lhs()
 											alpha_r, dpdn_r,
 											index1_r, index2_r, index3_r, index4_r,
 											q1coef_r, q2coef_r, q3coef_r, q4coef_r,
-											q1_p_r, q2_p_r, q3_p_r, q4_p_r);
+											q1_p_r, q2_p_r, q3_p_r, q4_p_r, timeStep);
 	kernels::LHS2_BC<<<grid,block>>>(LHS2_row_r, LHS2_col_r, LHS2_val_r, dx_r, dy_r, nx,ny,dt);
 }
 
@@ -148,4 +148,75 @@ void luo_iter::poisson_update_rhs()
 	dim3 block(blocksize, 1);
 
 	kernels::update_rhs2<<<grid, block>>>(rhs2_r, ns_rhs_r, interp_rhs_r, nx, ny);
+}
+
+#include <solvers/NavierStokes/luoIBM/kernels/intermediatePressure.h>
+#include <solvers/NavierStokes/luoIBM/kernels/LHS2.h>
+#include <solvers/NavierStokes/NavierStokes/kernels/LHS2.h>
+#include <solvers/NavierStokes/luoIBM/kernels/weight.h>//weighting function
+#include <solvers/NavierStokes/luoIBM/kernels/intermediateVelocity.h>
+#include <solvers/NavierStokes/luo_base/kernels/biLinearInterpolation.h>
+
+void luo_iter::generateRHS2()
+{
+	NavierStokesSolver::logger.startTimer("RHS2");
+
+	const int blocksize = 256;
+
+	dim3 grid( int( (nx*ny-0.5)/blocksize ) +1, 1);
+	dim3 block(blocksize, 1);
+
+	kernels::intermediatePressure_luo<<<grid,block>>>(rhs2_r, uhat_r, ym_r, yp_r, xm_r, xp_r, dx_r, dy_r, nx, ny);
+
+	//calculate lhs
+	poisson_calculate_lhs();
+
+	//sort
+	LHS2.sort_by_row_and_column();
+
+	//update preconditioner
+	if (timeStep == 0)
+		PC.generate2(LHS2, (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
+	else
+		PC.update2(LHS2);
+
+	//update rhs
+	poisson_update_rhs();
+
+	NavierStokesSolver::logger.stopTimer("RHS2");
+}
+
+void luo_iter::weightPressure()
+{
+	logger.startTimer("weightPressure");
+
+	const int blocksize = 256;
+
+	dim3 grid( int( (B.numCellsXHost*B.numCellsYHost-0.5)/blocksize ) +1, 1);
+	dim3 block(blocksize, 1);
+
+	cusp::blas::fill(pressureStar,0);//flag not needed
+
+	kernels::interpolatePressureToHybridNode<<<grid,block>>>(pressure_r, pressureStar_r, u_r, hybridTagsP_r, B.x_r, B.y_r,
+									B.uB_r, B.uBk_r, B.vB_r, B.vBk_r, yu_r, yv_r, xu_r, xv_r,
+									body_intercept_p_x_r, body_intercept_p_y_r, image_point_p_x_r, image_point_p_y_r,
+									B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny, dt,
+									index1_r, index2_r, index3_r, index4_r,
+									q1coef_r, q2coef_r, q3coef_r, q4coef_r,
+									a0_r, a1_r, a2_r, a3_r,
+									x1_p_r, x2_p_r, x3_p_r, x4_p_r, y1_p_r, y2_p_r, y3_p_r, y4_p_r, q1_p_r, q2_p_r, q3_p_r, q4_p_r);
+	kernels::weightP<<<grid,block>>>(pressure_r, pressureStar_r, ghostTagsP_r, hybridTagsP_r, yu_r, xv_r,
+									body_intercept_p_x_r, body_intercept_p_y_r, image_point_p_x_r, image_point_p_y_r,
+									B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny);
+	kernels::interpolatePressureToGhostNode<<<grid,block>>>(pressure_r, true, u_r, ghostTagsP_r, B.x_r, B.y_r, dpdn_r,
+									B.uB_r, B.uBk_r, B.vB_r, B.vBk_r, yu_r, yv_r, xu_r, xv_r,
+									body_intercept_p_x_r, body_intercept_p_y_r, image_point_p_x_r, image_point_p_y_r,  body_intercept_p_r,
+									B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny, dt,
+									index1_r, index2_r, index3_r, index4_r,
+									q1coef_r, q2coef_r, q3coef_r, q4coef_r,
+									a0_r, a1_r, a2_r, a3_r,
+									x1_p_r, x2_p_r, x3_p_r, x4_p_r, y1_p_r, y2_p_r, y3_p_r, y4_p_r, q1_p_r, q2_p_r, q3_p_r, q4_p_r);
+
+	//testInterpP();
+	logger.stopTimer("weightPressure");
 }

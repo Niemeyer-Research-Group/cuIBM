@@ -97,7 +97,8 @@ void LHS1_mid_iter_X(int *row, int *col, double *val, double *dx, double *dy, do
 					col[numE] = interp_index[n];
 					val[numE] = CInterp[n];
 				}
-				else if(stencil_index[m] == interp_index[n] && stencil_used[m])
+				//else if(stencil_index[m] == interp_index[n] && stencil_used[m])
+				else if(stencil_index[m] == interp_index[n] && interp_index[n] == iu)
 					interp_rhs[iu] += CInterp[n]*q[n];
 			}
 		}
@@ -293,7 +294,8 @@ void LHS1_mid_iter_Y(int *row, int *col, double *val, double *dx, double *dy, do
 					col[numE] = interp_index[n];
 					val[numE] = CInterp[n];
 				}
-				else if(stencil_index[m] == interp_index[n] && stencil_used[m])
+				//else if(stencil_index[m] == interp_index[n] && stencil_used[m])
+				else if(stencil_index[m] == interp_index[n] && interp_index[n] == iv)
 					interp_rhs[iv] += CInterp[n]*q[n];
 			}
 		}

@@ -85,14 +85,19 @@ void luo_iter::_intermediate_velocity()
 
 void luo_iter::_pressure()
 {
-	poisson_setup();
+	generateRHS2();
 	solvePoisson();
+	weightPressure();
+	//poisson_setup();
+	//solvePoisson();
 	/*int index = 0, ip, I;
+	if (timeStep>0)
+	{
 	for (int i = 0; i < numUV*5; i++)
 	{
 		ip = LHS2.row_indices[i];
 		I = ip%nx;
-		if (hybridTagsP[LHS2.row_indices[i]]>0 && I <160)
+		if (hybridTagsP[LHS2.row_indices[i]]==61751)
 		{
 			if (LHS2.row_indices[i] >index)
 			{
@@ -103,7 +108,11 @@ void luo_iter::_pressure()
 			std::cout<<LHS2.column_indices[i]<<"\t";
 			std::cout<<LHS2.values[i]<<std::endl;
 		}
-		if (LHS2.row_indices[i]>70000)
+		if (LHS2.row_indices[i]>61751)
+		{
+			std::cout<<rhs2[61751]<<"\n";
 			break;
+		}
+	}
 	}*/
 }

@@ -46,4 +46,8 @@ public:
 		void poisson_update_rhs();
 
 	virtual void cast();
+
+	//test
+	void generateRHS2();
+	void weightPressure();
 };

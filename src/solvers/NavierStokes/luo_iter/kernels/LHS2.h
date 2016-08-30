@@ -8,5 +8,5 @@ void LHS2_mid_iter(int *row, int *col, double *val, double *dx, double *dy, int 
 					double *alpha, double *dpdn,
 					int *index1, int *index2, int *index3, int *index4,
 					double *q1coef, double *q2coef, double *q3coef, double *q4coef,
-					double *q1, double *q2, double *q3, double *q4);
+					double *q1, double *q2, double *q3, double *q4, int timeStep);
 }
