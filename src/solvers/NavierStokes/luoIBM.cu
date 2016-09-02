@@ -102,8 +102,6 @@ void luoIBM::_pressure()
 {
 	generateRHS2();
 	solvePoisson();
-	//arrayprint(pressure,"p ibm","p",-1);
-	//arrayprint(rhs2,"rhs2 ibm","p",-1);
 	weightPressure();
 }
 

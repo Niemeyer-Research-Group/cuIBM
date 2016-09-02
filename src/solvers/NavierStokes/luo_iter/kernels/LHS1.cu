@@ -31,7 +31,7 @@ void LHS1_mid_iter_X(int *row, int *col, double *val, double *dx, double *dy, do
 
 	double temp = 1;
 
-	/*if (hybridTagsUV[iu]>0)
+	if (hybridTagsUV[iu]>0)
 	{
 		int interp_index[4] = {index1[iu], index2[iu], index3[iu], index4[iu]};
 		double q[4] = {q1[iu], q2[iu], q3[iu], q4[iu]};
@@ -54,7 +54,7 @@ void LHS1_mid_iter_X(int *row, int *col, double *val, double *dx, double *dy, do
 		/*   0  1  2		NW  N   NE
 		 *   3  4  5		W   P   E
 		 *   6  7  8		SW  S   SE
-		 *
+		 */
 		int stencil_index[9]    = {iu + (nx-1) - 1, iu + (nx-1), iu + (nx-1) + 1,
 								   iu - 1         , iu         , iu + 1,
 								   iu - (nx-1) - 1, iu - (nx-1), iu - (nx-1) + 1};
@@ -170,7 +170,7 @@ void LHS1_mid_iter_X(int *row, int *col, double *val, double *dx, double *dy, do
 		ns_rhs[iu] = 0;
 		interp_rhs[iu] = 2*uB[0] - temp;//flag this doesn't account for the interpolation part
 	}
-	else*/
+	else
 	{
 	temp = 1 + 0.5*dt*nu*(1/(dx[I+1]*(dx[I+1]+dx[I])*0.5)) + 0.5*dt*nu*(1/(dx[I]*(dx[I+1]+dx[I])*0.5)) + 0.5*dt*nu*(1/(dy[J]*(dy[J+1]+dy[J])*0.5)) + 0.5*dt*nu*(1/(dy[J]*(dy[J-1]+dy[J])*0.5));
 	//EAST
@@ -228,7 +228,7 @@ void LHS1_mid_iter_Y(int *row, int *col, double *val, double *dx, double *dy, do
 	int numE = (nx-1)*ny*5 - 2*ny-2*(nx-1)  +  nx*4-2  + (J-1)*(nx*5 - 2) + I*5 - 1;
 	double temp = 1;
 
-	/*if (hybridTagsUV[iv]>0)
+	if (hybridTagsUV[iv]>0)
 	{
 		int interp_index[4] = {index1[iv], index2[iv], index3[iv], index4[iv]};
 		double q[4] = {q1[iv], q2[iv], q3[iv], q4[iv]};
@@ -251,7 +251,7 @@ void LHS1_mid_iter_Y(int *row, int *col, double *val, double *dx, double *dy, do
 		/*   0  1  2		NW  N   NE
 		 *   3  4  5		W   P   E
 		 *   6  7  8		SW  S   SE
-		 *
+		 */
 		int stencil_index[9]    = {iv + nx - 1, iv + nx, iv + nx + 1,
 								   iv - 1     , iv     , iv + 1,
 								   iv - nx - 1, iv - nx, iv - nx + 1};
@@ -367,7 +367,7 @@ void LHS1_mid_iter_Y(int *row, int *col, double *val, double *dx, double *dy, do
 		ns_rhs[iv] = 0;
 		interp_rhs[iv] = 2*vB[0] - temp;//flag this doesn't account for the interpolation part
 	}
-	else*/
+	else
 	{
 	temp = 1 + 0.5*dt*nu*(1/(dx[I]*(dx[I]+dx[I+1])*0.5)) + 0.5*dt*nu*(1/(dx[I]*(dx[I]+dx[I-1])*0.5)) + 0.5*dt*nu*(1/(dy[J+1]*(dy[J]+dy[J+1])*0.5)) + 0.5*dt*nu*(1/(dy[J]*(dy[J]+dy[J+1])*0.5));
 

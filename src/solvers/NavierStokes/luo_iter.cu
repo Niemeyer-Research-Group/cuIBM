@@ -35,11 +35,11 @@ void luo_iter::initialise()
 
 void luo_iter::_intermediate_velocity()
 {
-	//intermediate_velocity_setup();
-	//solveIntermediateVelocity();
-	generateRHS1();
+	intermediate_velocity_setup();
 	solveIntermediateVelocity();
-	weightUhat();
+	//generateRHS1();
+	//solveIntermediateVelocity();
+	//weightUhat();
 }
 
 void luo_iter::_pressure()

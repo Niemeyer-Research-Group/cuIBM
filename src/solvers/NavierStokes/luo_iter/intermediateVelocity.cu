@@ -233,6 +233,15 @@ void luo_iter::generateRHS1()
 	kernels::generateRHS<<<dimGridUV,dimBlockUV>>>(rhs1_r, L_r, Nold_r, N_r, u_r, bc1_r, dt, nx, ny);
 	logger.stopTimer("RHS1 Setup");
 
+	//calculate alpha
+	intermediate_velocity_alpha();
+
+	//interpolation setup
+	intermediate_velocity_interpolation_setup();
+
+	//size lhs
+	intermediate_velocity_size_lhs();
+
 	//calculate lhs
 	intermediate_velocity_calculate_lhs();
 
@@ -295,7 +304,7 @@ void luo_iter::preRHS1Interpolation()
 	kernels::setInsideVelocity<<<grid_inside,block_inside>>>(ghostTagsUV_r, u_r, B.uB_r, B.vB_r, nx, ny);
 	//interpolate velocity to hybrid node
 	//zero ustar
-	kernels::interpolateVelocityToHybridNodeX<<<grid,block>>>(u_r, ustar_r, hybridTagsUV_r,
+	/*kernels::interpolateVelocityToHybridNodeX<<<grid,block>>>(u_r, ustar_r, hybridTagsUV_r,
 																B.x_r, B.y_r, B.uB_r, yu_r, xu_r,
 																body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
 																B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny,
@@ -312,7 +321,7 @@ void luo_iter::preRHS1Interpolation()
 																q1coef_r, q2coef_r, q3coef_r, q4coef_r,
 																x1_r, x2_r ,x3_r ,x4_r,
 																y1_r, y2_r, y3_r, y4_r,
-																q1_r, q2_r, q3_r, q4_r, image_point_u_r);
+																q1_r, q2_r, q3_r, q4_r, image_point_u_r);*/
 	//testInterpX();
 	//testInterpY();
 	logger.stopTimer("RHS1 Interpolation");
