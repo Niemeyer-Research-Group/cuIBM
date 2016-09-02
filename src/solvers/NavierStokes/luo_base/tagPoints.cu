@@ -45,7 +45,6 @@ void luo_base::tagPoints()
 	dim3 dimGrid( int( (width_i*height_j-0.5)/blocksize ) +1, 1);
 	dim3 dimBlock(blocksize, 1);
 	dim3 dimGrid0(int( (i_end-i_start-0.5)/blocksize ) +1, 1);
-
 	//tag u direction nodes for tags, tagsout and hybridTagsUV2
 	kernels::tag_u_luo<<<dimGrid,dimBlock>>>(hybridTagsUV_r, ghostTagsUV_r, hybridTagsUV2_r, B.x_r, B.y_r, B.uB_r, B.vB_r, yu_r, xu_r,
 											body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,

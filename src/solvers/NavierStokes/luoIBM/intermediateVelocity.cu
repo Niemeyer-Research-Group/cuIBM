@@ -8,6 +8,7 @@
 
 #include <solvers/NavierStokes/NavierStokes/kernels/intermediateVelocity.h> //generaterhs1
 #include <solvers/NavierStokes/luoIBM/kernels/intermediateVelocity.h>//updaterhs1_luo, zeroInside
+#include <solvers/NavierStokes/luo_base/kernels/intermediateVelocity.h> //set inside velocity
 #include <solvers/NavierStokes/luoIBM/kernels/LHS1.h> //generatelhs_luo _mid
 #include <solvers/NavierStokes/NavierStokes/kernels/LHS1.h> //lhs_bc
 #include <solvers/NavierStokes/FadlunModified/kernels/intermediateVelocity.h> //updateboundary
@@ -144,8 +145,8 @@ void luoIBM::zeroVelocity()
 {
 	const int blocksize = 256;
 
-	dim3 grid( int( (nx*(ny-1) + (nx-1)*ny-0.5)/blocksize ) +1, 1);
-	dim3 block(blocksize, 1);
+	dim3 grid_inside( int( (numUV-0.5)/blocksize ) +1, 1);
+	dim3 block_inside(blocksize, 1);
 
-	kernels::zeroInside<<<grid,block>>>(ghostTagsUV_r, u_r, nx*(ny-1) + (nx-1)*ny);
+	kernels::setInsideVelocity<<<grid_inside,block_inside>>>(ghostTagsUV_r, u_r, B.uB_r, B.vB_r, nx, ny);
 }

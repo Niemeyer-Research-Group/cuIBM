@@ -4,9 +4,9 @@ clear
 % close all
 figure
 %change these
-number = '4';
+number = '0';
 type = 'u'; %p or u
-suffix = ''; %u: 0, star, hat, hatfinal, empty. p: 0, star, empty
+suffix = 'hat iter'; %u: 0, star, hat, hatfinal, empty. p: 0, star, empty
 view = 'out';
 
 %load data
@@ -14,26 +14,26 @@ view = 'out';
 % caseFolder = '/scratch/src/cuIBM/validation/cylinder/Re40/output/';
 caseFolder = '/scratch/src/cuIBM/validation/osc/gh/output/';
 path = strcat(caseFolder,number,type,suffix,'.csv');
-ghostpath = strcat(caseFolder,number,'ghost',type,'.csv');
+% ghostpath = strcat(caseFolder,number,'ghost',type,'.csv');
 delim = '\t';
 u = dlmread(path,delim,1,0);
 test = u;
-N = dlmread(ghostpath,delim,1,0);
+% N = dlmread(ghostpath,delim,1,0);
 
-% manipulate inside/outside
-for i =1:length(u(:,1))
-    for j = 1:length(u(1,:))
-        if strcmp(view,'out')
-            if N(i,j)~=-1
-                u(i,j) = nan;
-            end
-        elseif strcmp(view,'in')
-            if N(i,j)==0
-                u(i,j) = nan;
-            end
-        end
-    end
-end
+% % manipulate inside/outside
+% for i =1:length(u(:,1))
+%     for j = 1:length(u(1,:))
+%         if strcmp(view,'out')
+%             if N(i,j)~=-1
+%                 u(i,j) = nan;
+%             end
+%         elseif strcmp(view,'in')
+%             if N(i,j)==0
+%                 u(i,j) = nan;
+%             end
+%         end
+%     end
+% end
 %plot area round body
 midy = round(length(u(:,1))/2);
 midx = round(length(u(1,:))/2);

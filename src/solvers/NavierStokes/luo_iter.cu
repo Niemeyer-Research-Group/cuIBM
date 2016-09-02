@@ -31,63 +31,27 @@ void luo_iter::initialise()
 {
 	luo_base::initialise();
 	luo_iter::cast();
-
-	parameterDB  &db = *paramDB;
-
-	double	dt	= db["simulation"]["dt"].get<double>(),
-			nu	= db["flow"]["nu"].get<double>(),
-			t = dt*timeStep,
-			//D = 0.2,
-			//uMax = 1,
-			f = B.frequency,
-			xCoeff = B.xCoeff,
-			uCoeff = B.uCoeff,
-			xPhase = B.xPhase,
-			uPhase = B.uPhase,
-			//KC = uMax/f/D,
-			//Re = uMax*D/nu,
-			totalPoints=B.totalPoints,
-			xold= B.midX,
-			unew,
-			uold,
-			xnew;
-
-	//xnew = -1/(2*M_PI)*sin(2*M_PI*f*t);
-	//unew = -f*cos(2*M_PI*f*t);
-	xnew = xCoeff*sin(2*M_PI*f*t + xPhase);
-	unew = uCoeff*cos(2*M_PI*f*t + uPhase);
-	uold = uCoeff*cos(2*M_PI*f*(t-dt)+uPhase);
-
-	B.centerVelocityU0 = unew;
-	B.midX0 = xnew;
-	B.centerVelocityU = unew;
-	B.midX = xnew;
-
-	const int blocksize = 256;
-	dim3 grid( int( (totalPoints)/blocksize ) +1, 1);
-	dim3 block(blocksize, 1);
-	//update position/velocity for current values
-	kernels::update_body_viv<<<grid,block>>>(B.x_r, B.uB_r, xnew-xold, unew, totalPoints);
-	//set position/velocity for old values
-	kernels::initialise_old<<<grid,block>>>(B.uBk_r,uold,totalPoints);
-	std::cout << "luo_iter: Initialised Movement!" << std::endl;
-
-	//must retag points because we have set a new body location since tagging points
-	tagPoints();
-	std::cout << "luo_iter: Tagged points!" << std::endl;
 }
 
 void luo_iter::_intermediate_velocity()
 {
-	intermediate_velocity_setup();
+	//intermediate_velocity_setup();
+	//solveIntermediateVelocity();
+	generateRHS1();
 	solveIntermediateVelocity();
+	weightUhat();
 }
 
 void luo_iter::_pressure()
 {
 	generateRHS2();
 	solvePoisson();
+	//arrayprint(pressure,"p iter","p",-1);
+	//arrayprint(rhs2,"rhs2 iter","p",-1);
 	weightPressure();
+	//arrayprint(rhs2,"rhs2","p",-1);
+	//arrayprint(ghostTagsP,"ghostp","p",-1);
+	//print(LHS2);
 	//poisson_setup();
 	//solvePoisson();
 	/*int index = 0, ip, I;

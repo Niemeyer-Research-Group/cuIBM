@@ -35,7 +35,8 @@ title('Drag')
 axis([0 5 0 6])
 
 %% plot force of osc cylinders with flow
-close all
+% close all
+figure
 clear
 clc
 pathbase = '/scratch/src/cuIBM/validation/';
@@ -43,10 +44,10 @@ cases = 'osc/flow/forces';
 delim = '\t';
 
 %read data
-forces = dlmread(strcat(pathbase,'osc/gh','/forces'),delim,0,0);
+forces = dlmread(strcat(pathbase,'osc/gh','/forces'),delim,1,0);
 % forces1 = dlmread(strcat(pathbase,'osc/ab','/forces1'),delim,0,0);
 % forces2 = dlmread(strcat(pathbase,'osc/ab','/forces2'),delim,0,0);
-x = dlmread(strcat(pathbase,'osc/flow/midPosition'),delim,1,0);
+x = dlmread(strcat(pathbase,'osc/gh/midPosition'),delim,1,0);
 %plot
 hold on
 plot(forces(10:end,1),forces(10:end,2),'r') %present

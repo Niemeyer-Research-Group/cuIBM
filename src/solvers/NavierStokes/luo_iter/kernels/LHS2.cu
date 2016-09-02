@@ -178,36 +178,48 @@ void LHS2_mid_iter(int *row, int *col, double *val, double *dx, double *dy, int 
 	}
 	else*/ //if were not at a hybrid node
 	{
-		temp = dt/(dx[I]*(dx[I]+dx[I+1])*0.5) + dt/(dx[I]*(dx[I]+dx[I-1])*0.5) + dt/(dy[J]*(dy[J]+dy[J+1])*0.5) + dt/(dy[J]*(dy[J]+dy[J-1])*0.5);
+		//temp = dt/(dx[I]*(dx[I]+dx[I+1])*0.5) + dt/(dx[I]*(dx[I]+dx[I-1])*0.5) + dt/(dy[J]*(dy[J]+dy[J+1])*0.5) + dt/(dy[J]*(dy[J]+dy[J-1])*0.5);
+		temp = 0;
 		//EAST
 		row[numE] = ip;
 		col[numE] = ip + 1;
-		val[numE] = -dt/(dx[I]*(dx[I]+dx[I+1])*0.5)/temp;
+		//val[numE] = -dt/(dx[I]*(dx[I]+dx[I+1])*0.5)/temp;
+		val[numE] = -dt/(dx[I]*(dx[I]+dx[I+1])*0.5);
+		temp += dt/(dx[I]*(dx[I]+dx[I+1])*0.5);
 		numE++;
 
 		//WEST
 		row[numE] = ip;
 		col[numE] = ip - 1;
-		val[numE] = -dt/(dx[I]*(dx[I]+dx[I-1])*0.5)/temp;
+		//val[numE] = -dt/(dx[I]*(dx[I]+dx[I-1])*0.5)/temp;
+		val[numE] = -dt/(dx[I]*(dx[I]+dx[I-1])*0.5);
+		temp +=dt/(dx[I]*(dx[I]+dx[I-1])*0.5);
 		numE++;
 
 		//NORTH
 		row[numE] = ip;
 		col[numE] = ip + nx;
-		val[numE] = -dt/(dy[J]*(dy[J]+dy[J+1])*0.5)/temp;
+		//val[numE] = -dt/(dy[J]*(dy[J]+dy[J+1])*0.5)/temp;
+		val[numE] = -dt/(dy[J]*(dy[J]+dy[J+1])*0.5);
+		temp += dt/(dy[J]*(dy[J]+dy[J+1])*0.5);
 		numE++;
 
 		//SOUTH
 		row[numE] = ip;
 		col[numE] = ip - nx;
-		val[numE] = -dt/(dy[J]*(dy[J]+dy[J-1])*0.5)/temp;
+		//val[numE] = -dt/(dy[J]*(dy[J]+dy[J-1])*0.5)/temp;
+		val[numE] = -dt/(dy[J]*(dy[J]+dy[J-1])*0.5);
+		temp += dt/(dy[J]*(dy[J]+dy[J-1])*0.5);
 		numE++;
 		//MID
 		row[numE] = ip;
 		col[numE] = ip;
-		val[numE] = 1;
-		ns_rhs[ip] = 1/temp;
+		//val[numE] = 1;
+		val[numE] = temp;
+		ns_rhs[ip] = 1;
 		interp_rhs[ip] = 0;
+		//ns_rhs[ip] = 1/temp;
+		//interp_rhs[ip] = 0;
 	}
 }
 }

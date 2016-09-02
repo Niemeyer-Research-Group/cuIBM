@@ -40,7 +40,7 @@ void update_rhs2(double *rhs2, double *ns_rhs, double *interp_rhs, int nx, int n
 	int ip 	= threadIdx.x + blockDim.x * blockIdx.x,
 		I	= ip % nx,
 		J	= ip / nx;
-	if (I == 0 || I == nx-2 || J == 0 || J == ny-1)
+	if (I == 0 || I == nx-1 || J == 0 || J == ny-1)
 		return;
 	rhs2[ip] = rhs2[ip] * ns_rhs[ip] + interp_rhs[ip];
 }

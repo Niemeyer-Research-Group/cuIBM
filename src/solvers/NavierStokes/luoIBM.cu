@@ -95,13 +95,15 @@ void luoIBM::writeCommon()
 void luoIBM::_intermediate_velocity()
 {
 	generateRHS1();
-	solveIntermediateVelocity();
+	solveIntermediateVelocity();//flag needs to be changed from zerovelocity to setinside
 	weightUhat();
 }
 void luoIBM::_pressure()
 {
 	generateRHS2();
 	solvePoisson();
+	//arrayprint(pressure,"p ibm","p",-1);
+	//arrayprint(rhs2,"rhs2 ibm","p",-1);
 	weightPressure();
 }
 

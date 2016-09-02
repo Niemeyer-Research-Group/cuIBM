@@ -50,4 +50,8 @@ public:
 	//test
 	void generateRHS2();
 	void weightPressure();
+	void generateRHS1();
+	void weightUhat();
+	void preRHS1Interpolation();
+	void preRHS2Interpolation();
 };

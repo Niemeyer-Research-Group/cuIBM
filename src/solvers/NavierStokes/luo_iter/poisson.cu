@@ -24,16 +24,16 @@ void luo_iter::poisson_setup()
 	kernels::intermediatePressure_luo<<<grid,block>>>(rhs2_r, uhat_r, ym_r, yp_r, xm_r, xp_r, dx_r, dy_r, nx, ny);
 
 	//calculate alpha
-	poisson_alpha(); //not needed
+	poisson_alpha();
 
 	//interpolation setup
-	poisson_interpolation_setup(); //done
+	poisson_interpolation_setup();
 
 	//size lhs
-	poisson_size_lhs(); //not needed
+	poisson_size_lhs();
 
 	//calculate lhs
-	poisson_calculate_lhs();//you are here
+	poisson_calculate_lhs();
 
 	//sort
 	LHS2.sort_by_row_and_column();
@@ -166,6 +166,8 @@ void luo_iter::generateRHS2()
 	dim3 grid( int( (nx*ny-0.5)/blocksize ) +1, 1);
 	dim3 block(blocksize, 1);
 
+	preRHS2Interpolation();
+
 	kernels::intermediatePressure_luo<<<grid,block>>>(rhs2_r, uhat_r, ym_r, yp_r, xm_r, xp_r, dx_r, dy_r, nx, ny);
 
 	//calculate lhs
@@ -219,4 +221,30 @@ void luo_iter::weightPressure()
 
 	//testInterpP();
 	logger.stopTimer("weightPressure");
+}
+
+void luo_iter::preRHS2Interpolation()
+{
+	const int blocksize = 256;
+
+	dim3 grid( int( (B.numCellsXHost*B.numCellsYHost-0.5)/blocksize ) +1, 1);
+	dim3 block(blocksize, 1);
+
+	//interpolate uhat to image point and ghost node
+	kernels::interpolateVelocityToGhostNodeX<<<grid,block>>>(uhat_r, true, ghostTagsUV_r, B.x_r, B.y_r, B.uB_r, yu_r, xu_r,
+													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
+													B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny,
+													index1_r, index2_r, index3_r, index4_r,
+													q1coef_r, q2coef_r, q3coef_r, q4coef_r,
+													x1_r, x2_r, x3_r, x4_r,
+													y1_r, y2_r, y3_r, y4_r,
+													q1_r, q2_r, q3_r, q4_r, image_point_u_r);
+	kernels::interpolateVelocityToGhostNodeY<<<grid,block>>>(uhat_r, true, ghostTagsUV_r, B.x_r, B.y_r, B.vB_r, yv_r, xv_r,
+													body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
+													B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny,
+													index1_r, index2_r, index3_r, index4_r,
+													q1coef_r, q2coef_r, q3coef_r, q4coef_r,
+													x1_r, x2_r, x3_r, x4_r,
+													y1_r, y2_r, y3_r, y4_r,
+													q1_r, q2_r, q3_r, q4_r, image_point_u_r);
 }

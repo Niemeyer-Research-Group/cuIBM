@@ -42,7 +42,50 @@ void luo_base::initialise()
 	std::cout << "luo_base: Initialised bodies!" << std::endl;
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
-	//TAG POINTS
+	//Movement
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+	parameterDB  &db = *paramDB;
+
+	double	dt	= db["simulation"]["dt"].get<double>(),
+			nu	= db["flow"]["nu"].get<double>(),
+			t = dt*timeStep,
+			//D = 0.2,
+			//uMax = 1,
+			f = B.frequency,
+			xCoeff = B.xCoeff,
+			uCoeff = B.uCoeff,
+			xPhase = B.xPhase,
+			uPhase = B.uPhase,
+			//KC = uMax/f/D,
+			//Re = uMax*D/nu,
+			totalPoints=B.totalPoints,
+			xold= B.midX,
+			unew,
+			uold,
+			xnew;
+
+	//xnew = -1/(2*M_PI)*sin(2*M_PI*f*t);
+	//unew = -f*cos(2*M_PI*f*t);
+	xnew = xCoeff*sin(2*M_PI*f*t + xPhase);
+	unew = uCoeff*cos(2*M_PI*f*t + uPhase);
+	uold = uCoeff*cos(2*M_PI*f*(t-dt)+uPhase);
+
+	B.centerVelocityU0 = unew;
+	B.midX0 = xnew;
+	B.centerVelocityU = unew;
+	B.midX = xnew;
+
+	const int blocksize = 256;
+	dim3 grid( int( (totalPoints)/blocksize ) +1, 1);
+	dim3 block(blocksize, 1);
+	//update position/velocity for current values
+	kernels::update_body_viv<<<grid,block>>>(B.x_r, B.uB_r, xnew-xold, unew, totalPoints);
+	//set position/velocity for old values
+	kernels::initialise_old<<<grid,block>>>(B.uBk_r,uold,totalPoints);
+	std::cout << "luo_base: Initialised Movement!" << std::endl;
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+	//Tag points
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	tagPoints();
 	std::cout << "luo_base: Tagged points!" << std::endl;
@@ -50,7 +93,6 @@ void luo_base::initialise()
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	//OUTPUT
 	/////////////////////////////////////////////////////////////////////////////////////////////////
-	parameterDB  &db = *NavierStokesSolver::paramDB;
 	std::string folder = db["inputs"]["caseFolder"].get<std::string>();
 	std::stringstream out;
 	out << folder << "/forces";
@@ -203,26 +245,17 @@ void luo_base::_pressure()
 {}
 void luo_base::_post_step()
 {
-	//arrayprint(pressure, "p","p",-1);
-	//arrayprint(u,"u","x",-1);
-	//arrayprint(u,"v","y",-1);
-	//arrayprint(uhat,"uhat","x",-1);
-	//arrayprint(uhat,"vhat","y",-1);
-	//arrayprint(ghostTagsP,"ghostp","p",-1);
-	//arrayprint(rhs2,"rhs2 inter3","p",-1);
-	//arrayprint(rhs2,"rhs2","p",-1);
-	//arrayprint(ghostTagsUV,"ghostu","x",-1);
-	//arrayprint(ghostTagsUV,"ghostv","y",-1);
 	if (timeStep==(*paramDB)["simulation"]["nt"].get<int>()-1)
 	{
-		arrayprint(pressure, "p","p",-1);
-		arrayprint(u,"u","x",-1);
-		arrayprint(u,"v","y",-1);
-		arrayprint(uhat,"uhat","x",-1);
-		arrayprint(uhat,"vhat","y",-1);
-		arrayprint(ghostTagsP,"ghostp","p",-1);
-		arrayprint(ghostTagsUV,"ghostu","x",-1);
-		arrayprint(ghostTagsUV,"ghostv","y",-1);
+		//arrayprint(pressure, "p","p",-1);
+		//arrayprint(rhs2, "rhs2","p",-1);
+		//arrayprint(u,"u","x",-1);
+		//arrayprint(u,"v","y",-1);
+		//arrayprint(uhat,"uhat","x",-1);
+		//arrayprint(uhat,"vhat","y",-1);
+		//arrayprint(ghostTagsP,"ghostp","p",-1);
+		//arrayprint(ghostTagsUV,"ghostu","x",-1);
+		//arrayprint(ghostTagsUV,"ghostv","y",-1);
 	}
 
 	//update time
