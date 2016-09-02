@@ -67,7 +67,7 @@ void LHS1_mid_iter_X(int *row, int *col, double *val, double *dx, double *dy, do
 			{
 				if (stencil_index[m] == interp_index[n] && m != 4)
 				{
-					stencil[m] += CInterp[n]; //flag should this be minus?
+					stencil[m] -= CInterp[n]; //flag should this be minus?
 				}
 			}
 		}
@@ -264,7 +264,7 @@ void LHS1_mid_iter_Y(int *row, int *col, double *val, double *dx, double *dy, do
 			{
 				if (stencil_index[m] == interp_index[n] && m != 4)
 				{
-					stencil[m] += CInterp[n]; //flag should this be minus?
+					stencil[m] -= CInterp[n]; //flag should this be minus?
 				}
 			}
 		}

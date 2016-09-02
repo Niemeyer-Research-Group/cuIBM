@@ -199,7 +199,7 @@ void luo_iter::weightPressure()
 
 	cusp::blas::fill(pressureStar,0);//flag not needed
 
-	kernels::interpolatePressureToHybridNode<<<grid,block>>>(pressure_r, pressureStar_r, u_r, hybridTagsP_r, B.x_r, B.y_r,
+	/*kernels::interpolatePressureToHybridNode<<<grid,block>>>(pressure_r, pressureStar_r, u_r, hybridTagsP_r, B.x_r, B.y_r,
 									B.uB_r, B.uBk_r, B.vB_r, B.vBk_r, yu_r, yv_r, xu_r, xv_r,
 									body_intercept_p_x_r, body_intercept_p_y_r, image_point_p_x_r, image_point_p_y_r,
 									B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny, dt,
@@ -209,7 +209,7 @@ void luo_iter::weightPressure()
 									x1_p_r, x2_p_r, x3_p_r, x4_p_r, y1_p_r, y2_p_r, y3_p_r, y4_p_r, q1_p_r, q2_p_r, q3_p_r, q4_p_r);
 	kernels::weightP<<<grid,block>>>(pressure_r, pressureStar_r, ghostTagsP_r, hybridTagsP_r, yu_r, xv_r,
 									body_intercept_p_x_r, body_intercept_p_y_r, image_point_p_x_r, image_point_p_y_r,
-									B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny);
+									B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny);*/
 	kernels::interpolatePressureToGhostNode<<<grid,block>>>(pressure_r, true, u_r, ghostTagsP_r, B.x_r, B.y_r, dpdn_r,
 									B.uB_r, B.uBk_r, B.vB_r, B.vBk_r, yu_r, yv_r, xu_r, xv_r,
 									body_intercept_p_x_r, body_intercept_p_y_r, image_point_p_x_r, image_point_p_y_r,  body_intercept_p_r,

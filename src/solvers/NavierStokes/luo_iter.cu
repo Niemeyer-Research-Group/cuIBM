@@ -37,46 +37,37 @@ void luo_iter::_intermediate_velocity()
 {
 	intermediate_velocity_setup();
 	solveIntermediateVelocity();
-	//generateRHS1();
-	//solveIntermediateVelocity();
-	//weightUhat();
 }
 
 void luo_iter::_pressure()
 {
-	generateRHS2();
+	poisson_setup();
 	solvePoisson();
-	//arrayprint(pressure,"p iter","p",-1);
-	//arrayprint(rhs2,"rhs2 iter","p",-1);
-	weightPressure();
-	//arrayprint(rhs2,"rhs2","p",-1);
+	//weightPressure();//currently just calculating ghost node
+	//generateRHS2();
+	//solvePoisson();
+	//weightPressure();
+	/*arrayprint(rhs2,"rhs2","p",-1);
+	arrayprint(interp_rhs,"+rhs","p",-1);
+	arrayprint(ns_rhs,"*rhs","p",-1);
 	//arrayprint(ghostTagsP,"ghostp","p",-1);
 	//print(LHS2);
 	//poisson_setup();
 	//solvePoisson();
-	/*int index = 0, ip, I;
-	if (timeStep>0)
+	int index = 0, ip, I, num;
+	num = 61751;
+	for (int i = num*4; i < numUV*5; i++)
 	{
-	for (int i = 0; i < numUV*5; i++)
-	{
-		ip = LHS2.row_indices[i];
-		I = ip%nx;
-		if (hybridTagsP[LHS2.row_indices[i]]==61751)
+		if (hybridTagsP[LHS2.row_indices[i]]==num)
 		{
-			if (LHS2.row_indices[i] >index)
-			{
-				std::cout<<"\n";
-				index = LHS2.row_indices[i];
-			}
 			std::cout<<LHS2.row_indices[i]<<"\t";
 			std::cout<<LHS2.column_indices[i]<<"\t";
 			std::cout<<LHS2.values[i]<<std::endl;
 		}
-		if (LHS2.row_indices[i]>61751)
+		if (LHS2.row_indices[i]>num)
 		{
-			std::cout<<rhs2[61751]<<"\n";
+			std::cout<<rhs2[num]<<"\n";
 			break;
 		}
-	}
 	}*/
 }

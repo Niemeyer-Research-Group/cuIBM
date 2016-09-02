@@ -247,14 +247,14 @@ void luo_base::_post_step()
 {
 	if (timeStep==(*paramDB)["simulation"]["nt"].get<int>()-1)
 	{
-		//arrayprint(pressure, "p","p",-1);
+		arrayprint(pressure, "p","p",-1);
 		//arrayprint(rhs2, "rhs2","p",-1);
-		//arrayprint(u,"u","x",-1);
+		arrayprint(u,"u","x",-1);
 		//arrayprint(u,"v","y",-1);
-		//arrayprint(uhat,"uhat","x",-1);
+		arrayprint(uhat,"uhat","x",-1);
 		//arrayprint(uhat,"vhat","y",-1);
-		//arrayprint(ghostTagsP,"ghostp","p",-1);
-		//arrayprint(ghostTagsUV,"ghostu","x",-1);
+		arrayprint(ghostTagsP,"ghostp","p",-1);
+		arrayprint(ghostTagsUV,"ghostu","x",-1);
 		//arrayprint(ghostTagsUV,"ghostv","y",-1);
 	}
 

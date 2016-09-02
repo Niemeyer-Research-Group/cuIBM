@@ -29,7 +29,7 @@ void LHS2_mid_iter(int *row, int *col, double *val, double *dx, double *dy, int 
 	double temp = 0;
 
 
-	/*if (hybridTagsP[ip]>0)//if were at hybrid node
+	if (hybridTagsP[ip]>0)//if were at hybrid node
 	{
 		int interp_index[4] = {index1[ip], index2[ip], index3[ip], index4[ip]};
 		//int nx_index[5] = {ip+nx, ip+1, ip-nx, ip-1, ip};//n e s w p
@@ -60,7 +60,7 @@ void LHS2_mid_iter(int *row, int *col, double *val, double *dx, double *dy, int 
 		/*   0  1  2		NW  N   NE
 		 *   3  4  5		W   P   E
 		 *   6  7  8		SW  S   SE
-		 *
+		 */
 		int stencil_index[9]    = {ip + nx - 1, ip + nx, ip + nx + 1,
 								   ip - 1     , ip     , ip + 1,
 								   ip - nx - 1, ip - nx, ip - nx + 1};
@@ -176,7 +176,7 @@ void LHS2_mid_iter(int *row, int *col, double *val, double *dx, double *dy, int 
 		ns_rhs[ip] = 0;
 		interp_rhs[ip] = dpdn[ip] + temp;
 	}
-	else*/ //if were not at a hybrid node
+	else //if were not at a hybrid node
 	{
 		//temp = dt/(dx[I]*(dx[I]+dx[I+1])*0.5) + dt/(dx[I]*(dx[I]+dx[I-1])*0.5) + dt/(dy[J]*(dy[J]+dy[J+1])*0.5) + dt/(dy[J]*(dy[J]+dy[J-1])*0.5);
 		temp = 0;
