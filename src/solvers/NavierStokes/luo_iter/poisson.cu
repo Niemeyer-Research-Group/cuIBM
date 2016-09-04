@@ -80,7 +80,7 @@ void luo_iter::poisson_interpolation_setup()
 	cusp::blas::fill(q3coef,0);
 	cusp::blas::fill(q4coef,0);
 
-	kernels::interpolatePressureToGhostNode<<<grid,block>>>(pressure_r, false, u_r, ghostTagsP_r, B.x_r, B.y_r, dpdn_r,
+	kernels::interpolatePressureToGhostNode<<<grid,block>>>(pressure_r, true, u_r, ghostTagsP_r, B.x_r, B.y_r, dpdn_r,
 																B.uB_r, B.uBk_r, B.vB_r, B.vBk_r, yu_r, yv_r, xu_r, xv_r,
 																body_intercept_p_x_r, body_intercept_p_y_r, image_point_p_x_r, image_point_p_y_r,  body_intercept_p_r,
 																B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny, dt,

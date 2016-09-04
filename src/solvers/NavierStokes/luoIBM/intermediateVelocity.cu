@@ -36,7 +36,7 @@ void luoIBM::generateRHS1()
 	Nold = N;
 
 	//interpolate u and v to image points, then again to ghost nodes
-	preRHS1Interpolation();
+	rhs1GNInterpolation();
 
 	//calculate explicit advection terms
 	generateN();
@@ -50,6 +50,7 @@ void luoIBM::generateRHS1()
 	logger.startTimer("RHS1 Setup");
 	//sum rhs components
 	kernels::generateRHS<<<dimGridUV,dimBlockUV>>>(rhs1_r, L_r, Nold_r, N_r, u_r, bc1_r, dt, nx, ny);
+	arrayprint(rhs1,"rhs1","x",-1);
 	logger.stopTimer("RHS1 Setup");
 
 }
@@ -90,7 +91,7 @@ void luoIBM::weightUhat()
 	logger.stopTimer("weightUhat");
 }
 
-void luoIBM::preRHS1Interpolation()
+void luoIBM::rhs1GNInterpolation()
 {
 	logger.startTimer("RHS1 Interpolation");
 
@@ -116,8 +117,18 @@ void luoIBM::preRHS1Interpolation()
 													y1_r, y2_r, y3_r, y4_r,
 													q1_r, q2_r, q3_r, q4_r, image_point_u_r);
 	zeroVelocity();
-	//interpolate velocity to hybrid node
-	//zero ustar
+	logger.stopTimer("RHS1 Interpolation");
+}
+
+void luoIBM::rhs1HNInterpolation()
+{
+	logger.startTimer("RHS1 Interpolation");
+
+	const int blocksize = 256;
+
+	dim3 grid( int( (B.numCellsXHost*B.numCellsYHost-0.5)/blocksize ) +1, 1);
+	dim3 block(blocksize, 1);
+
 	kernels::interpolateVelocityToHybridNodeX<<<grid,block>>>(u_r, ustar_r, hybridTagsUV_r,
 																B.x_r, B.y_r, B.uB_r, yu_r, xu_r,
 																body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
@@ -140,6 +151,7 @@ void luoIBM::preRHS1Interpolation()
 	//testInterpY();
 	logger.stopTimer("RHS1 Interpolation");
 }
+
 
 void luoIBM::zeroVelocity()
 {

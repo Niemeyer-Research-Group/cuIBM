@@ -54,7 +54,8 @@ public:
 	//intermediateVelocity
 	//////////////////////////
 	virtual void generateRHS1();
-	virtual void preRHS1Interpolation();
+	void rhs1GNInterpolation();
+	void rhs1HNInterpolation();
 	virtual void generateLHS1();
 
 	virtual void cast();

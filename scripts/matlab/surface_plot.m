@@ -5,9 +5,9 @@ clear
 figure
 %change these
 number = '0';
-type = 'p'; %p or u
-suffix = ''; %u: 0, star, hat, hatfinal, empty. p: 0, star, empty
-view = 'out';
+type = 'u'; %p or u
+suffix = 'hat'; %u: 0, star, hat, hatfinal, empty. p: 0, star, empty
+view = 'in';
 
 %load data
 % caseFolder = '/scratch/src/cuIBM/validation/luo/test/output/'
