@@ -95,7 +95,7 @@ void LHS1_mid_iter_X(int *row, int *col, double *val, double *dx, double *dy, do
 				{
 					row[numE] = iu;
 					col[numE] = interp_index[n];
-					val[numE] = CInterp[n];
+					val[numE] = -CInterp[n]; //this should be minus?
 				}
 				//else if(stencil_index[m] == interp_index[n] && stencil_used[m])
 				else if(stencil_index[m] == interp_index[n] && interp_index[n] == iu)
@@ -168,7 +168,7 @@ void LHS1_mid_iter_X(int *row, int *col, double *val, double *dx, double *dy, do
 			}
 		}
 		ns_rhs[iu] = 0;
-		interp_rhs[iu] = 2*uB[0] - temp;//flag this doesn't account for the interpolation part
+		interp_rhs[iu] = 2*uB[0] + temp;//flag this doesn't account for the interpolation part
 	}
 	else
 	{
@@ -292,7 +292,7 @@ void LHS1_mid_iter_Y(int *row, int *col, double *val, double *dx, double *dy, do
 				{
 					row[numE] = iv;
 					col[numE] = interp_index[n];
-					val[numE] = CInterp[n];
+					val[numE] = -CInterp[n];
 				}
 				//else if(stencil_index[m] == interp_index[n] && stencil_used[m])
 				else if(stencil_index[m] == interp_index[n] && interp_index[n] == iv)
@@ -346,7 +346,7 @@ void LHS1_mid_iter_Y(int *row, int *col, double *val, double *dx, double *dy, do
 			}
 			else
 			{
-				temp += CInterp[i] * q[i];
+				temp -= CInterp[i] * q[i];
 			}
 		}
 		//fill remainder of values
@@ -365,7 +365,7 @@ void LHS1_mid_iter_Y(int *row, int *col, double *val, double *dx, double *dy, do
 			}
 		}
 		ns_rhs[iv] = 0;
-		interp_rhs[iv] = 2*vB[0] - temp;//flag this doesn't account for the interpolation part
+		interp_rhs[iv] = 2*vB[0] + temp;//flag this doesn't account for the interpolation part
 	}
 	else
 	{

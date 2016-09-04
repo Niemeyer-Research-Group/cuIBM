@@ -249,7 +249,8 @@ void luo_base::_post_step()
 	{
 		//arrayprint(pressure, "p","p",-1);
 		//arrayprint(rhs2, "rhs2","p",-1);
-		//arrayprint(u,"u","x",-1);
+		arrayprint(u,"u","x",-1);
+		arrayprint(rhs1,"rhs1","x",-1);
 		//arrayprint(u,"v","y",-1);
 		arrayprint(uhat,"uhat","x",-1);
 		//arrayprint(uhat,"vhat","y",-1);

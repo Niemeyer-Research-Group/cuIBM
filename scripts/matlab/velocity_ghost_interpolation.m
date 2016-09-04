@@ -8,7 +8,7 @@ M = dlmread('/scratch/src/cuIBM/validation/osc/gh/interp_testX.csv','\t',1,0); %
 X = zeros(1,7);
 Y = zeros(1,7);
 Z = zeros(1,7);
-for i =38%1:length(M)
+for i =1:length(M)
 %     close
     X(1) = M(i,5); %ghost node
     X(2) = M(i,7); %body intercept
@@ -56,7 +56,7 @@ Y = zeros(1,7);
 Z = zeros(1,7);
 hold on
 x = linspace(0,2*pi, 360);
-plot (0.5*cos(x),0.5*sin(x),'g');
+plot (0.5*cos(x)-0.25,0.5*sin(x),'g');
 for i =1:length(M)
     X(1) = M(i,5); %ghost node
     X(2) = M(i,7); %body intercept

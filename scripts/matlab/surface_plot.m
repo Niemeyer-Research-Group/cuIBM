@@ -4,10 +4,10 @@ clear
 % close all
 figure
 %change these
-number = '0';
+number = '0'; 
 type = 'u'; %p or u
-suffix = 'hat'; %u: 0, star, hat, hatfinal, empty. p: 0, star, empty
-view = 'in';
+suffix = ''; %u: 0, star, hat, hatfinal, empty. p: 0, star, empty
+view = 'in'; 
 
 %load data
 % caseFolder = '/scratch/src/cuIBM/validation/luo/test/output/'

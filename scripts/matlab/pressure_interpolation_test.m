@@ -44,7 +44,7 @@ for i =1:length(M)
     plot(X(3:6),Y(3:6),'rd')                                %interpolation corners
     plot(M(i,1),M(i,2),'rs',M(i,3),M(i,4),'rs')             %body nodes
     %plot([X(1) X(7)], [Y(1) Y(7)], 'k-') % line between ghost node and image point
-    trouble_nodes = [47];
+    trouble_nodes = [34];
     if(any(i==trouble_nodes))
         linecolor = [1 0 0]; %if trouble spot set red else set blue
     else

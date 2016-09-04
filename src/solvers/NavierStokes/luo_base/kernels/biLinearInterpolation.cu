@@ -79,18 +79,19 @@ void interpolateVelocityToGhostNodeX(double *u, bool set, int *ghostTagsUV, doub
 	//point 1
 	for (int l=0;l<4;l++)
 	{
-	if ( ghostTagsUV[index[l]] > 0)
+	//if ( ghostTagsUV[index[l]] > 0)//this moves every node inside to the edge
+	if ( ghostTagsUV[index[l]] == iu ) //this moves just the GN to the edge
 	{
 		x[l] = body_intercept_x[index[l]];
 		y[l] = body_intercept_y[index[l]];
 		q[l] = uB[0];
 	}
-	/*else if ( index[l]==close_index && !inflag ) //uncomment this if you want to move the closest node outside of the body to the body
+	else if ( index[l]==close_index && !inflag ) //uncomment this if you want to move the closest node outside of the body to the body
 	{
 		x[l] = body_intercept_x[iu];
 		y[l] = body_intercept_y[iu];
 		q[l] = uB[0];
-	}*/
+	}
 	}
 
 	x1[iu] = x[0];
@@ -249,18 +250,19 @@ void interpolateVelocityToGhostNodeY(double *u, bool set, int *ghostTagsUV, doub
 	//point 1
 	for (int l=0;l<4;l++)
 	{
-	if ( ghostTagsUV[index[l]] > 0)
+	//if ( ghostTagsUV[index[l]] > 0)
+	if ( ghostTagsUV[index[l]] == iv )
 	{
 		x[l] = body_intercept_x[index[l]];
 		y[l] = body_intercept_y[index[l]];
 		q[l] = vB[0];
 	}
-	/*else if ( index[l]==close_index && !inflag ) //uncomment this if you want to move the closest node outside of the body to the body
+	else if ( index[l]==close_index && !inflag ) //uncomment this if you want to move the closest node outside of the body to the body
 	{
 		x[l] = body_intercept_x[iv];
 		y[l] = body_intercept_y[iv];
 		q[l] = vB[0];
-	}*/
+	}
 	}
 
 	x1[iv] = x[0];
@@ -503,6 +505,7 @@ void interpolateVelocityToHybridNodeX(double *u, double *ustar, int *hybridTagsU
 	 q4coef[iu] = (b14+b24*xu[I]+b34*yu[J]+b44*xu[I]*yu[J])/detA;
 
 	 ustar[iu] = a0 + a1*xu[I] + a2*yu[J] + a3*yu[J]*xu[I];
+	 //u[iu] = a0 + a1*xu[I] + a2*yu[J] + a3*yu[J]*xu[I];
 	 image_point_u[iu] = a0 + a1*image_point_x[iu] + a2*image_point_y[iu] + a3*image_point_x[iu]*image_point_y[iu];
 }
 
@@ -660,6 +663,7 @@ void interpolateVelocityToHybridNodeY(double *u, double *ustar, int *hybridTagsU
 	 q4coef[iv] = (b14+b24*xv[I]+b34*yv[J]+b44*xv[I]*yv[J])/detA;
 
 	 ustar[iv] = a0 + a1*xv[I] + a2*yv[J] + a3*yv[J]*xv[I];
+	 //u[iv] = a0 + a1*xv[I] + a2*yv[J] + a3*yv[J]*xv[I];
 	 image_point_u[iv] = a0 + a1*image_point_x[iv] + a2*image_point_y[iv] + a3*image_point_x[iv]*image_point_y[iv];
 }
 

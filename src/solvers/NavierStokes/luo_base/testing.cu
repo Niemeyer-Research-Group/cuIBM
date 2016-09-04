@@ -102,8 +102,8 @@ void luo_base::testInterpX()//flag split this into ghost node and hybrid node fu
 		for (int I=i_start;  I<i_end;  I++)
 		{
 			iu = J*(nx-1) + I;
-			//if (ghostTagsUV[iu] >0)//for inside
-			if (hybridTagsUV[iu] >0)//for outside
+			if (ghostTagsUV[iu] >0)//for inside
+			//if (hybridTagsUV[iu] >0)//for outside
 			{
 				body_nodes << x1_ip[iu]<<"\t";
 				body_nodes << y1_ip[iu]<<"\t";
@@ -127,8 +127,8 @@ void luo_base::testInterpX()//flag split this into ghost node and hybrid node fu
 				body_nodes << q2[iu] <<"\t";
 				body_nodes << q3[iu] <<"\t";
 				body_nodes << q4[iu] <<"\t";
-				//body_nodes << u[iu] <<"\t";//inside
-				body_nodes << ustar[iu] <<"\t";//outside
+				body_nodes << u[iu] <<"\t";//inside
+				//body_nodes << ustar[iu] <<"\t";//outside
 				body_nodes << image_point_u[iu]<<"\t";
 				body_nodes << q1coef[iu] << "\t";
 				body_nodes << q2coef[iu] << "\t";

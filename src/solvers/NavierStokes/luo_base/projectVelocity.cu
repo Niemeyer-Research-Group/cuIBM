@@ -44,7 +44,7 @@ void luo_base::_project_velocity()
 													y1_r, y2_r, y3_r, y4_r,
 													q1_r, q2_r, q3_r, q4_r, image_point_u_r);
 
-
+	//testInterpX();
 	dim3 grid2( int( ((nx-1)*ny-0.5)/blocksize ) +1, 1);
 	kernels::setInsideVelocity<<<grid2,block>>>(ghostTagsUV_r, u_r, B.uB_r, B.vB_r, nx, ny);
 	//testInterpX();
