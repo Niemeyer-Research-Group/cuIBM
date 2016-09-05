@@ -40,6 +40,28 @@ figure
 clear
 clc
 pathbase = '/scratch/src/cuIBM/validation/';
+cases = 'osc/static/forces';
+delim = '\t';
+
+%read data
+forces = dlmread(strcat(pathbase,'osc/static','/forces'),delim,1,0);
+
+x = dlmread(strcat(pathbase,'osc/static/midPosition'),delim,1,0);
+%plot
+hold on
+plot(forces(10:end,1),forces(10:end,2),'r')
+hold off
+xlabel('time')
+ylabel('force')
+title('Oscillating Cylinder in Static Flow')
+axis([0 2 -0.5 0.5])
+
+%% plot force of osc cylinders with flow
+% close all
+figure
+clear
+clc
+pathbase = '/scratch/src/cuIBM/validation/';
 cases = 'osc/flow/forces';
 delim = '\t';
 
@@ -81,15 +103,15 @@ cases = '/flow/forces';
 delim = '\t';
 
 %read data
-a = dlmread(strcat(pathbase,'ab','/forcesa'),delim,0,0);
+a = dlmread(strcat(pathbase,'ab','/forcesa'),delim,1,0);
 % b = dlmread(strcat(pathbase,'ab','/forces'),delim,0,0);
-b = dlmread(strcat(pathbase,'ab','/forcesb'),delim,0,0);
-c = dlmread(strcat(pathbase,'cd','/forcesc'),delim,0,0);
-d = dlmread(strcat(pathbase,'cd','/forcesd'),delim,0,0);
-e = dlmread(strcat(pathbase,'ef','/forcese'),delim,0,0);
-f = dlmread(strcat(pathbase,'ef','/forcesf'),delim,0,0);
-g = dlmread(strcat(pathbase,'gh','/forcesg'),delim,0,0);
-h = dlmread(strcat(pathbase,'gh','/forcesh'),delim,0,0);
+b = dlmread(strcat(pathbase,'ab','/forcesb'),delim,1,0);
+c = dlmread(strcat(pathbase,'cd','/forcesc'),delim,1,0);
+d = dlmread(strcat(pathbase,'cd','/forcesd'),delim,1,0);
+e = dlmread(strcat(pathbase,'ef','/forcese'),delim,1,0);
+f = dlmread(strcat(pathbase,'ef','/forcesf'),delim,1,0);
+g = dlmread(strcat(pathbase,'gh','/forcesg'),delim,1,0);
+h = dlmread(strcat(pathbase,'gh','/forcesh'),delim,1,0);
 
 hold on
 subplot(4,2,1)
