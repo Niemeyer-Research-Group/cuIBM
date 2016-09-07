@@ -159,8 +159,8 @@ void luo_base::updateSolver()
 //flag this could probably be done with B.update
 void luo_base::moveBody()
 {
-	//calculateForce();
-	luoForce();
+	calculateForce();
+	//luoForce();
 
 	logger.startTimer("moveBody");
 	double	t = dt*timeStep,

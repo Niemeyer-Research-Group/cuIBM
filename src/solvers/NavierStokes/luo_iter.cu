@@ -43,31 +43,4 @@ void luo_iter::_pressure()
 {
 	poisson_setup();
 	solvePoisson();
-	//weightPressure();//currently just calculating ghost node
-	//generateRHS2();
-	//solvePoisson();
-	//weightPressure();
-	/*arrayprint(rhs2,"rhs2","p",-1);
-	arrayprint(interp_rhs,"+rhs","p",-1);
-	arrayprint(ns_rhs,"*rhs","p",-1);
-	//arrayprint(ghostTagsP,"ghostp","p",-1);
-	//print(LHS2);
-	//poisson_setup();
-	//solvePoisson();
-	int index = 0, ip, I, num;
-	num = 61751;
-	for (int i = num*4; i < numUV*5; i++)
-	{
-		if (hybridTagsP[LHS2.row_indices[i]]==num)
-		{
-			std::cout<<LHS2.row_indices[i]<<"\t";
-			std::cout<<LHS2.column_indices[i]<<"\t";
-			std::cout<<LHS2.values[i]<<std::endl;
-		}
-		if (LHS2.row_indices[i]>num)
-		{
-			std::cout<<rhs2[num]<<"\n";
-			break;
-		}
-	}*/
 }

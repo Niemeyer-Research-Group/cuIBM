@@ -34,19 +34,17 @@ ylabel('force')
 title('Drag')
 axis([0 5 0 6])
 
-%% plot force of osc cylinders with flow
+%% plot force of osc cylinders with no flow
 % close all
 figure
 clear
 clc
-pathbase = '/scratch/src/cuIBM/validation/';
-cases = 'osc/static/forces';
+path = '/scratch/src/cuIBM/validation/osc/static/forces';
 delim = '\t';
 
 %read data
-forces = dlmread(strcat(pathbase,'osc/static','/forces'),delim,1,0);
+forces = dlmread(path,delim,1,0);
 
-x = dlmread(strcat(pathbase,'osc/static/midPosition'),delim,1,0);
 %plot
 hold on
 plot(forces(10:end,1),forces(10:end,2),'r')
@@ -61,36 +59,19 @@ axis([0 2 -0.5 0.5])
 figure
 clear
 clc
-pathbase = '/scratch/src/cuIBM/validation/';
-cases = 'osc/flow/forces';
+path = '/scratch/src/cuIBM/validation/osc/flow/forces';
 delim = '\t';
 
 %read data
-forces = dlmread(strcat(pathbase,'osc/gh','/forces'),delim,1,0);
-% forces1 = dlmread(strcat(pathbase,'osc/ab','/forces1'),delim,0,0);
-% forces2 = dlmread(strcat(pathbase,'osc/ab','/forces2'),delim,0,0);
-x = dlmread(strcat(pathbase,'osc/gh/midPosition'),delim,1,0);
+forces = dlmread(path,delim,1,0);
 %plot
 hold on
-plot(forces(10:end,1),forces(10:end,2),'r') %present
-% plot(forces1(10:end,1),forces1(10:end,2),'b')
-% plot(forces2(10:end,1),forces2(10:end,2),'k')
+plot(forces(10:end,1),forces(10:end,2),'r')
 hold off
-% legend('10','3','1')
 xlabel('time')
 ylabel('force')
 title('Drag')
 axis([0 10 0 2])
-
-% figure
-% X = 0:0.1:10;
-% plot(forces(10:end,1),x(10:end,2),'k'), hold on
-% plot(X,-0.25*cos(2*pi*0.2*X),'ko')
-% plot(forces(10:end,1),x(10:end,4),'r')
-% plot(X,0.1*pi*sin(2*pi*0.2*X),'ro')
-% xlabel('time')
-% legend('position','expected position','velocity','expected velocity')
-% ylabel('x position')
 
 %% plot foce of all osc cylinders with flow
 
@@ -98,58 +79,80 @@ axis([0 10 0 2])
 % clear
 % clc
 
-pathbase = '/scratch/src/cuIBM/validation/osc/';
-cases = '/flow/forces';
+pathbase = '/scratch/src/cuIBM/validation/osc/flow/';
 delim = '\t';
 
 %read data
-a = dlmread(strcat(pathbase,'ab','/forcesa'),delim,1,0);
-% b = dlmread(strcat(pathbase,'ab','/forces'),delim,0,0);
-b = dlmread(strcat(pathbase,'ab','/forcesb'),delim,1,0);
-c = dlmread(strcat(pathbase,'cd','/forcesc'),delim,1,0);
-d = dlmread(strcat(pathbase,'cd','/forcesd'),delim,1,0);
-e = dlmread(strcat(pathbase,'ef','/forcese'),delim,1,0);
-f = dlmread(strcat(pathbase,'ef','/forcesf'),delim,1,0);
-g = dlmread(strcat(pathbase,'gh','/forcesg'),delim,1,0);
-h = dlmread(strcat(pathbase,'gh','/forcesh'),delim,1,0);
+a = dlmread(strcat(pathbase,'a','/forces'),delim,1,0);
+b = dlmread(strcat(pathbase,'b','/forces'),delim,1,0);
+c = dlmread(strcat(pathbase,'c','/forces'),delim,1,0);
+d = dlmread(strcat(pathbase,'d','/forces'),delim,1,0);
+e = dlmread(strcat(pathbase,'e','/forces'),delim,1,0);
+f = dlmread(strcat(pathbase,'f','/forces'),delim,1,0);
+g = dlmread(strcat(pathbase,'g','/forces'),delim,1,0);
+h = dlmread(strcat(pathbase,'h','/forces'),delim,1,0);
+i = dlmread(strcat(pathbase,'i','/forces'),delim,1,0);
+j = dlmread(strcat(pathbase,'j','/forces'),delim,1,0);
+k = dlmread(strcat(pathbase,'k','/forces'),delim,1,0);
+l = dlmread(strcat(pathbase,'l','/forces'),delim,1,0);
 
 hold on
-subplot(4,2,1)
+%row 1
+subplot(4,3,1)
 plot(a(:,1),a(:,2),'k')
 ylabel('force')
 axis([0 10 0 2])
 
-subplot(4,2,2)
+subplot(4,3,2)
 plot(b(:,1),b(:,2),'k')
 axis([0 10 0 2])
 
-subplot(4,2,3)
+subplot(4,3,3)
 plot(c(:,1),c(:,2),'k')
-ylabel('force')
 axis([0 10 0 2])
 
-subplot(4,2,4)
+%row 2
+subplot(4,3,4)
 plot(d(:,1),d(:,2),'k')
-axis([0 10 0 2])
-
-subplot(4,2,5)
-plot(e(:,1),e(:,2),'k')
 ylabel('force')
 axis([0 10 0 2])
 
-subplot(4,2,6)
+subplot(4,3,5)
+plot(e(:,1),e(:,2),'k')
+axis([0 10 0 2])
+
+subplot(4,3,6)
 plot(f(:,1),f(:,2),'k')
 axis([0 10 0 2])
 
-subplot(4,2,7)
+%row 3
+subplot(4,3,7)
 plot(g(:,1),g(:,2),'k')
-xlabel('time')
 ylabel('force')
 axis([0 10 0 2])
 
-subplot(4,2,8)
+subplot(4,3,8)
 plot(h(:,1),h(:,2),'k')
+axis([0 10 0 2])
+
+subplot(4,3,9)
+plot(i(:,1),i(:,2),'k')
+axis([0 10 0 2])
+
+%row 4
+subplot(4,3,10)
+plot(j(:,1),j(:,2),'k')
+ylabel('force')
 xlabel('time')
 axis([0 10 0 2])
 
+subplot(4,3,11)
+plot(k(:,1),k(:,2),'k')
+xlabel('time')
+axis([0 10 0 2])
+
+subplot(4,3,12)
+plot(l(:,1),l(:,2),'k')
+xlabel('time')
+axis([0 10 0 2])
 hold off

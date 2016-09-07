@@ -12,7 +12,8 @@ view = 'in';
 %load data
 % caseFolder = '/scratch/src/cuIBM/validation/luo/test/output/'
 % caseFolder = '/scratch/src/cuIBM/validation/cylinder/Re40/output/';
-caseFolder = '/scratch/src/cuIBM/validation/osc/gh/output/';
+% caseFolder = '/scratch/src/cuIBM/validation/osc/gh/output/';
+caseFolder = '/scratch/src/cuIBM/validation/osc/static/output/';
 path = strcat(caseFolder,number,type,suffix,'.csv');
 ghostpath = strcat(caseFolder,number,'ghost',type,'.csv');
 delim = '\t';
