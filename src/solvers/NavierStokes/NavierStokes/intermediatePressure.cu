@@ -11,7 +11,7 @@
 
 void NavierStokesSolver::generateRHS2()
 {
-	logger.startTimer("RHS2");
+	logger.startTimer("Poisson Setup");
 
 	const int blocksize = 256;
 
@@ -20,13 +20,11 @@ void NavierStokesSolver::generateRHS2()
 
 	kernels::intermediatePressureNoBody<<<grid,block>>>(rhs2_r, uhat_r, ym_r, yp_r, xm_r, xp_r, dx_r, dy_r, nx, ny);
 
-	logger.stopTimer("RHS2");
+	logger.stopTimer("Poisson Setup");
 }
 
 void NavierStokesSolver::generateLHS2()
 {
-	logger.startTimer("LHS2");
-
 	const int blocksize = 256;
 
 	dim3 grid( int( (nx*ny-0.5)/blocksize ) +1, 1);
@@ -36,6 +34,4 @@ void NavierStokesSolver::generateLHS2()
 
 	kernels::LHS2_mid_nobody<<<grid,block>>>(LHS2_row_r, LHS2_col_r, LHS2_val_r, dx_r, dy_r, nx, ny, dt);
 	kernels::LHS2_BC<<<grid,block>>>(LHS2_row_r, LHS2_col_r, LHS2_val_r, dx_r, dy_r, nx,ny,dt);
-
-	logger.stopTimer("LHS2");
 }

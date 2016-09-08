@@ -71,11 +71,6 @@ void luoIBM::writeData()
 	writeCommon();
 	logger.stopTimer("output");
 
-	logger.startTimer("calculateForce");
-	//calculateForce();
-	luoForce();
-	logger.stopTimer("calculateForce");
-
 	logger.startTimer("output");
 	if (NavierStokesSolver::timeStep == 1)
 		forceFile<<"timestep\tFx\tFy\n";

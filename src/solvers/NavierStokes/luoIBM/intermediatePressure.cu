@@ -14,7 +14,7 @@
 
 void luoIBM::generateRHS2()
 {
-	NavierStokesSolver::logger.startTimer("RHS2");
+	NavierStokesSolver::logger.startTimer("Poisson Setup");
 
 	const int blocksize = 256;
 
@@ -24,13 +24,11 @@ void luoIBM::generateRHS2()
 	preRHS2Interpolation();
 
 	kernels::intermediatePressure_luo<<<grid,block>>>(rhs2_r, uhat_r, ym_r, yp_r, xm_r, xp_r, dx_r, dy_r, nx, ny);
-	NavierStokesSolver::logger.stopTimer("RHS2");
+	NavierStokesSolver::logger.stopTimer("Poisson Setup");
 }
 
 void luoIBM::generateLHS2()
 {
-	NavierStokesSolver::logger.startTimer("LHS2");
-
 	const int blocksize = 256;
 
 	dim3 grid( int( (nx*ny-0.5)/blocksize ) +1, 1);
@@ -40,12 +38,11 @@ void luoIBM::generateLHS2()
 
 	kernels::LHS2_mid_luo<<<grid,block>>>(LHS2_row_r, LHS2_col_r, LHS2_val_r, dx_r, dy_r, nx, ny, dt);
 	kernels::LHS2_BC<<<grid,block>>>(LHS2_row_r, LHS2_col_r, LHS2_val_r, dx_r, dy_r, nx,ny,dt);
-	logger.stopTimer("LHS2");
 }
 
 void luoIBM::weightPressure()
 {
-	logger.startTimer("weightPressure");
+	logger.startTimer("Poisson Weight");
 
 	const int blocksize = 256;
 
@@ -75,7 +72,7 @@ void luoIBM::weightPressure()
 									x1_p_r, x2_p_r, x3_p_r, x4_p_r, y1_p_r, y2_p_r, y3_p_r, y4_p_r, q1_p_r, q2_p_r, q3_p_r, q4_p_r);
 
 	//testInterpP();
-	logger.stopTimer("weightPressure");
+	logger.stopTimer("Poisson Weight");
 }
 
 void luoIBM::preRHS2Interpolation()

@@ -26,7 +26,6 @@ fadlunModified::fadlunModified(parameterDB *pDB, domain *dInfo)
 void fadlunModified::initialise()
 {
 	NavierStokesSolver::initialiseNoBody();
-	logger.startTimer("initialise");
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	//ARRAYS
@@ -66,8 +65,6 @@ void fadlunModified::initialise()
 	std::stringstream out;
 	out << folder << "/forces";
 	forceFile.open(out.str().c_str());
-
-	logger.stopTimer("initialise");
 }
 
 /*

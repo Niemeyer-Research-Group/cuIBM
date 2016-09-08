@@ -12,8 +12,6 @@
 
 void fadlunModified::generateRHS2()
 {
-	NavierStokesSolver::logger.startTimer("RHS2");
-
 	const int blocksize = 256;
 
 	dim3 grid( int( (nx*ny-0.5)/blocksize ) +1, 1);
@@ -21,14 +19,10 @@ void fadlunModified::generateRHS2()
 
 	kernels::intermediatePressure<<<grid,block>>>(rhs2_r, uhat_r, tagsP_r, tagsPOut_r, tagsIn_r, distance_from_u_to_body_r, distance_from_v_to_body_r, ym_r, yp_r, xm_r, xp_r, dx_r, dy_r, nx, ny);
 	NavierStokesSolver::pressure_old = NavierStokesSolver::pressure;
-
-	NavierStokesSolver::logger.stopTimer("RHS2");
 }
 
 void fadlunModified::generateLHS2()
 {
-	NavierStokesSolver::logger.startTimer("LHS2");
-
 	const int blocksize = 256;
 
 	dim3 grid( int( (nx*ny-0.5)/blocksize ) +1, 1);
@@ -38,6 +32,4 @@ void fadlunModified::generateLHS2()
 
 	kernels::LHS2_mid<<<grid,block>>>(LHS2_row_r, LHS2_col_r, LHS2_val_r, distance_from_u_to_body_r, distance_from_v_to_body_r, tagsP_r, tagsPOut_r, dx_r, dy_r, nx, ny, dt);
 	kernels::LHS2_BC<<<grid,block>>>(LHS2_row_r, LHS2_col_r, LHS2_val_r, dx_r, dy_r, nx,ny,dt);
-
-	logger.stopTimer("LHS2");
 }

@@ -13,6 +13,7 @@
 
 void NavierStokesSolver::generateRHS1()
 {
+	logger.startTimer("Intermediate Velocity Setup");
 	//set correct grid and block size
 	const int blocksize = 256;
 
@@ -33,6 +34,7 @@ void NavierStokesSolver::generateRHS1()
 	generateBC1();
 
 	kernels::generateRHS<<<dimGridUV,dimBlockUV>>>(rhs1_r, L_r, Nold_r, N_r, u_r, bc1_r, dt, nx, ny);
+	logger.stopTimer("Intermediate Velocity Setup");
 }
 
 /**
@@ -46,8 +48,6 @@ void NavierStokesSolver::generateRHS1()
  */
 void NavierStokesSolver::generateN()
 {
-	logger.startTimer("Advection Terms");
-
 	const int blocksize = 256;
 
 	dim3 gridU( int( ((nx-1)*ny-0.5)/blocksize ) +1, 1);
@@ -59,8 +59,6 @@ void NavierStokesSolver::generateN()
 	kernels::Nbcx<<<gridU, blockU>>>(N_r, u_r, dx_r, dy_r, ym_r, yp_r, xm_r, xp_r, nx, ny);
 	kernels::Nmidy<<<gridV, blockV>>>(N_r,u_r,dx_r,dy_r,nx,ny);
 	kernels::Nbcy<<<gridV, blockV>>>(N_r, u_r, dx_r, dy_r, ym_r, yp_r, xm_r, xp_r, nx, ny);
-
-	logger.stopTimer("Advection Terms");
 }
 
 /**
@@ -75,8 +73,6 @@ void NavierStokesSolver::generateN()
  */
 void NavierStokesSolver::generateL()
 {
-	logger.startTimer("Diffusion Terms");
-
 	const int blocksize = 256;
 
 	dim3 gridU( int( ((nx-1)*ny-0.5)/blocksize ) +1, 1);
@@ -88,14 +84,10 @@ void NavierStokesSolver::generateL()
 	kernels::Lbcx<<<gridU, blockU>>>(L_r, u_r, dx_r, dy_r, ym_r, yp_r, xm_r, xp_r, nx, ny, nu);
 	kernels::Lmidy<<<gridV, blockV>>>(L_r,u_r,dx_r,dy_r,nx,ny,nu);
 	kernels::Lbcy<<<gridV, blockV>>>(L_r, u_r, dx_r, dy_r, ym_r, yp_r, xm_r, xp_r, nx, ny, nu);
-
-	logger.stopTimer("Diffusion Terms");
 }
 
 void NavierStokesSolver::generateLHS1()
 {
-	logger.startTimer("LHS1");
-
 	const int blocksize = 256;
 
 	dim3 gridU( int( ((nx-1)*ny-0.5)/blocksize ) +1, 1);
@@ -107,14 +99,10 @@ void NavierStokesSolver::generateLHS1()
 	kernels::LHS_mid_Y_nobody<<<gridV,blockV>>>(LHS1_row_r, LHS1_col_r, LHS1_val_r, dx_r, dy_r, dt, nu, nx, ny);
 	kernels::LHS_BC_X<<<gridU,blockU>>>(LHS1_row_r, LHS1_col_r, LHS1_val_r, dx_r, dy_r, dt, nu, nx, ny);
 	kernels::LHS_BC_Y<<<gridV,blockV>>>(LHS1_row_r, LHS1_col_r, LHS1_val_r, dx_r, dy_r, dt, nu, nx, ny);
-
-	logger.stopTimer("LHS1");
 }
 
 void NavierStokesSolver::generateBC1()
 {
-	logger.startTimer("BC1");
-
 	const int blocksize = 256;
 
 	dim3 gridU( int( ((nx-1)*ny-0.5)/blocksize ) +1, 1);
@@ -124,6 +112,4 @@ void NavierStokesSolver::generateBC1()
 
 	kernels::bc1X<<<gridU, blockU>>>(u_r, bc1_r, ym_r, yp_r, xm_r, xp_r, dx_r, dy_r, nu, dt, nx, ny);
 	kernels::bc1Y<<<gridV, blockV>>>(u_r, bc1_r, ym_r, yp_r, xm_r, xp_r, dx_r, dy_r, nu, dt, nx, ny);
-
-	logger.stopTimer("BC1");
 }

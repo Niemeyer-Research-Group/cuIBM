@@ -16,7 +16,6 @@
 
 void fadlunModified::tagPoints()
 {
-	logger.startTimer("tagPoints");
 	int  totalPoints = B.totalPoints,
 		 i_start = B.startI[0],
 		 j_start = B.startJ[0],
@@ -60,6 +59,4 @@ void fadlunModified::tagPoints()
 	kernels::zero_x<<<dimGrid0,dimBlock>>>(tagsIn_r, i_start, j_start, i_end, j_end, nx, ny);
 	//zero the inside of tagsiny
 	kernels::zero_y<<<dimGrid0,dimBlock>>>(tagsIn_r, i_start, j_start, i_end, j_end, nx, ny);
-
-	logger.stopTimer("tagPoints");
 }

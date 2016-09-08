@@ -16,7 +16,6 @@
 
 void luo_base::tagPoints()
 {
-	logger.startTimer("tagPoints");
 	double	i_start = B.startI[0],
 			j_start = B.startJ[0],
 			width_i = B.numCellsX[0],
@@ -71,5 +70,4 @@ void luo_base::tagPoints()
 
 	//testOutputX();
 	//testOutputY();
-	logger.stopTimer("tagPoints");
 }

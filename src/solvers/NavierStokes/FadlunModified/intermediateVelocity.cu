@@ -40,8 +40,6 @@ void fadlunModified::generateRHS1()
 
 void fadlunModified::updateRobinBoundary()
 {
-	NavierStokesSolver::logger.startTimer("update Boundary");
-
 	double 	Uinf = 1, //need a better way to enforce these, ie read from yaml file
 			Vinf = 1;
 
@@ -53,14 +51,10 @@ void fadlunModified::updateRobinBoundary()
 
 	kernels::updateBoundaryX<<<dimGridBCX,dimBlockBC>>>(u_r, xp_r, dx_r, dt, Uinf, nx, ny);
 	kernels::updateBoundaryY<<<dimGridBCY,dimBlockBC>>>(u_r, xp_r, dx_r, dt, Vinf, nx, ny);
-
-	NavierStokesSolver::logger.stopTimer("update Boundary");
 }
 
 void fadlunModified::generateLHS1()
 {
-	NavierStokesSolver::logger.startTimer("LHS1");
-
 	const int blocksize = 256;
 
 	dim3 gridU( int( ((nx-1)*ny-0.5)/blocksize ) +1, 1);
@@ -73,6 +67,4 @@ void fadlunModified::generateLHS1()
 
 	kernels::LHS_BC_X<<<gridU,blockU>>>(LHS1_row_r, LHS1_col_r, LHS1_val_r, dx_r, dy_r, dt, nu, nx, ny);
 	kernels::LHS_BC_Y<<<gridV,blockV>>>(LHS1_row_r, LHS1_col_r, LHS1_val_r, dx_r, dy_r, dt, nu, nx, ny);
-
-	NavierStokesSolver::logger.stopTimer("LHS1");
 }

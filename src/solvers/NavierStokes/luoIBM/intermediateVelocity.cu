@@ -17,7 +17,7 @@
 
 void luoIBM::generateRHS1()
 {
-	logger.startTimer("RHS1 Setup");
+	logger.startTimer("Intermediate Velocity Setup");
 
 	//set correct grid and block size
 	const int blocksize = 256;
@@ -29,7 +29,6 @@ void luoIBM::generateRHS1()
 	dim3 dimGridV( int( (nx*(ny-1)-0.5)/blocksize ) +1, 1);
 	dim3 dimBlockV(blocksize, 1);
 
-	logger.stopTimer("RHS1 Setup");
 	//update right boundary of the domain for the convective boundary condition
 	updateRobinBoundary();
 	//set Nold to N
@@ -49,17 +48,14 @@ void luoIBM::generateRHS1()
 	//calculate boundary terms
 	generateBC1();
 
-	logger.startTimer("RHS1 Setup");
 	//sum rhs components
 	kernels::generateRHS<<<dimGridUV,dimBlockUV>>>(rhs1_r, L_r, Nold_r, N_r, u_r, bc1_r, dt, nx, ny);
-	logger.stopTimer("RHS1 Setup");
+	logger.stopTimer("Intermediate Velocity Setup");
 
 }
 
 void luoIBM::generateLHS1()
 {
-	NavierStokesSolver::logger.startTimer("LHS1");
-
 	const int blocksize = 256;
 	dim3 gridU( int( ((nx-1)*ny-0.5)/blocksize ) +1, 1);
 	dim3 blockU(blocksize, 1);
@@ -71,13 +67,11 @@ void luoIBM::generateLHS1()
 
 	kernels::LHS_BC_X<<<gridU,blockU>>>(LHS1_row_r, LHS1_col_r, LHS1_val_r, dx_r, dy_r, dt, nu, nx, ny);
 	kernels::LHS_BC_Y<<<gridV,blockV>>>(LHS1_row_r, LHS1_col_r, LHS1_val_r, dx_r, dy_r, dt, nu, nx, ny);
-
-	NavierStokesSolver::logger.stopTimer("LHS1");
 }
 
 void luoIBM::weightUhat()
 {
-	logger.startTimer("weightUhat");
+	logger.startTimer("Intermediate Velocity Weight");
 
 	const int blocksize = 256;
 	dim3 grid( int( (B.numCellsXHost*B.numCellsYHost-0.5)/blocksize ) +1, 1);
@@ -89,13 +83,11 @@ void luoIBM::weightUhat()
 	kernels::weightY<<<grid,block>>>(uhat_r, ustar_r, ghostTagsUV_r, hybridTagsUV_r, yv_r, xv_r,
 									body_intercept_x_r, body_intercept_y_r, image_point_x_r, image_point_y_r,
 									B.startI_r, B.startJ_r, B.numCellsXHost, nx, ny);
-	logger.stopTimer("weightUhat");
+	logger.stopTimer("Intermediate Velocity Weight");
 }
 
 void luoIBM::rhs1GNInterpolation()
 {
-	logger.startTimer("RHS1 Interpolation");
-
 	const int blocksize = 256;
 
 	dim3 grid( int( (B.numCellsXHost*B.numCellsYHost-0.5)/blocksize ) +1, 1);
@@ -118,13 +110,10 @@ void luoIBM::rhs1GNInterpolation()
 													y1_r, y2_r, y3_r, y4_r,
 													q1_r, q2_r, q3_r, q4_r, image_point_u_r);
 	zeroVelocity();
-	logger.stopTimer("RHS1 Interpolation");
 }
 
 void luoIBM::rhs1HNInterpolation()
 {
-	logger.startTimer("RHS1 Interpolation");
-
 	const int blocksize = 256;
 
 	dim3 grid( int( (B.numCellsXHost*B.numCellsYHost-0.5)/blocksize ) +1, 1);
@@ -150,7 +139,6 @@ void luoIBM::rhs1HNInterpolation()
 																q1_r, q2_r, q3_r, q4_r, image_point_u_r);
 	//testInterpX();
 	//testInterpY();
-	logger.stopTimer("RHS1 Interpolation");
 }
 
 

@@ -15,6 +15,6 @@
       maxIterations: 10000
     - system: Poisson
       solver: CG
-      preconditioner: SMOOTHED_AGGREGATION
+      preconditioner: DIAGONAL
       tolerance: 1e-5
       maxIterations: 20000

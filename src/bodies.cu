@@ -19,7 +19,6 @@
  */
 void bodies::initialise(parameterDB &db, domain &D)
 {
-	std::cout << "Initialising bodies... ";
 	std::vector<body> *B = db["flow"]["bodies"].get<std::vector<body> *>();
 	// number of bodies in the flow
 	numBodies = B->size();

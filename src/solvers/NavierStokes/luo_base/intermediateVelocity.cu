@@ -10,7 +10,6 @@
 
 void luo_base::updateRobinBoundary()
 {
-	NavierStokesSolver::logger.startTimer("update Boundary");
 	double 	Uinf = 1, //need a better way to enforce these, ie read from yaml file
 			Vinf = 1;
 
@@ -21,5 +20,4 @@ void luo_base::updateRobinBoundary()
 
 	kernels::updateBoundaryX<<<dimGridBCX,dimBlockBC>>>(u_r, xp_r, dx_r, dt, Uinf, nx, ny);
 	kernels::updateBoundaryY<<<dimGridBCY,dimBlockBC>>>(u_r, xp_r, dx_r, dt, Vinf, nx, ny);
-	NavierStokesSolver::logger.stopTimer("update Boundary");
 }

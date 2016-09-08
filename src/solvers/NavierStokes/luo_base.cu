@@ -135,21 +135,12 @@ void luo_base::writeData()
  */
 void luo_base::updateSolver()
 {
-	logger.startTimer("Bounding Boxes");
+	logger.startTimer("Update Solver");
 	B.calculateBoundingBoxes(*paramDB, *domInfo);//flag this isn't really needed because the body never moves out of the bounding box
-	logger.stopTimer("Bounding Boxes");
 
 	tagPoints();
-	/*generateLHS1();//is this needed?
-	generateLHS2();
 
-	logger.startTimer("Preconditioner");
-	if (iterationCount2 > 100)
-	{
-		PC.update1(LHS1);
-		PC.update2(LHS2);
-	}
-	logger.stopTimer("Preconditioner");*/
+	logger.stopTimer("Update Solver");
 }
 
 /*
@@ -159,10 +150,13 @@ void luo_base::updateSolver()
 //flag this could probably be done with B.update
 void luo_base::moveBody()
 {
+	logger.startTimer("Calculate Force");
 	calculateForce();
 	//luoForce();
+	logger.stopTimer("Calculate Force");
 
-	logger.startTimer("moveBody");
+
+	logger.startTimer("Move Body");
 	double	t = dt*timeStep,
 			f = B.frequency,
 			xCoeff = B.xCoeff,
@@ -187,7 +181,7 @@ void luo_base::moveBody()
 	dim3 block(blocksize, 1);
 	B.uBk = B.uB;
 	kernels::update_body_viv<<<grid,block>>>(B.x_r, B.uB_r, xnew-xold, unew, totalPoints);
-	logger.stopTimer("moveBody");
+	logger.stopTimer("Move Body");
 }
 
 /**
@@ -215,17 +209,13 @@ void luo_base::writeCommon()
 						<< "\t" << "X"
 						<< "\t" << "Y"
 						<< "\t" << "U"
-						<< "\t" << "V"
-						<< "\t" << "DuDt"
-						<< "\t" << "DvDt" << std::endl;
+						<< "\t" << "V" << std::endl;
 	}
 	midPositionFile << timeStep
 					<< "\t" << B.midX
 					<< "\t" << B.midY
 					<< "\t" << B.centerVelocityU
-					<< "\t" << B.centerVelocityV
-					<< "\t" << (B.uB[0]-B.uBk[0])/dt
-					<< "\t" << (B.vB[0]-B.vBk[0])/dt <<std::endl;
+					<< "\t" << B.centerVelocityV <<std::endl;
 }
 
 void luo_base::stepTime()
@@ -261,7 +251,7 @@ void luo_base::_post_step()
 
 	//update time
 	timeStep++;
-	std::cout << timeStep << ": " << cfl_max << std::endl;
+	//std::cout << timeStep << ": " << cfl_max << std::endl;
 
 	//Release the body after a certain timestep
 	if (timeStep >= (*paramDB)["simulation"]["startStep"].get<int>())

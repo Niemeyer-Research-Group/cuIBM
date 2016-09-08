@@ -145,9 +145,11 @@ void NavierStokesSolver::initialiseLHS()
 {
 	generateLHS1();
 	generateLHS2();
+	std::cout << "NavierStokesSolver: Initialised LHS!" << std::endl;
 
 	PC.generate1(LHS1, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>());
 	PC.generate2(LHS2, (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
+	std::cout << "NavierStokesSolver: Initialised Preconditioners!" << std::endl;
 }
 
 //##############################################################################
@@ -217,7 +219,7 @@ NavierStokesSolver::NavierStokesSolver(parameterDB *pDB, domain *dInfo)
 
 void NavierStokesSolver::solveIntermediateVelocity()
 {
-	logger.startTimer("solveIntermediateVel");
+	logger.startTimer("Intermediate Velocity Solve");
 	int  maxIters = (*paramDB)["velocitySolve"]["maxIterations"].get<int>();
 	double relTol = (*paramDB)["velocitySolve"]["tolerance"].get<double>();
 
@@ -235,7 +237,7 @@ void NavierStokesSolver::solveIntermediateVelocity()
 		std::exit(-1);
 	}
 
-	logger.stopTimer("solveIntermediateVel");
+	logger.stopTimer("Intermediate Velocity Solve");
 }
 
 /**
@@ -244,7 +246,7 @@ void NavierStokesSolver::solveIntermediateVelocity()
 
 void NavierStokesSolver::solvePoisson()
 {
-	logger.startTimer("solvePoisson");
+	logger.startTimer("Poisson Solve");
 
 	int  maxIters = (*paramDB)["PoissonSolve"]["maxIterations"].get<int>();
 	double relTol   = (*paramDB)["PoissonSolve"]["tolerance"].get<double>();
@@ -262,7 +264,7 @@ void NavierStokesSolver::solvePoisson()
 		std::exit(-1);
 	}
 
-	logger.stopTimer("solvePoisson");
+	logger.stopTimer("Poisson Solve");
 }
 
 //##############################################################################
