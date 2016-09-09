@@ -4,10 +4,10 @@
   nt: 16000
   nsave: 1000
   startStep: 0
-  #SolverType: LUO
-  SolverType: OSC_CYLINDER
+  SolverType: LUO
+  #SolverType: OSC_CYLINDER
   VIV: 1
-  Ured: 3
+  Ured: 4
   linearSolvers:
     - system: velocity
       solver: CG

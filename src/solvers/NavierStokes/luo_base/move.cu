@@ -41,7 +41,7 @@ void luo_base::viv_movement()
 	double	Cy	= B.forceY*2.0,
 			U	= bc[XMINUS][0],
 			Mred= 2.0,
-			Ured= (*paramDB)["flow"]["Ured"].get<double>(),
+			Ured= (*paramDB)["simulation"]["Ured"].get<int>(),
 			totalPoints=B.totalPoints,
 			vold= B.centerVelocityV,
 			yold= B.midY,
@@ -54,10 +54,6 @@ void luo_base::viv_movement()
 	//calc updated velocity
 	vnew = (vold - a*(yold+ dt/2*vold) + dt*Cy/2/Mred)/(1+b);
 	ynew = yold + dt/2*(vnew + vold);
-	std::cout<<"vnew\t"<<vnew<<"\n";
-	std::cout<<"vold\t"<<vold<<"\n";
-	std::cout<<"ynew\t"<<ynew<<"\n";
-	std::cout<<"yold\t"<<yold<<"\n";
 	B.centerVelocityV = vnew;
 	B.midY = ynew;
 

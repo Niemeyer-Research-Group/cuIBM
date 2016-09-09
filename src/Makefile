@@ -156,6 +156,9 @@ oscflowl:
 ############################
 vivUred3:
 	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/VIV/Ured3
+	
+vivUred4:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/VIV/Ured4
 
 ############################
 #CYLINDER
