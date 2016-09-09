@@ -76,7 +76,9 @@ void parseSimulation(const YAML::Node &node, parameterDB &DB)
 	       scaleCV = 2.0;
 	int    nt = 100,
 	       nsave = 100,
-	       startStep = 0;
+	       startStep = 0,
+	       VIV = 0,
+	       Ured=3;
 	string convSch = "ADAMS_BASHFORTH_2";
 	bool   restart = false;
 
@@ -113,6 +115,20 @@ void parseSimulation(const YAML::Node &node, parameterDB &DB)
 	catch(...)
 	{
 	}
+	try
+	{
+		node["VIV"] >> VIV;
+	}
+	catch(...)
+	{
+	}
+	try
+	{
+		node["Ured"] >> Ured;
+	}
+	catch(...)
+	{
+	}
 
 	// write to DB
 	string dbKey = "simulation";
@@ -122,6 +138,8 @@ void parseSimulation(const YAML::Node &node, parameterDB &DB)
 	DB[dbKey]["nt"].set<int>(nt);
 	DB[dbKey]["restart"].set<bool>(restart);
 	DB[dbKey]["SolverType"].set<solverType>(solverTypeFromString(SolverType));
+	DB[dbKey]["VIV"].set<int>(VIV);
+	DB[dbKey]["Ured"].set<int>(Ured);
 
 	string system = "velocity", linearSolver = "CG", preconditioner = "DIAGONAL";
 	double tol = 1e-5;

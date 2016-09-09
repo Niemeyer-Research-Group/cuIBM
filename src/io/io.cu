@@ -107,7 +107,7 @@ void makeDirectory(const std::string folderPath)
  */
 void readInputs(int argc, char **argv, parameterDB &DB, domain &D)
 {
-	// get a default database
+	// get a  database
 	initialiseDefaultDB(DB);
 
 	// first pass of command line arguments
@@ -177,8 +177,8 @@ void initialiseDefaultDB(parameterDB &DB)
 	DB[sim]["nsave"].set<int>(100);
 	DB[sim]["restart"].set<bool>(false);
 	DB[sim]["startStep"].set<bool>(0);
-	//DB[sim]["solverType"].set<int>(0); //flag get rid of this?
-	DB[sim]["Ured"].set<double>(3);
+	DB[sim]["Ured"].set<int>(3);
+	DB[sim]["VIV"].set<int>(0);
 	DB[sim]["SolverType"].set<solverType>(NAVIERSTOKES);
 
 	// velocity solver

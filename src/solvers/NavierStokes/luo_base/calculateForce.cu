@@ -79,7 +79,6 @@ void luo_base::luoForce()
 	const int blocksize = 256;
 	dim3 grid( int( (B.totalPoints-0.5)/blocksize ) +1, 1);
 	dim3 block(blocksize, 1);
-
 	kernels::force_pressure<<<grid,block>>>(B.force_pressure_r, body_intercept_p_r,
 												body_intercept_p_x_r, body_intercept_p_y_r,
 												B.x_r, B.y_r, xv_r, yu_r, ghostTagsP_r,
@@ -93,10 +92,8 @@ void luo_base::luoForce()
 	kernels::force<<<grid,block>>>(B.force_x_r, B.force_y_r, B.force_pressure_r, B.force_dudn_r, B.force_dvdn_r,
 												B.x_r, B.y_r,
 												B.totalPoints, B.midX, B.midY, nu);
-
 	//testForce_p();
 	//testForce_dudn();
-
 	B.forceX = thrust::reduce(B.force_x.begin(), B.force_x.end());
 	B.forceY = thrust::reduce(B.force_y.begin(), B.force_y.end());
 }

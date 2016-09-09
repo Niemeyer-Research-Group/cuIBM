@@ -5,4 +5,4 @@
   xPhase: 1.570796327 #0 = sin, 90 = cos
   uCoefficient: 0.3141592654 #0.1*pi
   uPhase: -1.570796327 #0=cos, -90 = sin
-  frequency: 0.2
+  xfrequency: 0.2

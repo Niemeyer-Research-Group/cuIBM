@@ -39,7 +39,7 @@ void force_pressure(double *force_pressure, double *body_intercept_p,
 		ii++;
 	I0 = ii-2;
 	If = ii+1;
-	while (yu[jj] <by[idx])
+	while (yu[jj] < by[idx])
 		jj++;
 	J0=jj-2;
 	Jf=jj+1;
@@ -60,7 +60,6 @@ void force_pressure(double *force_pressure, double *body_intercept_p,
 		for(int j=J0;j<=Jf;j++)
 		{
 			ip = j*nx+i;
-
 			if (ghostTagsP[ip]>0)
 			{
 				theta = asin((body_intercept_p_y[ip]-midY)/sqrt(pow(body_intercept_p_x[ip]-midX,2)+pow(body_intercept_p_y[ip]-midY,2)));
@@ -69,10 +68,10 @@ void force_pressure(double *force_pressure, double *body_intercept_p,
 					theta = M_PI-theta;
 				}
 				if (thetaNode > M_PI*5/4 || thetaNode < -M_PI/4)
-					{
-						if(body_intercept_p_x[ip]>midX)
-							theta += 2*M_PI;
-					}
+				{
+					if(body_intercept_p_x[ip]>midX)
+						theta += 2*M_PI;
+				}
 				thetaID = ip;
 				if (theta > thetaNode && theta < max)
 				{

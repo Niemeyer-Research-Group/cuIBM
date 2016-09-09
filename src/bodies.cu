@@ -25,10 +25,15 @@ void bodies::initialise(parameterDB &db, domain &D)
 
 	//oscylinder
 	xCoeff = (*B)[0].xCoefficient;
+	yCoeff = (*B)[0].yCoefficient;
 	uCoeff = (*B)[0].uCoefficient;
-	frequency = (*B)[0].frequency;
+	vCoeff = (*B)[0].vCoefficient;
+	xfrequency = (*B)[0].xfrequency;
+	yfrequency = (*B)[0].yfrequency;
 	xPhase = (*B)[0].xPhase;
+	yPhase = (*B)[0].yPhase;
 	uPhase = (*B)[0].uPhase;
+	vPhase = (*B)[0].vPhase;
 
 	// set the sizes of all the arrays
 	numPoints.resize(numBodies);

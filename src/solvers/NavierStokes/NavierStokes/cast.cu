@@ -11,7 +11,6 @@ void NavierStokesSolver::cast()
 	//note: try to resize things before they are cast, it doesn't really like it the other way around
 	nu = (*paramDB)["flow"]["nu"].get<double>();
 	dt = (*paramDB)["simulation"]["dt"].get<double>();
-
 	nx = domInfo ->nx,
 	ny = domInfo ->ny;
 

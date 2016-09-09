@@ -106,10 +106,15 @@ public:
 			forceX,		///< force acting on a body in the x-direction
 			forceY,		///< force acting on a body in the y-direction
 			xCoeff,
+			yCoeff,
 			uCoeff,
-			frequency,
+			vCoeff,
+			xfrequency,
+			yfrequency,
 			xPhase,
-			uPhase;
+			yPhase,
+			uPhase,
+			vPhase;
 
 
 	int	*numPoints_r,

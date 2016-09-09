@@ -7,8 +7,8 @@
 
 #include "luo_base.h"
 #include <sys/stat.h>
-#include <solvers/NavierStokes/luo_base/kernels/structure.h>
 
+#include <solvers/NavierStokes/luo_base/kernels/structure.h> //update_body_viv
 /**
  * \brief Constructor. Copies the database and information about the computational grid.
  *
@@ -51,7 +51,7 @@ void luo_base::initialise()
 			t = dt*timeStep,
 			//D = 0.2,
 			//uMax = 1,
-			f = B.frequency,
+			f = B.xfrequency,
 			xCoeff = B.xCoeff,
 			uCoeff = B.uCoeff,
 			xPhase = B.xPhase,
@@ -151,36 +151,20 @@ void luo_base::updateSolver()
 void luo_base::moveBody()
 {
 	logger.startTimer("Calculate Force");
-	calculateForce();
-	//luoForce();
+	//calculateForce();
+	luoForce();
 	logger.stopTimer("Calculate Force");
 
-
 	logger.startTimer("Move Body");
-	double	t = dt*timeStep,
-			f = B.frequency,
-			xCoeff = B.xCoeff,
-			uCoeff = B.uCoeff,
-			xPhase = B.xPhase,
-			uPhase = B.uPhase,
-			totalPoints=B.totalPoints,
-			xold= B.midX,
-			unew,
-			xnew;
-
-	//xnew = -1/(2*M_PI)*sin(2*M_PI*f*t);
-	//unew = -f*cos(2*M_PI*f*t);
-	xnew = xCoeff*sin(2*M_PI*f*t + xPhase);
-	unew = uCoeff*cos(2*M_PI*f*t + uPhase);
-
-	B.centerVelocityU = unew;
-	B.midX = xnew;
-
-	const int blocksize = 256;
-	dim3 grid( int( (totalPoints)/blocksize ) +1, 1);
-	dim3 block(blocksize, 1);
-	B.uBk = B.uB;
-	kernels::update_body_viv<<<grid,block>>>(B.x_r, B.uB_r, xnew-xold, unew, totalPoints);
+	if ((*paramDB)["simulation"]["VIV"].get<int>() == 0)
+		set_movement();
+	else if ( (*paramDB)["simulation"]["VIV"].get<int>()==1 )
+		viv_movement();
+	else
+	{
+		std::cout<<"No movement type error, exiting\n";
+		exit(-1);
+	}
 	logger.stopTimer("Move Body");
 }
 
@@ -239,19 +223,21 @@ void luo_base::_post_step()
 	{
 		//arrayprint(pressure, "p","p",-1);
 		//arrayprint(rhs2, "rhs2","p",-1);
-		arrayprint(u,"u","x",-1);
-		arrayprint(rhs1,"rhs1","x",-1);
+		//arrayprint(u,"u","x",-1);
+		//arrayprint(rhs1,"rhs1","x",-1);
 		//arrayprint(u,"v","y",-1);
-		arrayprint(uhat,"uhat","x",-1);
+		//arrayprint(uhat,"uhat","x",-1);
 		//arrayprint(uhat,"vhat","y",-1);
 		//arrayprint(ghostTagsP,"ghostp","p",-1);
-		arrayprint(ghostTagsUV,"ghostu","x",-1);
+		//arrayprint(ghostTagsUV,"ghostu","x",-1);
 		//arrayprint(ghostTagsUV,"ghostv","y",-1);
+		//arrayprint(body_intercept_p_x,"bipx","p",-1);
+		//arrayprint(body_intercept_p_y,"bipy","p",-1);
 	}
 
 	//update time
 	timeStep++;
-	//std::cout << timeStep << ": " << cfl_max << std::endl;
+	std::cout << timeStep << ": " << cfl_max << std::endl;
 
 	//Release the body after a certain timestep
 	if (timeStep >= (*paramDB)["simulation"]["startStep"].get<int>())
