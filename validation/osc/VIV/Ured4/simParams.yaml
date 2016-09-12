@@ -1,8 +1,8 @@
 - type: simulation
   dt: 0.005
   scaleCV: 5.0
-  nt: 16000
-  nsave: 1000
+  nt: 6000
+  nsave: 16000
   startStep: 0
   SolverType: LUO
   #SolverType: OSC_CYLINDER

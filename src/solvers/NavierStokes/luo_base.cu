@@ -237,7 +237,7 @@ void luo_base::_post_step()
 
 	//update time
 	timeStep++;
-	std::cout << timeStep << ": " << cfl_max << std::endl;
+	//std::cout << timeStep << ": " << cfl_max << std::endl;
 
 	//Release the body after a certain timestep
 	if (timeStep >= (*paramDB)["simulation"]["startStep"].get<int>())

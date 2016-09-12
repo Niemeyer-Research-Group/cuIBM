@@ -1,7 +1,7 @@
 - type: simulation
   dt: 0.0025
   scaleCV: 5.0
-  nt: 1400
+  nt: 10000
   nsave: 10000
   SolverType: LUO
   linearSolvers:

@@ -159,6 +159,18 @@ vivUred3:
 	
 vivUred4:
 	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/VIV/Ured4
+	
+vivUred5:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/VIV/Ured5
+	
+vivUred6:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/VIV/Ured6
+	
+vivUred7:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/VIV/Ured7
+	
+vivUred8:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/VIV/Ured8
 
 ############################
 #CYLINDER
