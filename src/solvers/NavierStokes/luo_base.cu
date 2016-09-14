@@ -151,8 +151,8 @@ void luo_base::updateSolver()
 void luo_base::moveBody()
 {
 	logger.startTimer("Calculate Force");
-	//calculateForce();
-	luoForce();
+	calculateForce();
+	//luoForce();
 	logger.stopTimer("Calculate Force");
 
 	logger.startTimer("Move Body");
