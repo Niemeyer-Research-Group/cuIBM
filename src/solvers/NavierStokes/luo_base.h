@@ -191,7 +191,8 @@ protected:
 	//move
 	//////////////////////////
 	void set_movement();
-	void viv_movement();
+	void viv_movement_LC();
+	void viv_movement_SC();
 
 	//////////////////////////
 	//testing

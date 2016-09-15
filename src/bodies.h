@@ -59,7 +59,9 @@ public:
 
 	cusp::array1d<double, cusp::device_memory>
 		uBk,	//x-velocity of boundary points at substep k
-		vBk;	//y-velocity of boundary points at substep k
+		vBk,	//y-velocity of boundary points at substep k
+		xk,
+		yk;
 
 	cusp::array1d<double, cusp::device_memory>
 		xleft,	///< min and max values for the body nodes
@@ -96,13 +98,17 @@ public:
 		force_y;
 
 	double	centerVelocityU,
+			centerVelocityUk,
 			centerVelocityV,
+			centerVelocityVk,
 			centerVelocityV0,
 			centerVelocityU0,
 			midY,
+			midYk,
 			midY0,
 			midX0,
 			midX,
+			midXk,
 			forceX,		///< force acting on a body in the x-direction
 			forceY,		///< force acting on a body in the y-direction
 			xCoeff,

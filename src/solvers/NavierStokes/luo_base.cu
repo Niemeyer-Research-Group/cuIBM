@@ -151,15 +151,15 @@ void luo_base::updateSolver()
 void luo_base::moveBody()
 {
 	logger.startTimer("Calculate Force");
-	calculateForce();
-	//luoForce();
+	//calculateForce();
+	luoForce();
 	logger.stopTimer("Calculate Force");
 
 	logger.startTimer("Move Body");
 	if ((*paramDB)["simulation"]["VIV"].get<int>() == 0)
 		set_movement();
 	else if ( (*paramDB)["simulation"]["VIV"].get<int>()==1 )
-		viv_movement();
+		viv_movement_LC();
 	else
 	{
 		std::cout<<"No movement type error, exiting\n";

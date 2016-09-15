@@ -88,6 +88,8 @@ void bodies::initialise(parameterDB &db, domain &D)
 	}
 	x.resize(totalPoints);
 	y.resize(totalPoints);
+	xk.resize(totalPoints);
+	yk.resize(totalPoints);
 	uB.resize(totalPoints);
 	vB.resize(totalPoints);
 	uBk.resize(totalPoints);
@@ -154,6 +156,8 @@ void bodies::initialise(parameterDB &db, domain &D)
 	midY=0;
 	midX0=0;
 	midY0=0;
+	midXk=0;
+	midYk=0;
 	for (int i=0;i<totalPoints;i++)
 	{
 		midX += x[i];
@@ -165,6 +169,8 @@ void bodies::initialise(parameterDB &db, domain &D)
 	midY=midY0;
 	centerVelocityV = 0;
 	centerVelocityU = 0;
+	centerVelocityVk = 0;
+	centerVelocityUk = 0;
 	centerVelocityU0= 0;
 	centerVelocityV0= 0;
 }
@@ -196,6 +202,8 @@ void bodies::cast()
 	ones_r			= thrust::raw_pointer_cast ( &(ones[0]));
 	x_r				= thrust::raw_pointer_cast ( &(x[0]));
 	y_r				= thrust::raw_pointer_cast ( &(y[0]));
+	//xk_r			= thrust::raw_pointer_cast ( &(xk[0]));
+	//yk_r			= thrust::raw_pointer_cast ( &(yk[0]));
 	uB_r			= thrust::raw_pointer_cast ( &(uB[0]));
 	vB_r			= thrust::raw_pointer_cast ( &(vB[0]));
 	uBk_r			= thrust::raw_pointer_cast ( &(uBk[0]));
