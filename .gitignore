@@ -22,6 +22,8 @@ bin
 forces
 iterations
 run.info
+midPosition
+output
 grid
 scripts/python/*.bdy
 *.txt
