@@ -39,6 +39,11 @@ void NavierStokesSolver::cast()
 	rhs2.resize(numP);
 	pressure_old.resize(numP);
 
+	//substep
+	uk.resize(numUV);
+	uhatk.resize(numUV);
+	pressurek.resize(numP);
+
 	//Boundary conditions
 	bc[XMINUS].resize(2*ny-1);
 	bc[XPLUS].resize(2*ny-1);
@@ -76,6 +81,10 @@ void NavierStokesSolver::cast()
 	LHS2_row_r		= thrust::raw_pointer_cast( &(LHS2.row_indices[0]) );
 	LHS2_col_r		= thrust::raw_pointer_cast( &(LHS2.column_indices[0]) );
 	LHS2_val_r		= thrust::raw_pointer_cast( &(LHS2.values[0]) );
+
+	uk_r			= thrust::raw_pointer_cast( &(uk[0]) ),
+	uhatk_r			= thrust::raw_pointer_cast( &(uhatk[0]) ),
+	pressurek_r		= thrust::raw_pointer_cast( &(pressurek[0]) );
 
 
 	cfl.resize(nx*ny);

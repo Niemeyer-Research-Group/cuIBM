@@ -60,6 +60,8 @@ public:
 	cusp::array1d<double, cusp::device_memory>
 		uBk,	//x-velocity of boundary points at substep k
 		vBk,	//y-velocity of boundary points at substep k
+		uB0,
+		vB0,
 		xk,
 		yk;
 
@@ -152,6 +154,8 @@ public:
 			*vB_r,
 			*uBk_r,
 			*vBk_r,
+			*uB0_r,
+			*vB0_r,
 			*xleft_r,
 			*xright_r,
 			*ybot_r,

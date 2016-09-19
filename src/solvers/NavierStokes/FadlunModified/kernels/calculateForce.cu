@@ -10,21 +10,6 @@
 
 namespace kernels
 {
-
-__global__
-void calcForceFadlun(double *force, double *L, double *Lnew, double *Nold, double *N, double *u, double *uold, int *tags, double dt, int nx, int ny)
-{
-	if (threadIdx.x + (blockDim.x * blockIdx.x) >= (ny-1)*nx + (nx-1)*ny)
-			return;
-	int i 	= threadIdx.x + (blockDim.x * blockIdx.x);
-
-	force[i] = (tags[i]!=-1)  *  (
-								   u[i]/dt - 0.5*Lnew[i] - 				//u^l+1
-								   uold[i]/dt + 1.5*N[i] - 0.5*L[i] - 	//u^l
-								   0.5*Nold[i]	 						//u^l-1
-								 );
-}
-
 /**
  * \brief Calculates drag using a control-volume approach (left-right).
  *

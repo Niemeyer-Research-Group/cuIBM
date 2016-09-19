@@ -220,8 +220,10 @@ public:
 	virtual void writeCommon();
 	virtual void shutDown();
 	virtual void stepTime();
+	virtual void _pre_step();
 	virtual void _intermediate_velocity();
 	virtual void _pressure();
+	virtual void _update_body();
 	virtual void _post_step();
 	void moveBody();
 	void updateSolver();

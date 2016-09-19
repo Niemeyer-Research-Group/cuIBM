@@ -32,7 +32,7 @@ void luo_base::set_movement()
 	const int blocksize = 256;
 	dim3 grid( int( (totalPoints)/blocksize ) +1, 1);
 	dim3 block(blocksize, 1);
-	B.uBk = B.uB;
+	//B.uBk = B.uB;
 	kernels::update_body_viv<<<grid,block>>>(B.x_r, B.uB_r, xnew-xold, unew, totalPoints);
 }
 

@@ -94,6 +94,8 @@ void bodies::initialise(parameterDB &db, domain &D)
 	vB.resize(totalPoints);
 	uBk.resize(totalPoints);
 	vBk.resize(totalPoints);
+	uB0.resize(totalPoints);
+	vB0.resize(totalPoints);
 
 	force_dudn.resize(totalPoints);
 	force_dvdn.resize(totalPoints);

@@ -29,8 +29,8 @@ protected:
 		u,			///< velocity vector (u_l and u_l+1, depending on where)
 		uhat,		///< intermediate velocity vector
 		uold,		///< old velocity vector (u_l-1)
-		pressure,			///< pressure vector (p_l+1)
-		pressure_old,		///< old pressure vector (p_l)
+		pressure,	///< pressure vector (p_l+1)
+		pressure_old,	///< old pressure vector (p_l)
 		Nold,		///< convection term for N(uold)
 		N,			///< convection term for N(u)
 		L,			///< Laplacian of u
@@ -39,6 +39,11 @@ protected:
 		rhs1,		///< -G*p -1.5N(u) + 0.5 N(uold) + 0.5 L(u)
 		rhs2,		///< rhs for the intermediate pressure
 		bc[4];		///< array that contains the boundary conditions of the rectangular
+
+	cusp::array1d<double, cusp::device_memory> //substep variables.
+		uk,
+		uhatk,//flag not needed?
+		pressurek;
 
 	size_t
 		timeStep,			///< time iteration number
@@ -88,6 +93,10 @@ protected:
 			*yv_r,
 			*LHS1_val_r,
 			*LHS2_val_r;
+
+	double	*uk_r,
+			*uhatk_r,
+			*pressurek_r;
 
 	int 	*LHS1_row_r,
 			*LHS1_col_r,

@@ -61,14 +61,14 @@ void luo_base::initialise()
 			totalPoints=B.totalPoints,
 			xold= B.midX,
 			unew,
-			uold,
+			uoldd, //uold is a vector
 			xnew;
 
 	//xnew = -1/(2*M_PI)*sin(2*M_PI*f*t);
 	//unew = -f*cos(2*M_PI*f*t);
 	xnew = xCoeff*sin(2*M_PI*f*t + xPhase);
 	unew = uCoeff*cos(2*M_PI*f*t + uPhase);
-	uold = uCoeff*cos(2*M_PI*f*(t-dt)+uPhase);
+	uoldd = uCoeff*cos(2*M_PI*f*(t-dt)+uPhase);
 
 	B.centerVelocityU0 = unew;
 	B.midX0 = xnew;
@@ -81,7 +81,7 @@ void luo_base::initialise()
 	//update position/velocity for current values
 	kernels::update_body_viv<<<grid,block>>>(B.x_r, B.uB_r, xnew-xold, unew, totalPoints);
 	//set position/velocity for old values
-	kernels::initialise_old<<<grid,block>>>(B.uBk_r,uold,totalPoints);
+	kernels::initialise_old<<<grid,block>>>(B.uBk_r,uoldd,totalPoints);
 	std::cout << "luo_base: Initialised Movement!" << std::endl;
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -139,6 +139,8 @@ void luo_base::updateSolver()
 	B.calculateBoundingBoxes(*paramDB, *domInfo);//flag this isn't really needed because the body never moves out of the bounding box
 
 	tagPoints();
+
+	//no update lhs?
 
 	logger.stopTimer("Update Solver");
 }
@@ -204,41 +206,41 @@ void luo_base::writeCommon()
 
 void luo_base::stepTime()
 {
+	_pre_step();
+
 	_intermediate_velocity();
 
 	_pressure();
 
 	_project_velocity();
 
+	_update_body();
+
 	_post_step();
+}
+
+void luo_base::_pre_step()
+{
+	pressure_old = pressure;
+	uold = u;
+	Nold = N;
+	B.uB0 = B.uB;
+	B.vB0 = B.vB;
+	B.uBk = B.uB;
+	B.vBk = B.vB;
+	B.midX0 = B.midX;
+	B.midY0 = B.midY;
+	B.centerVelocityU0 = B.centerVelocityU;
+	B.centerVelocityV0 = B.centerVelocityV;
 }
 
 void luo_base::_intermediate_velocity()
 {}
 void luo_base::_pressure()
 {}
-void luo_base::_post_step()
+
+void luo_base::_update_body()
 {
-	if (timeStep==(*paramDB)["simulation"]["nt"].get<int>()-1)
-	{
-		//arrayprint(pressure, "p","p",-1);
-		//arrayprint(rhs2, "rhs2","p",-1);
-		//arrayprint(u,"u","x",-1);
-		//arrayprint(rhs1,"rhs1","x",-1);
-		//arrayprint(u,"v","y",-1);
-		//arrayprint(uhat,"uhat","x",-1);
-		//arrayprint(uhat,"vhat","y",-1);
-		//arrayprint(ghostTagsP,"ghostp","p",-1);
-		//arrayprint(ghostTagsUV,"ghostu","x",-1);
-		//arrayprint(ghostTagsUV,"ghostv","y",-1);
-		//arrayprint(body_intercept_p_x,"bipx","p",-1);
-		//arrayprint(body_intercept_p_y,"bipy","p",-1);
-	}
-
-	//update time
-	timeStep++;
-	//std::cout << timeStep << ": " << cfl_max << std::endl;
-
 	//Release the body after a certain timestep
 	if (timeStep >= (*paramDB)["simulation"]["startStep"].get<int>())
 	{
@@ -246,6 +248,14 @@ void luo_base::_post_step()
 		updateSolver();
 		CFL();
 	}
+}
+
+void luo_base::_post_step()
+{
+	//update time
+	timeStep++;
+	if (timeStep%100 == 0)
+		std::cout << float(timeStep)/float((*paramDB)["simulation"]["nt"].get<int>())*100 << "%\n";
 
 	//print stuff if its done
 	if (timeStep%(*paramDB)["simulation"]["nt"].get<int>() == 0)

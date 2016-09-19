@@ -58,7 +58,7 @@ void NavierStokesSolver::initialiseNoBody()
 
 	// creates directory
 	std::string folder = (*paramDB)["inputs"]["caseFolder"].get<std::string>();
-	io::makeDirectory(folder);;
+	io::makeDirectory(folder);
 
 	// writes the grids information to a file
 	io::writeGrid(folder, *domInfo);

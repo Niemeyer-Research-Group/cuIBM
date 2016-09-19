@@ -29,15 +29,17 @@ void luoIBM::generateRHS1()
 	dim3 dimGridV( int( (nx*(ny-1)-0.5)/blocksize ) +1, 1);
 	dim3 dimBlockV(blocksize, 1);
 
+	//set u to correct starting value
+	u = uold;
+
 	//update right boundary of the domain for the convective boundary condition
 	updateRobinBoundary();
 	//set Nold to N
-	Nold = N;
+	//Nold = N;//removed for substep
 
 	//interpolate u and v to image points, then again to ghost nodes
 	rhs1GNInterpolation();
 	rhs1HNInterpolation();
-	//arrayprint(u,"u0","x",-1);
 
 	//calculate explicit advection terms
 	generateN();
