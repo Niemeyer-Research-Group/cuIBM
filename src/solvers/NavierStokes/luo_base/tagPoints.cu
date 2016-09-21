@@ -71,3 +71,40 @@ void luo_base::tagPoints()
 	//testOutputX();
 	//testOutputY();
 }
+
+void luo_base::checkTags()
+{
+	double	i_start = B.startI[0],
+			j_start = B.startJ[0],
+			width_i = B.numCellsX[0],
+			height_j = B.numCellsY[0],
+			i_end = i_start + width_i,
+			j_end = j_start + height_j;
+
+	const int blocksize = 256;
+	dim3 grid( int( (width_i*height_j-0.5)/blocksize ) +1, 1);
+	dim3 block(blocksize, 1);
+	//set checknodes to 0
+	//call checktags
+	kernels::check_tags_for_coincident_nodes<<<grid,block>>>(check_nodes_r, B.x_r, B.y_r, xu_r, xv_r, yu_r, yv_r,
+																i_start, j_start, i_end, j_end, nx, ny, B.totalPoints);
+
+	//find max val
+	thrust::device_vector<int>::iterator iter = thrust::max_element(check_nodes.begin(),check_nodes.end());
+	unsigned int position = iter - check_nodes.begin();
+	double max_val = *iter;
+
+	//check if max val isn't 0
+	if (max_val != 0)
+	{
+		std::cout<<	"########################################################\n"
+					"WARNING: A grid point is coincident to a body point, expect immersed body errors or crashes\n"
+					"########################################################\n";
+		arrayprint(ghostTagsUV,"ghostu_error","x",-1);
+		arrayprint(ghostTagsUV,"ghostv_error","y",-1);
+		arrayprint(hybridTagsUV,"hybridu_error","x",-1);
+		arrayprint(hybridTagsUV,"hybridv_error","y",-1);
+		arrayprint(ghostTagsP,"ghostp_error","p",-1);
+		arrayprint(hybridTagsP,"hybridp_error","p",-1);
+	}
+}

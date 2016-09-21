@@ -162,6 +162,8 @@ void luo_base::moveBody()
 		set_movement();
 	else if ( (*paramDB)["simulation"]["VIV"].get<int>()==1 )
 		viv_movement_LC();
+	else if ( (*paramDB)["simulation"]["VIV"].get<int>()==2 )
+		viv_movement_SC();
 	else
 	{
 		std::cout<<"No movement type error, exiting\n";
@@ -208,14 +210,38 @@ void luo_base::stepTime()
 {
 	_pre_step();
 
-	_intermediate_velocity();
+	tol = 0.001;
+	if ( (*paramDB)["simulation"]["VIV"].get<int>()==2 )
+		tol=1;
+	int counter = 0;
+	while (abs(tol)>0.001 || counter < 2)
+	{
+		if (timeStep>1700)
+		{
+			checkTags();
+			std::string Result;
+			std::ostringstream convert;
+			convert << counter;
+			Result = convert.str();
+			arrayprint(ghostTagsUV,"ghostu"+Result,"x",-1);
+			arrayprint(ghostTagsUV,"ghostv"+Result,"y",-1);
+			arrayprint(hybridTagsUV,"hybridu"+Result,"x",-1);
+			arrayprint(hybridTagsUV,"hybridv"+Result,"y",-1);
+			arrayprint(ghostTagsP,"ghostp"+Result,"p",-1);
+			arrayprint(hybridTagsP,"hybridp"+Result,"p",-1);
+			//arrayprint(u,"u"+Result,"x",-1);
+		}
+		_intermediate_velocity();
 
-	_pressure();
+		_pressure();
 
-	_project_velocity();
+		_project_velocity();
 
-	_update_body();
+		_update_body();
 
+		counter ++;
+	}
+	std::cout <<counter<<"\n";
 	_post_step();
 }
 
@@ -265,7 +291,27 @@ void luo_base::_post_step()
 		std::cout<<"CFL I: " << cfl_I << std::endl;
 		std::cout<<"CFL J: " << cfl_J << std::endl;
 		std::cout<<"CFL ts: " << cfl_ts << std::endl;
+		crash();
 	}
+}
+
+void luo_base::crash()
+{
+	arrayprint(uhat,"uhat","x",-1);
+	arrayprint(uhat,"vhat","y",-1);
+	arrayprint(uold,"uold","x",-1);
+	arrayprint(uold,"vold","y",-1);
+	arrayprint(pressure_old,"pold","p",-1);
+	arrayprint(u,"u","x",-1);
+	arrayprint(u,"v","y",-1);
+	arrayprint(pressure,"p","p",-1);
+	//arrayprint(ghostTagsUV,"ghostu","x",-1);
+	//arrayprint(ghostTagsUV,"ghostv","y",-1);
+	//arrayprint(hybridTagsUV,"hybridu","x",-1);
+	//arrayprint(hybridTagsUV,"hybridv","y",-1);
+	//arrayprint(ghostTagsP,"ghostp","p",-1);
+	//arrayprint(hybridTagsP,"hybridp","p",-1);
+	arrayprint(rhs2,"rhs2","p",-1);
 }
 
 /**

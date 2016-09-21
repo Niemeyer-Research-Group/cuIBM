@@ -43,8 +43,8 @@ void luo_base::viv_movement_LC()
 			Mred= 2.0,
 			Ured= (*paramDB)["simulation"]["Ured"].get<int>(),
 			totalPoints=B.totalPoints,
-			vold= B.centerVelocityV,
-			yold= B.midY,
+			vold = B.centerVelocityV0,
+			yold = B.midY0,
 			vnew,
 			ynew;
 
@@ -63,32 +63,33 @@ void luo_base::viv_movement_LC()
 	kernels::update_body_viv<<<grid,block>>>(B.y_r, B.vB_r, ynew-yold, vnew, totalPoints);
 }
 
-/*void luo_base::viv_movement_SC()
+void luo_base::viv_movement_SC()
 {
 	double	Cy	= B.forceY*2.0,
 			U	= bc[XMINUS][0],
 			Mred= 2.0,
 			Ured= (*paramDB)["simulation"]["Ured"].get<int>(),
 			totalPoints=B.totalPoints,
-			vold= B.centerVelocityV,
-			voldk = B.centerVelocityVk;
-			yold= B.midY,
+			vold= B.centerVelocityV0,
+			yold= B.midY0,
 			vnew,
 			ynew,
-			relax = 0.75; //this should be set somewhere else
+			relax = 0.9; //this should be set somewhere else
+	tol = B.midY;
 
 	double a = dt*M_PI*M_PI*4/(Ured*Ured),
 		   b = dt*dt*2*M_PI*M_PI/(Ured*Ured);
 
 	//calc updated velocity
 	vnew = (vold - a*(yold+ dt/2*vold) + dt*Cy/2/Mred)/(1+b);
-	vnew = relax*vnew + (1-relax)*vold_iter;
-	ynew = yold + dt/2*(vnew + vold);
-	B.centerVelocityVk = vnew;
-	B.midYk = ynew;
+	ynew = relax*(yold + dt/2*(vnew + vold)) + (1-relax)*B.midY;;
+	B.centerVelocityV = vnew;
+	B.midY = ynew;
 
 	const int blocksize = 256;
 	dim3 grid( int( (totalPoints)/blocksize ) +1, 1);
 	dim3 block(blocksize, 1);
-	kernels::update_body_viv<<<grid,block>>>(B.yk_r, B.vBk_r, ynew-yold, vnew, totalPoints);
-}*/
+	kernels::update_body_viv<<<grid,block>>>(B.y_r, B.vB_r, ynew-yold, vnew, totalPoints);
+	std::cout<<timeStep<<"\t"<<B.midY<<"\t"<<cfl_max<<"\n";
+	tol = (tol-ynew)/tol;
+}

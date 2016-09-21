@@ -1132,7 +1132,40 @@ void zero_y_luo(int *ghostTagsUV,  int i_start, int j_start, int i_end, int j_en
 	}
 }
 
+__global__
+void check_tags_for_coincident_nodes(int *check_nodes, double *bx, double *by, double *xu, double *xv, double *yu, double *yv,
+										int i_start, int j_start, int i_end, int j_end, int nx, int ny, int totalPoints)
+{
+	int idx	= threadIdx.x + blockDim.x * blockIdx.x,
+		i	= idx % (i_end-i_start),
+		j	= idx / (i_end-i_start),
+		I	= i_start + i,
+		J	= j_start + j,
+		iu = J*(nx-1) + I,
+		ip = J*nx + I,
+		iv = ip + ny*(nx-1);
 
+	//return if out of bounds
+	if (iu > J*(nx-1) + I) //return if we're out of bound
+		return;
+	//find i, I, J, iv, iu, ip etc
+	double tol = 1e-10;
+
+	//loop through each body node
+	for (int index = 0; index<totalPoints; index++)
+	{
+		//check u
+		if (abs(xu[I]-bx[index])<tol && abs(yu[J]-bx[index])<tol)
+			check_nodes[iu] = 1;
+		//check v
+		if (abs(xv[I]-bx[index])<tol && abs(yv[J]-bx[index])<tol)
+			check_nodes[iv] = 1;
+		//check p
+		if (abs(xv[I]-bx[index])<tol && abs(yu[J]-bx[index])<tol)
+			check_nodes[ip] = 1;
+	}
+
+}
 
 
 }

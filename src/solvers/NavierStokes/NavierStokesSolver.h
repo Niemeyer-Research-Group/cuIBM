@@ -156,6 +156,7 @@ public:
 	virtual void writeData();
 	bool finished();
 	virtual void shutDown();
+	virtual void crash();
 
 	//////////////////////////
 	//intermediatepressure.cu

@@ -29,6 +29,8 @@ void zero_x_luo(int *ghostTagsUV,  int i_start, int j_start, int i_end, int j_en
 __global__
 void zero_y_luo(int *ghostTagsUV,  int i_start, int j_start, int i_end, int j_end, int nx, int ny);
 
-
+__global__
+void check_tags_for_coincident_nodes(int *check_nodes, double *bx, double *by, double *xu, double *xv, double *yu, double *yv,
+										int i_start, int j_start, int i_end, int j_end, int nx, int ny, int totalPoints);
 
 }

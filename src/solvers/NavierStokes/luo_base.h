@@ -23,7 +23,8 @@ protected:
 		index2,
 		index3,
 		index4,
-		count;
+		count,
+		check_nodes;
 
 
 	cusp::array1d<double, cusp::device_memory>
@@ -101,7 +102,8 @@ protected:
 		*index2_r,
 		*index3_r,
 		*index4_r,
-		*count_r;
+		*count_r,
+		*check_nodes_r;
 
 	double	*pressureStar_r,
 			*ustar_r,
@@ -168,6 +170,8 @@ protected:
 
 	bodies 	B;		///< bodies in the flow
 
+	double tol;
+
 	std::ofstream forceFile;
 	std::ofstream midPositionFile;
 
@@ -186,6 +190,7 @@ protected:
 	//tagpoints
 	//////////////////////////
 	void tagPoints();
+	void checkTags();
 
 	//////////////////////////
 	//move
@@ -227,6 +232,7 @@ public:
 	virtual void _post_step();
 	void moveBody();
 	void updateSolver();
+	virtual void crash();
 
 	//////////////////////////
 	//projectVelocity

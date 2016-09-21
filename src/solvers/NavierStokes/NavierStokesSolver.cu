@@ -234,6 +234,7 @@ void NavierStokesSolver::solveIntermediateVelocity()
 		std::cout << "Iterations   : " << iterationCount1 << std::endl;
 		std::cout << "Residual norm: " << sys1Mon.residual_norm() << std::endl;
 		std::cout << "Tolerance    : " << sys1Mon.tolerance() << std::endl;
+		crash();
 		std::exit(-1);
 	}
 
@@ -261,6 +262,7 @@ void NavierStokesSolver::solvePoisson()
 		std::cout << "Iterations   : " << iterationCount2 << std::endl;
 		std::cout << "Residual norm: " << sys2Mon.residual_norm() << std::endl;
 		std::cout << "Tolerance    : " << sys2Mon.tolerance() << std::endl;
+		crash();
 		std::exit(-1);
 	}
 
@@ -276,6 +278,10 @@ void NavierStokesSolver::solvePoisson()
  * param value the array
  * param type type of array, p, x, y
  */
+
+void NavierStokesSolver::crash()
+{
+}
 
 void NavierStokesSolver::arrayprint(cusp::array1d<double, cusp::device_memory> value, std::string name, std::string type, int time)
 {
