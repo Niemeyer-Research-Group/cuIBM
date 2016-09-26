@@ -106,6 +106,8 @@ cleanall: clean cleanexternal cleandoc
 ################################################################################
 
 # commands to run cuIBM simulations
+test:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/cylinder/test
 ############################
 #OSC CLYINDER IN NO FLOW
 ############################

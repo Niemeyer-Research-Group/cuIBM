@@ -4,10 +4,10 @@ clear
 % close all
 figure
 %change these
-number = '1736'; 
+number = '10'; 
 type = 'u'; %p or u
 suffix = ''; %u: 0, star, hat, hatfinal, empty. p: 0, star, empty
-view = 'in'; 
+view = 'inn'; 
 
 %load data
 % caseFolder = '/scratch/src/cuIBM/validation/luo/test/output/'
@@ -15,6 +15,7 @@ view = 'in';
 % caseFolder = '/scratch/src/cuIBM/validation/osc/gh/output/';
 % caseFolder = '/scratch/src/cuIBM/validation/osc/static/output/';
 caseFolder = '/scratch/src/cuIBM/validation/osc/VIV/Ured4/output/';
+caseFolder = '/scratch/src/cuIBM/validation/cylinder/test/output/';
 path = strcat(caseFolder,number,type,suffix,'.csv');
 ghostpath = strcat(caseFolder,number,'ghost',type,'.csv');
 delim = '\t';

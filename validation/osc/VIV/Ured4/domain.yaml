@@ -4,7 +4,7 @@
   subDomains:
     - end: -1.0
       stretchRatio: 1.02
-    - end: 1.0
+    - end: 5.0
       stretchRatio: 1.0
     - end: 15.0
       stretchRatio: 1.02
