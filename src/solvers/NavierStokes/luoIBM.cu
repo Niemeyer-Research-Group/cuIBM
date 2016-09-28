@@ -92,15 +92,13 @@ void luoIBM::_intermediate_velocity()
 	/*std::cout<<"Printing domain\n";
 	for (int i=0; i<nx-1; i++)
 	{
-		std::cout<<domInfo->xu[i]<<"\t"<<domInfo->yu[i]<<"\n";
+		std::cout<<domInfo->xv[i]<<"\t"<<domInfo->yu[i]<<"\n";
 	}
 	std::cout<<"\nPrinting body\n";
 	for (int i=0; i<B.totalPoints; i++)
 	{
 		std::cout<<B.x[i]<<"\t"<<B.y[i]<<"\n";
-	}
-	arrayprint(ghostTagsUV,"ghostu","x",-1);
-	arrayprint(hybridTagsUV,"hybridu","x",-1);*/
+	}*/
 	generateRHS1();
 	solveIntermediateVelocity();
 	weightUhat();

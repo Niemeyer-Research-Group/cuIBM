@@ -209,7 +209,7 @@ void tag_u_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *
 				}
 				//case 3
 				//coincident
-				else if (fabs(x-xu[I])<eps)
+				else if (fabs(x-xu[I])<eps && abs(midX-xu[I]) > abs(midY-yu[J]))
 				{
 					outsideX  = true;
 					bdryFlagX = iu;
@@ -243,14 +243,13 @@ void tag_u_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *
 						Xa = 0;
 						Xb = xu[I+1]-xu[I];
 					}
-					flag      = true; // flag is true when the point of intersection coincides with the grid point
-					//you are here, need to add a bit more stuff
+					flag = true; // flag is true when the point of intersection coincides with the grid point
 				}
 			}
 		}
 		// consider rays along the y-direction
 		// if the ray intersects the boundary segment (right endpoint must be strictly to the right of ray; left can be on or to the left of the ray)
-		if ( (bx[left]-eps < xu[I]) && (bx[right]-eps > xu[I]) && ( !flag ) ) // no need to do this part if flag is false
+		if ( (bx[left]-eps < xu[I]) && (bx[right]-eps > xu[I]))// && ( !flag ) ) // no need to do this part if flag is false
 		{
 			// if the segment is not parallel to the y-direction
 			if (fabs(bx[l]-bx[k]) > eps)
@@ -272,7 +271,6 @@ void tag_u_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *
 				{
 					bdryFlagY = iu;
 					bdryFlag2Y= iu+(nx-1);
-					//if (outsideY)
 					if(y>midY+eps)
 					{
 						ghostTagsUV[iu-(nx-1)]=iu-(nx-1);
@@ -367,7 +365,7 @@ void tag_u_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *
 				}
 				//case 3
 				//coincident
-				else if (fabs(y-yu[I])<eps)
+				else if (fabs(y-yu[J])<eps && fabs(y-midY)>fabs(x-midX))
 				{
 					outsideY  = true;
 					bdryFlagY = iu;
@@ -388,7 +386,7 @@ void tag_u_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *
 					}
 					if (y > midY) //above
 					{
-						ghostTagsUV[iu-1] = iu-(nx-1);
+						ghostTagsUV[iu-(nx-1)] = iu-(nx-1);
 						bdryFlag2X = iu+(nx-1);
 						body_intercept_x[iu-(nx-1)] = xu[I];
 						body_intercept_y[iu-(nx-1)] = yu[J];
@@ -402,7 +400,6 @@ void tag_u_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *
 						Yb = yu[J+1]-yu[J];
 					}
 					flag      = true; // flag is true when the point of intersection coincides with the grid point
-					//you are here, need to add a bit more stuff
 				}
 			}
 		}
@@ -611,7 +608,7 @@ void tag_v_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *
 				}
 				//case 3
 				//coincident
-				else if (fabs(x-xv[I])<eps)
+				else if (fabs(x-xv[I])<eps && abs(midX-xv[I]) > abs(midY-yv[J]))
 				{
 					outsideX  = true;
 					bdryFlagX = iv;
@@ -661,19 +658,8 @@ void tag_v_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *
 				// calculate the body velocity at the point of intersectioin
 				uvY = vB[k] + (vB[l]-vB[k]) * (xv[I]-bx[k])/(bx[l]-bx[k]);
 
-				// if the point of intersection coincides with the grid point
-				if (fabs(y-yv[J]) < eps)
-				{
-					outsideY   = true;
-					bdryFlagY = iv;
-					bdryFlag2Y= iv;
-					ghostTagsUV[iv] = iv;
-					Ya        = 0.0;
-					Yb        = 1.0;
-					flag      = true;
-				}
 				// if the point of intersection lies to the top of the grid point
-				else if (y > yv[J]+eps)
+				if (y > yv[J]+eps)
 					outsideY = !outsideY;
 
 				//above body
@@ -778,18 +764,18 @@ void tag_v_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *
 						distance_from_v_to_body[ip+nx] = Ya;
 				}
 				//coincident
-				else if (fabs(y-yv[I])<eps)
+				else if (abs(y-yv[J])<eps && abs(midY-yv[J]) > abs(midX-xv[I]))
 				{
 					outsideY  = true;
 					bdryFlagY = iv;
 					if (y < midY) //below
 					{
-						ghostTagsUV[iv+(nx-1)] = iv+(nx-1);
-						bdryFlag2X = iv-(nx-1);
-						body_intercept_x[iv+(nx-1)] = xv[I];
-						body_intercept_y[iv+(nx-1)] = yv[J];
-						image_point_x[iv+(nx-1)] = xv[I];
-						image_point_y[iv+(nx-1)] = yv[J-1];
+						ghostTagsUV[iv+nx] = iv+nx;
+						bdryFlag2X = iv-nx;
+						body_intercept_x[iv+nx] = xv[I];
+						body_intercept_y[iv+nx] = yv[J];
+						image_point_x[iv+nx] = xv[I];
+						image_point_y[iv+nx] = yv[J-1];
 						body_intercept_x[iv] = xv[I];
 						body_intercept_y[iv] = yv[J];
 						image_point_x[iv] = xv[I];
@@ -799,12 +785,12 @@ void tag_v_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *
 					}
 					if (y > midY) //above
 					{
-						ghostTagsUV[iv-1] = iv-(nx-1);
-						bdryFlag2X = iv+(nx-1);
-						body_intercept_x[iv-(nx-1)] = xv[I];
-						body_intercept_y[iv-(nx-1)] = yv[J];
-						image_point_x[iv-(nx-1)] = xv[I];
-						image_point_y[iv-(nx-1)] = yv[J+1];
+						ghostTagsUV[iv-nx] = iv-nx;
+						bdryFlag2X = iv+nx;
+						body_intercept_x[iv-nx] = xv[I];
+						body_intercept_y[iv-nx] = yv[J];
+						image_point_x[iv-nx] = xv[I];
+						image_point_y[iv-nx] = yv[J+1];
 						body_intercept_x[iv] = xv[I];
 						body_intercept_y[iv] = yv[J];
 						image_point_x[iv] = xv[I];
@@ -907,7 +893,7 @@ void tag_p_luo(int *ghostTagsP, int *hybridTagsP, double *bx, double *by, double
 				x = bx[k] + (bx[l]-bx[k]) * (yu[J]-by[k])/(by[l]-by[k]);
 
 				// just inside, right of mid
-				if (x > midX + eps && x > xv[I] + eps && x < xv[I+1] + eps)
+				if (x > midX + eps && x > xv[I]+eps + eps && x < xv[I+1] - eps)
 				{
 					ghostTagsP[ip] = ip;
 					x1_p[ip] = bx[l];
@@ -929,7 +915,7 @@ void tag_p_luo(int *ghostTagsP, int *hybridTagsP, double *bx, double *by, double
 					image_point_p_x[ip] = body_intercept_p_x[ip]+(body_intercept_p_x[ip]-xv[I]);
 				}
 				// just inside, left of mid
-				else if (x < midX + eps && x < xv[I] +eps && x > xv[I-1])
+				else if (x < midX + eps && x < xv[I] - eps && x > xv[I-1] + eps)
 				{
 					ghostTagsP[ip] = ip;
 					x1_p[ip] = bx[l];
@@ -952,7 +938,7 @@ void tag_p_luo(int *ghostTagsP, int *hybridTagsP, double *bx, double *by, double
 				}
 
 				// just inside, right of mid
-				if (x > midX + eps && x < xv[I] + eps && x > xv[I-1] + eps)
+				if (x > midX + eps && x < xv[I] - eps && x > xv[I-1] + eps)
 				{
 					hybridTagsP[ip] = ip;
 					//hybrid node interpolation
@@ -975,7 +961,7 @@ void tag_p_luo(int *ghostTagsP, int *hybridTagsP, double *bx, double *by, double
 					image_point_p_x[ip] = 2*xv[I] - body_intercept_p_x[ip];
 				}
 				// just inside, left of mid
-				else if (x < midX + eps && x > xv[I] +eps && x < xv[I+1] + eps)
+				else if (x < midX + eps && x > xv[I] + eps && x < xv[I+1] - eps)
 				{
 					hybridTagsP[ip] = ip;
 					//hybrid node interpolation
@@ -996,6 +982,37 @@ void tag_p_luo(int *ghostTagsP, int *hybridTagsP, double *bx, double *by, double
 					body_intercept_p_x[ip] = bx[k] + (bx[l]-bx[k])/p * a/tan(theta_321);
 					image_point_p_y[ip] = 2*yu[J] - body_intercept_p_y[ip];
 					image_point_p_x[ip] = 2*xv[I] - body_intercept_p_x[ip];
+				}
+
+				if (abs(x-xv[I])<eps && abs(midX-xv[I])>abs(midY-yu[J]))
+				{
+					hybridTagsP[ip] = ip;
+					if (x < midX) //left side
+					{
+						ghostTagsP[ip+1] = ip+1;
+						body_intercept_p_x[ip+1] = xv[I];
+						body_intercept_p_y[ip+1] = yu[J];
+						image_point_p_x[ip+1] = xv[I-1];
+						image_point_p_y[ip+1] = yu[J];
+						body_intercept_p_x[ip] = xv[I];
+						body_intercept_p_y[ip] = yu[J];
+						image_point_p_x[ip] = xv[I-1];
+						image_point_p_y[ip] = yu[J];
+					}
+					else if (x > midX) //right side
+					{
+						ghostTagsP[ip-1] = ip-1;
+						body_intercept_p_x[ip-1] = xv[I];
+						body_intercept_p_y[ip-1] = yu[J];
+						image_point_p_x[ip-1] = xv[I+1];
+						image_point_p_y[ip-1] = yu[J];
+						body_intercept_p_x[ip] = xv[I];
+						body_intercept_p_y[ip] = yu[J];
+						image_point_p_x[ip] = xv[I+1];
+						image_point_p_y[ip] = yu[J];
+					}
+					flag      = true; // flag is true when the point of intersection coincides with the grid point
+					//you are here, need to add a bit more stuff
 				}
 			}
 		}
@@ -1008,13 +1025,8 @@ void tag_p_luo(int *ghostTagsP, int *hybridTagsP, double *bx, double *by, double
 				// calculate the point of intersection of the double ray with the boundary
 				y = by[k] + (by[l]-by[k]) * (xv[I]-bx[k])/(bx[l]-bx[k]);
 
-				// if the point of intersection coincides with the grid point
-				/*if (fabs(y-yu[J]) < eps)
-				{
-					std::cout<<"tagpoints warning\n\n\n\n\n";
-				}*/
 				// just inside, north of mid
-				if (y > midY + eps && y > yu[J] +eps && y < yu[J+1])
+				if (y > midY + eps && y > yu[J] + eps && y < yu[J+1] - eps)
 				{
 					ghostTagsP[ip] = ip;
 					x1_p[ip] = bx[l];
@@ -1036,7 +1048,7 @@ void tag_p_luo(int *ghostTagsP, int *hybridTagsP, double *bx, double *by, double
 					image_point_p_x[ip] = body_intercept_p_x[ip]+(body_intercept_p_x[ip]-xv[I]);
 				}
 				//just inside, south of mid
-				else if (y < midY + eps && y < yu[J] +eps && y > yu[J-1] +eps)
+				else if (y < midY + eps && y < yu[J] - eps && y > yu[J-1] + eps)
 				{
 					ghostTagsP[ip] = ip;
 					x1_p[ip] = bx[l];
@@ -1059,7 +1071,7 @@ void tag_p_luo(int *ghostTagsP, int *hybridTagsP, double *bx, double *by, double
 				}
 
 				// just inside, north of mid
-				if (y > midY + eps && y < yu[J] +eps && y > yu[J-1])
+				if (y > midY + eps && y < yu[J] - eps && y > yu[J-1] + eps)
 				{
 					hybridTagsP[ip] = ip;
 					//hybrid node interpolation
@@ -1082,7 +1094,7 @@ void tag_p_luo(int *ghostTagsP, int *hybridTagsP, double *bx, double *by, double
 					image_point_p_x[ip] = 2*xv[I] - body_intercept_p_x[ip];
 				}
 				//just inside, south of mid
-				else if (y < midY + eps && y > yu[J] +eps && y < yu[J+1] +eps)
+				else if (y < midY + eps && y > yu[J] + eps && y < yu[J+1] - eps)
 				{
 					hybridTagsP[ip] = ip;
 					//hybrid node interpolation
@@ -1103,6 +1115,37 @@ void tag_p_luo(int *ghostTagsP, int *hybridTagsP, double *bx, double *by, double
 					body_intercept_p_x[ip] = bx[k] + (bx[l]-bx[k])/p * a/tan(theta_321);
 					image_point_p_y[ip] = 2*yu[J] - body_intercept_p_y[ip];
 					image_point_p_x[ip] = 2*xv[I] - body_intercept_p_x[ip];
+				}
+
+				if (abs(y-yu[J])<eps && abs(midY-yu[J]) > abs(midX-xv[I]))
+				{
+					hybridTagsP[ip] = ip;
+					if (y < midY) //below
+					{
+						ghostTagsP[ip+nx] = ip+nx;
+						body_intercept_p_x[ip+nx] = xv[I];
+						body_intercept_p_y[ip+nx] = yu[J];
+						image_point_p_x[ip+nx] = xv[I];
+						image_point_p_y[ip+nx] = yu[J-1];
+						body_intercept_p_x[ip] = xv[I];
+						body_intercept_p_y[ip] = yu[J];
+						image_point_p_x[ip] = xv[I];
+						image_point_p_y[ip] = yu[J-1];
+					}
+					if (y > midY) //above
+					{
+						ghostTagsP[ip-nx] = ip-nx;
+						body_intercept_p_x[ip-nx] = xv[I];
+						body_intercept_p_y[ip-nx] = yu[J];
+						image_point_p_x[ip-nx] = xv[I];
+						image_point_p_y[ip-nx] = yu[J+1];
+						body_intercept_p_x[ip] = xv[I];
+						body_intercept_p_y[ip] = yu[J];
+						image_point_p_x[ip] = xv[I];
+						image_point_p_y[ip] = yu[J+1];
+					}
+					flag = true; // flag is true when the point of intersection coincides with the grid point
+					//you are here, need to add a bit more stuff
 				}
 			}
 		}
