@@ -23,6 +23,8 @@ void NavierStokesSolver::CFL()
 	double max_val = *iter;
 	if (max_val > cfl_max)
 	{
+		if (timeStep>100)
+			crash();
 		cfl_max = max_val;
 		cfl_I = position%nx;
 		cfl_J = int(position/nx);

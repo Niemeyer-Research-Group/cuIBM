@@ -89,16 +89,6 @@ void luoIBM::writeCommon()
 
 void luoIBM::_intermediate_velocity()
 {
-	/*std::cout<<"Printing domain\n";
-	for (int i=0; i<nx-1; i++)
-	{
-		std::cout<<domInfo->xv[i]<<"\t"<<domInfo->yu[i]<<"\n";
-	}
-	std::cout<<"\nPrinting body\n";
-	for (int i=0; i<B.totalPoints; i++)
-	{
-		std::cout<<B.x[i]<<"\t"<<B.y[i]<<"\n";
-	}*/
 	generateRHS1();
 	solveIntermediateVelocity();
 	weightUhat();

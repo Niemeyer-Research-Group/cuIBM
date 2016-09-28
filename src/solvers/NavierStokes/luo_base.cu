@@ -79,7 +79,7 @@ void luo_base::initialise()
 	dim3 grid( int( (totalPoints)/blocksize ) +1, 1);
 	dim3 block(blocksize, 1);
 	//update position/velocity for current values
-	kernels::update_body_viv<<<grid,block>>>(B.x_r, B.uB_r, xnew-xold, unew, totalPoints);
+	kernels::update_body_viv<<<grid,block>>>(B.x_r, B.uB_r, B.dx_r, unew, B.midX, totalPoints);
 	//set position/velocity for old values
 	kernels::initialise_old<<<grid,block>>>(B.uBk_r,uoldd,totalPoints);
 	std::cout << "luo_base: Initialised Movement!" << std::endl;
@@ -241,7 +241,6 @@ void luo_base::stepTime()
 
 		counter ++;
 	}
-	std::cout <<counter<<"\n";
 	_post_step();
 }
 
@@ -297,32 +296,31 @@ void luo_base::_post_step()
 
 void luo_base::crash()
 {
-	//arrayprint(uhat,"uhat","x",-1);
-	//arrayprint(uhat,"vhat","y",-1);
-	//arrayprint(uold,"uold","x",-1);
-	//arrayprint(uold,"vold","y",-1);
-	//arrayprint(pressure_old,"pold","p",-1);
-	//arrayprint(rhs2,"rhs2","p",-1);
-	//arrayprint(u,"u","x",-1);
-	//arrayprint(u,"v","y",-1);
-	//arrayprint(pressure,"p","p",-1);
-	//arrayprint(ghostTagsUV,"ghostu","y",-1);
-	//arrayprint(ghostTagsUV,"ghostv","y",-1);
-	//arrayprint(hybridTagsUV,"hybridu","y",-1);
-	//arrayprint(hybridTagsUV,"hybridv","y",-1);
-	//arrayprint(ghostTagsP,"ghostp","p",-1);
-	//arrayprint(hybridTagsP,"hybridp","p",-1);
-	//arrayprint(body_intercept_x,"bix","y",-1);
-	//arrayprint(body_intercept_y,"biy","y",-1);
-	//arrayprint(image_point_x,"ipx","y",-1);
-	//arrayprint(image_point_y,"ipy","y",-1);
-	//arrayprint(x1,"x1","y",-1);
-	//arrayprint(x2,"x2","y",-1);
-	//arrayprint(y1,"y1","y",-1);
-	//arrayprint(y2,"y2","y",-1);
-	//arrayprint(distance_from_v_to_body,"dfvtb","p",-1);
-	//arrayprint(uv,"uv","y",-1);
-
+	arrayprint(uhat,"uhat","x",-1);
+	arrayprint(uhat,"vhat","y",-1);
+	arrayprint(uold,"uold","x",-1);
+	arrayprint(uold,"vold","y",-1);
+	arrayprint(pressure_old,"pold","p",-1);
+	arrayprint(rhs2,"rhs2","p",-1);
+	arrayprint(u,"u","x",-1);
+	arrayprint(u,"v","y",-1);
+	arrayprint(pressure,"p","p",-1);
+	arrayprint(ghostTagsUV,"ghostu","x",-1);
+	arrayprint(ghostTagsUV,"ghostv","x",-1);
+	arrayprint(hybridTagsUV,"hybridu","x",-1);
+	arrayprint(hybridTagsUV,"hybridv","x",-1);
+	arrayprint(ghostTagsP,"ghostp","p",-1);
+	arrayprint(hybridTagsP,"hybridp","p",-1);
+	std::cout<<"Printing domain\n";
+	for (int i=0; i<ny; i++)
+	{
+		std::cout<<domInfo->xv[i]<<"\t"<<domInfo->yu[i]<<"\n";
+	}
+	std::cout<<"\nPrinting body\n";
+	for (int i=0; i<B.totalPoints; i++)
+	{
+		std::cout<<B.x[i]<<"\t"<<B.y[i]<<"\n";
+	}
 }
 
 /**

@@ -88,6 +88,8 @@ void bodies::initialise(parameterDB &db, domain &D)
 	}
 	x.resize(totalPoints);
 	y.resize(totalPoints);
+	dx.resize(totalPoints);
+	dy.resize(totalPoints);
 	xk.resize(totalPoints);
 	yk.resize(totalPoints);
 	uB.resize(totalPoints);
@@ -167,8 +169,13 @@ void bodies::initialise(parameterDB &db, domain &D)
 	}
 	midX /= totalPoints;
 	midY /= totalPoints;
-	midX=midX0;
-	midY=midY0;
+	for (int i = 0; i<totalPoints; i++)
+	{
+		dx[i] = x[i] - midX;
+		dy[i] = y[i] - midY;
+	}
+	midX0=midX;
+	midY0=midY;
 	centerVelocityV = 0;
 	centerVelocityU = 0;
 	centerVelocityVk = 0;
@@ -204,6 +211,8 @@ void bodies::cast()
 	ones_r			= thrust::raw_pointer_cast ( &(ones[0]));
 	x_r				= thrust::raw_pointer_cast ( &(x[0]));
 	y_r				= thrust::raw_pointer_cast ( &(y[0]));
+	dx_r			= thrust::raw_pointer_cast ( &(dx[0]));
+	dy_r			= thrust::raw_pointer_cast ( &(dy[0]));
 	//xk_r			= thrust::raw_pointer_cast ( &(xk[0]));
 	//yk_r			= thrust::raw_pointer_cast ( &(yk[0]));
 	uB_r			= thrust::raw_pointer_cast ( &(uB[0]));
@@ -306,7 +315,6 @@ void bodies::calculateBoundingBoxes(parameterDB &db, domain &D)
 	iter_xmin = thrust::min_element(x.begin(),x.end());
 	iter_ymax = thrust::max_element(y.begin(),y.end());
 	iter_ymin = thrust::min_element(y.begin(),y.end());
-
 
 	const int blocksize = 1;
 	dim3 grid(1, 1);

@@ -1,13 +1,8 @@
 - type: simulation
   dt: 0.005
-  scaleCV: 5.0
-  nt: 12000
-  nsave: 6000
-  startStep: 0
+  nt: 1
+  nsave: 2000
   SolverType: LUO
-  #SolverType: OSC_CYLINDER
-  VIV: 2
-  Ured: 4
   linearSolvers:
     - system: velocity
       solver: CG

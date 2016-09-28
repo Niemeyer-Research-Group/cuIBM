@@ -7,7 +7,7 @@
   SolverType: LUO
   #SolverType: OSC_CYLINDER
   VIV: 2
-  Ured: 4
+  Ured: 8
   linearSolvers:
     - system: velocity
       solver: CG

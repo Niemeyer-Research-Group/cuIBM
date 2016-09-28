@@ -54,6 +54,8 @@ public:
 		ones,  ///< vector of size \link totalPoints \endlink with all elements 1
 		x,     ///< actual x-coordinate of the boundary points
 		y,     ///< actual y-coordinate of the boundary points
+		dx,    ///< distance from midX to x
+		dy,    ///< distance from midY to y
 		uB,    ///< x-velocity of the boundary points
 		vB;    ///< y-velocity of the boundary points
 
@@ -150,6 +152,8 @@ public:
 			*ones_r,
 			*x_r,
 			*y_r,
+			*dx_r,
+			*dy_r,
 			*uB_r,
 			*vB_r,
 			*uBk_r,

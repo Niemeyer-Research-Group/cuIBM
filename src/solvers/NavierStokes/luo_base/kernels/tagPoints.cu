@@ -320,7 +320,6 @@ void tag_u_luo(int *hybridTagsUV, int *ghostTagsUV, int *hybridTagsUV2, double *
 				{
 					bdryFlagY = iu;
 					bdryFlag2Y= iu-(nx-1);
-					//if (outsideY)
 					if (y<midY-eps)
 					{
 						ghostTagsUV[iu+(nx-1)]=iu+(nx-1);

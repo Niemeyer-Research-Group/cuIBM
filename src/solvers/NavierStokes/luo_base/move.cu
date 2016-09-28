@@ -17,7 +17,6 @@ void luo_base::set_movement()
 			xPhase = B.xPhase,
 			uPhase = B.uPhase,
 			totalPoints=B.totalPoints,
-			xold= B.midX,
 			unew,
 			xnew;
 
@@ -33,7 +32,7 @@ void luo_base::set_movement()
 	dim3 grid( int( (totalPoints)/blocksize ) +1, 1);
 	dim3 block(blocksize, 1);
 	//B.uBk = B.uB;
-	kernels::update_body_viv<<<grid,block>>>(B.x_r, B.uB_r, xnew-xold, unew, totalPoints);
+	kernels::update_body_viv<<<grid,block>>>(B.x_r, B.uB_r, B.dx_r, unew, B.midX, totalPoints);
 }
 
 void luo_base::viv_movement_LC()
@@ -60,7 +59,7 @@ void luo_base::viv_movement_LC()
 	const int blocksize = 256;
 	dim3 grid( int( (totalPoints)/blocksize ) +1, 1);
 	dim3 block(blocksize, 1);
-	kernels::update_body_viv<<<grid,block>>>(B.y_r, B.vB_r, ynew-yold, vnew, totalPoints);
+	kernels::update_body_viv<<<grid,block>>>(B.y_r, B.vB_r, B.dy_r, vnew, B.midY, totalPoints);
 }
 
 void luo_base::viv_movement_SC()
@@ -82,14 +81,15 @@ void luo_base::viv_movement_SC()
 
 	//calc updated velocity
 	vnew = (vold - a*(yold+ dt/2*vold) + dt*Cy/2/Mred)/(1+b);
-	ynew = relax*(yold + dt/2*(vnew + vold)) + (1-relax)*B.midY;;
+	ynew = relax*(yold + dt/2*(vnew + vold)) + (1-relax)*B.midY;
 	B.centerVelocityV = vnew;
 	B.midY = ynew;
 
 	const int blocksize = 256;
 	dim3 grid( int( (totalPoints)/blocksize ) +1, 1);
 	dim3 block(blocksize, 1);
-	kernels::update_body_viv<<<grid,block>>>(B.y_r, B.vB_r, ynew-yold, vnew, totalPoints);
+	kernels::update_body_viv<<<grid,block>>>(B.y_r, B.vB_r, B.dy_r, vnew, B.midY, totalPoints);
 	std::cout<<timeStep<<"\t"<<B.midY<<"\t"<<cfl_max<<"\n";
+
 	tol = (tol-ynew)/tol;
 }
