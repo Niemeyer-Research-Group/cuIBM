@@ -20,7 +20,7 @@ def main():
 	print "-"*80
 	caseFolder = '/scratch/src/cuIBM/validation/osc/VIV'
 	name = '/scratch/src/cuIBM/validation/osc/VIV/Ured'
-	fileid = '/midPosition.csv'
+	fileid = '/midPosition'
 	d3 = genfromtxt(name + '3' + fileid,dtype=float,delimiter='\t',skip_header=1)
 	d4 = genfromtxt(name + '4' + fileid,dtype=float,delimiter='\t',skip_header=1)
 	d5 = genfromtxt(name + '5' + fileid,dtype=float,delimiter='\t',skip_header=1)
