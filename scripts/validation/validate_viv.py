@@ -13,14 +13,13 @@ from scipy import signal
 #import sys
 
 def main():
-	caseFolder = '/scratch/src/cuIBM/validation/osc/VIV/Ured'
 
 	print "-"*80
 	print "Making validaiton plot for an oscillating cylinder in flow."
 	print "-"*80
 	caseFolder = '/scratch/src/cuIBM/validation/osc/VIV'
 	name = '/scratch/src/cuIBM/validation/osc/VIV/Ured'
-	fileid = '/midPosition'
+	fileid = '/lc_luo_calcf/midPosition'
 	d3 = genfromtxt(name + '3' + fileid,dtype=float,delimiter='\t',skip_header=1)
 	d4 = genfromtxt(name + '4' + fileid,dtype=float,delimiter='\t',skip_header=1)
 	d5 = genfromtxt(name + '5' + fileid,dtype=float,delimiter='\t',skip_header=1)
