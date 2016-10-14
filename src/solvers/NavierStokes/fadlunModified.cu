@@ -28,7 +28,7 @@ void fadlunModified::initialise()
 	NavierStokesSolver::initialiseNoBody();
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	//ARRAYS
+	//cast
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	fadlunModified::cast();
 
@@ -75,6 +75,8 @@ void fadlunModified::initialiseLHS()
 	parameterDB  &db = *NavierStokesSolver::paramDB;
 	generateLHS1();
 	generateLHS2();
+	LHS1.sort_by_row_and_column();
+	LHS2.sort_by_row_and_column();
 
 	NavierStokesSolver::PC.generate1(NavierStokesSolver::LHS1, db["velocitySolve"]["preconditioner"].get<preconditionerType>());
 	NavierStokesSolver::PC.generate2(NavierStokesSolver::LHS2, db["PoissonSolve"]["preconditioner"].get<preconditionerType>());
@@ -121,6 +123,7 @@ void fadlunModified::writeCommon()
 void fadlunModified::stepTime()
 {
 	generateRHS1();
+	//print(LHS1);
 	solveIntermediateVelocity();
 
 	generateRHS2();

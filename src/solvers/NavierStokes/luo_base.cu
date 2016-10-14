@@ -210,27 +210,12 @@ void luo_base::stepTime()
 {
 	_pre_step();
 
-	tol = 0.001;
+	tol = 0.0001;
 	if ( (*paramDB)["simulation"]["VIV"].get<int>()==2 )
 		tol=1;
 	int counter = 0;
 	while (abs(tol)>0.001 || counter < 2)
 	{
-		/*if (timeStep>1700)
-		{
-			checkTags();
-			std::string Result;
-			std::ostringstream convert;
-			convert << counter;
-			Result = convert.str();
-			arrayprint(ghostTagsUV,"ghostu"+Result,"x",-1);
-			arrayprint(ghostTagsUV,"ghostv"+Result,"y",-1);
-			arrayprint(hybridTagsUV,"hybridu"+Result,"x",-1);
-			arrayprint(hybridTagsUV,"hybridv"+Result,"y",-1);
-			arrayprint(ghostTagsP,"ghostp"+Result,"p",-1);
-			arrayprint(hybridTagsP,"hybridp"+Result,"p",-1);
-			//arrayprint(u,"u"+Result,"x",-1);
-		}*/
 		_intermediate_velocity();
 
 		_pressure();

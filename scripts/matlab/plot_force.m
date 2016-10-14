@@ -95,64 +95,85 @@ i = dlmread(strcat(pathbase,'i','/forces'),delim,1,0);
 j = dlmread(strcat(pathbase,'j','/forces'),delim,1,0);
 k = dlmread(strcat(pathbase,'k','/forces'),delim,1,0);
 l = dlmread(strcat(pathbase,'l','/forces'),delim,1,0);
+m = dlmread(strcat(pathbase,'m','/forces'),delim,1,0);
+n = dlmread(strcat(pathbase,'n','/forces'),delim,1,0);
+o = dlmread(strcat(pathbase,'o','/forces'),delim,1,0);
+p = dlmread(strcat(pathbase,'p','/forces'),delim,1,0);
 
 hold on
 %row 1
-subplot(4,3,1)
+subplot(4,4,1)
 plot(a(:,1),a(:,2),'k')
 ylabel('force')
 axis([0 10 0 2])
 
-subplot(4,3,2)
+subplot(4,4,2)
 plot(b(:,1),b(:,2),'k')
 axis([0 10 0 2])
 
-subplot(4,3,3)
+subplot(4,4,3)
 plot(c(:,1),c(:,2),'k')
 axis([0 10 0 2])
 
-%row 2
-subplot(4,3,4)
+subplot(4,4,4)
 plot(d(:,1),d(:,2),'k')
+axis([0 10 0 2])
+
+%row 2
+subplot(4,4,5)
+plot(e(:,1),e(:,2),'k')
 ylabel('force')
 axis([0 10 0 2])
 
-subplot(4,3,5)
-plot(e(:,1),e(:,2),'k')
-axis([0 10 0 2])
-
-subplot(4,3,6)
+subplot(4,4,6)
 plot(f(:,1),f(:,2),'k')
 axis([0 10 0 2])
 
-%row 3
-subplot(4,3,7)
+subplot(4,4,7)
 plot(g(:,1),g(:,2),'k')
-ylabel('force')
 axis([0 10 0 2])
 
-subplot(4,3,8)
+subplot(4,4,8)
 plot(h(:,1),h(:,2),'k')
 axis([0 10 0 2])
 
-subplot(4,3,9)
+%row 3
+subplot(4,4,9)
 plot(i(:,1),i(:,2),'k')
+ylabel('force')
+axis([0 10 0 2])
+
+subplot(4,4,10)
+plot(j(:,1),j(:,2),'k')
+axis([0 10 0 2])
+
+subplot(4,4,11)
+plot(l(:,1),l(:,2),'k')
+axis([0 10 0 2])
+
+subplot(4,4,12)
+plot(l(:,1),l(:,2),'k')
 axis([0 10 0 2])
 
 %row 4
-subplot(4,3,10)
-plot(j(:,1),j(:,2),'k')
+subplot(4,4,13)
+plot(m(:,1),m(:,2),'k')
 ylabel('force')
 xlabel('time')
 axis([0 10 0 2])
 
-subplot(4,3,11)
-plot(k(:,1),k(:,2),'k')
+subplot(4,4,14)
+plot(n(:,1),n(:,2),'k')
 xlabel('time')
 axis([0 10 0 2])
 
-subplot(4,3,12)
-plot(l(:,1),l(:,2),'k')
+subplot(4,4,15)
+plot(o(:,1),o(:,2),'k')
+xlabel('time')
+axis([0 10 0 2])
+
+subplot(4,4,16)
+plot(p(:,1),p(:,2),'k')
 xlabel('time')
 axis([0 10 0 2])
 hold off

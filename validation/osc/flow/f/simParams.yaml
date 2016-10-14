@@ -4,7 +4,7 @@
   nt: 2000
   nsave: 3000
   startStep: 0
-  SolverType: OSC_CYLINDER
+  SolverType: LUO
   linearSolvers:
     - system: velocity
       solver: CG

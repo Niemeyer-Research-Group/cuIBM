@@ -1,8 +1,8 @@
 - type: simulation
-  dt: 0.01
+  dt: 0.005
   scaleCV: 2.0
-  nt: 1000
-  nsave: 2000
+  nt: 2000
+  nsave: 3000
   startStep: 0
   SolverType: OSC_CYLINDER
   linearSolvers:
