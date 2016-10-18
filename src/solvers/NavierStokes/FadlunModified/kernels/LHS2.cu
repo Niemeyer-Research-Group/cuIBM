@@ -9,7 +9,7 @@
 namespace kernels
 {
 __global__
-void LHS2_mid(int *row, int *col, double *val, double *distance_from_u_to_body, double *distance_from_v_to_body, int  *tagsP, int *tagsPOut, double *dx, double *dy, int nx, int ny, double dt)
+void LHS2_mid(int *row, int *col, double *val, double *distance_from_u_to_body, double *distance_from_v_to_body, int  *ghostTagsP, int *hybridTagsP, double *dx, double *dy, int nx, int ny, double dt)
 {
 	int ip 	= threadIdx.x + blockDim.x * blockIdx.x;
 	if (ip >= nx*ny)
@@ -23,11 +23,11 @@ void LHS2_mid(int *row, int *col, double *val, double *distance_from_u_to_body, 
 	int numE = nx*4-2 + (J-1)*(nx*5-2) + I*5-1;
 	double temp = 0;
 	//just outside immersed body
-	if (tagsPOut[ip] != -1)
+	if (hybridTagsP[ip] != -1)
 	{
 		//EAST
 		//check if east is outside body
-		if (tagsP[ip+1] == -1)
+		if (ghostTagsP[ip+1] == -1)
 		{
 			row[numE] = ip;
 			col[numE] = ip + 1;
@@ -53,7 +53,7 @@ void LHS2_mid(int *row, int *col, double *val, double *distance_from_u_to_body, 
 
 		//WEST
 		//check if west pressure node is outside the body
-		if(tagsP[ip-1] == -1)
+		if(ghostTagsP[ip-1] == -1)
 		{
 			row[numE] = ip;
 			col[numE] = ip - 1;
@@ -80,7 +80,7 @@ void LHS2_mid(int *row, int *col, double *val, double *distance_from_u_to_body, 
 
 		//NORTH
 		//check if north pressure node is outside body
-		if (tagsP[ip+nx] == -1)
+		if (ghostTagsP[ip+nx] == -1)
 		{
 			row[numE] = ip;
 			col[numE] = ip + nx;
@@ -106,7 +106,7 @@ void LHS2_mid(int *row, int *col, double *val, double *distance_from_u_to_body, 
 
 		//SOUTH
 		//check if south pressure node is outside body
-		if (tagsP[ip-nx] == -1)
+		if (ghostTagsP[ip-nx] == -1)
 		{
 			row[numE] = ip;
 			col[numE] = ip - nx;
@@ -133,10 +133,10 @@ void LHS2_mid(int *row, int *col, double *val, double *distance_from_u_to_body, 
 	}
 	//end just outside immersed body
 	//if just inside body
-	else if (tagsP[ip] > 0)
+	else if (ghostTagsP[ip] > 0)
 	{
 		//EAST
-		if (tagsP[ip+1] == 0)
+		if (ghostTagsP[ip+1] == 0)
 		{
 			row[numE] = ip;
 			col[numE] = ip + 1;
@@ -153,7 +153,7 @@ void LHS2_mid(int *row, int *col, double *val, double *distance_from_u_to_body, 
 		}
 
 		//WEST
-		if (tagsP[ip-1] == 0)
+		if (ghostTagsP[ip-1] == 0)
 		{
 			row[numE] = ip;
 			col[numE]= ip - 1;
@@ -170,7 +170,7 @@ void LHS2_mid(int *row, int *col, double *val, double *distance_from_u_to_body, 
 		}
 
 		//NORTH
-		if (tagsP[ip+nx] == 0)
+		if (ghostTagsP[ip+nx] == 0)
 		{
 			row[numE] = ip;
 			col[numE] = ip + nx;
@@ -187,7 +187,7 @@ void LHS2_mid(int *row, int *col, double *val, double *distance_from_u_to_body, 
 		}
 
 		//SOUTH
-		if (tagsP[ip-nx] == 0)
+		if (ghostTagsP[ip-nx] == 0)
 		{
 			row[numE] = ip;
 			col[numE] = ip - nx;

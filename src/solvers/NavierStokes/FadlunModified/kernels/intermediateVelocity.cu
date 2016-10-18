@@ -41,24 +41,24 @@ void updateBoundaryY(double *u, double *xp, double *dx, double dt, double Vinf, 
 }
 
 __global__
-void updateRHS1forIBX(int *tags, int *tagsIn, double *rhs, double *distance_from_intersection_to_node, double *distance_between_nodes_at_IB, double *uv, int nx, int ny)
+void updateRHS1forIBX(int *hybridTagsUV, int *ghostTagsUV, double *rhs, double *distance_from_intersection_to_node, double *distance_between_nodes_at_IB, double *uv, int nx, int ny)
 {
 	if (threadIdx.x + (blockDim.x * blockIdx.x) >= (nx-1)*ny)
 			return;
 	int 	i 	= threadIdx.x + (blockDim.x * blockIdx.x);
 
 	//		  if not outtag  & if not in tag    rhs				if out tag		outside interpolation //flag inside interpolation?
-	rhs[i]	= (tags[i]==-1) * (tagsIn[i]<=0) * (rhs[i])   +   (tags[i]!=-1) * distance_between_nodes_at_IB[i]/(distance_from_intersection_to_node[i]+distance_between_nodes_at_IB[i]) * uv[i];
+	rhs[i]	= (hybridTagsUV[i]==-1) * (ghostTagsUV[i]<=0) * (rhs[i])   +   (hybridTagsUV[i]!=-1) * distance_between_nodes_at_IB[i]/(distance_from_intersection_to_node[i]+distance_between_nodes_at_IB[i]) * uv[i];
 }
 
 __global__//note dx and dy must be equal and uniform at the point the boundary atm for the second line (forcing for the inside) to work
-void updateRHS1forIBY(int *tags, int *tagsIn, double *rhs, double *distance_from_intersection_to_node, double *distance_between_nodes_at_IB, double *uv, int nx, int ny)
+void updateRHS1forIBY(int *hybridTagsUV, int *ghostTagsUV, double *rhs, double *distance_from_intersection_to_node, double *distance_between_nodes_at_IB, double *uv, int nx, int ny)
 {
 	if (threadIdx.x + (blockDim.x * blockIdx.x) >= nx*(ny-1))
 		return;
 	int 	i 	= threadIdx.x + (blockDim.x * blockIdx.x) +  (nx-1)*ny;
 
 	//		  if not outtag  & if not in tag    rhs				if out tag		outside interpolation
-	rhs[i]	= (tags[i]==-1) * (tagsIn[i]<=0) * (rhs[i])   +   (tags[i]!=-1) * distance_between_nodes_at_IB[i]/(distance_from_intersection_to_node[i]+distance_between_nodes_at_IB[i]) * uv[i];
+	rhs[i]	= (hybridTagsUV[i]==-1) * (ghostTagsUV[i]<=0) * (rhs[i])   +   (hybridTagsUV[i]!=-1) * distance_between_nodes_at_IB[i]/(distance_from_intersection_to_node[i]+distance_between_nodes_at_IB[i]) * uv[i];
 }
 } // end of namespace kernels

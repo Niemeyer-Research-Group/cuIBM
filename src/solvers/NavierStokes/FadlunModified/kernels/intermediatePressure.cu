@@ -14,7 +14,7 @@
 namespace kernels
 {
 __global__
-void intermediatePressure(double *rhs2, double *uhat, int *tagsP, int *tagsPOut, int *tagsIn, double *distance_from_u_to_body, double *distance_from_v_to_body, double *ym, double *yp, double *xm, double *xp, double *dx, double *dy, int nx, int ny)
+void intermediatePressure(double *rhs2, double *uhat, int *ghostTagsP, int *hybridTagsP, int *ghostTagsUV, double *distance_from_u_to_body, double *distance_from_v_to_body, double *ym, double *yp, double *xm, double *xp, double *dx, double *dy, int nx, int ny)
 {
 	if (threadIdx.x + blockDim.x * blockIdx.x >= nx*ny)
 		return;
@@ -27,11 +27,11 @@ void intermediatePressure(double *rhs2, double *uhat, int *tagsP, int *tagsPOut,
 	double temp = 0;
 
 	//Outside immersed body
-	if (tagsPOut[ip] != -1)
+	if (hybridTagsP[ip] != -1)
 	{
 		//EAST
 		//check if east pressure node is outside of the body
-		if (tagsP[ip+1] == -1)
+		if (ghostTagsP[ip+1] == -1)
 		{
 			if (distance_from_u_to_body[ip] > dx[I]/2 && distance_from_u_to_body[ip] < dx[I])
 			{
@@ -43,7 +43,7 @@ void intermediatePressure(double *rhs2, double *uhat, int *tagsP, int *tagsPOut,
 
 		//WEST
 		//check if west pressure node is outside of the body
-		if (tagsP[ip-1] == -1)
+		if (ghostTagsP[ip-1] == -1)
 		{
 			if (distance_from_u_to_body[ip] > dx[I]/2 && distance_from_u_to_body[ip] < dx[I])
 			{
@@ -55,7 +55,7 @@ void intermediatePressure(double *rhs2, double *uhat, int *tagsP, int *tagsPOut,
 
 		//NORTH
 		//check if north pressure node is outside of the body
-		if (tagsP[ip+nx] == -1)
+		if (ghostTagsP[ip+nx] == -1)
 		{
 			if (distance_from_v_to_body[ip] > dy[J]/2 && distance_from_v_to_body[ip] < dy[J])
 			{
@@ -67,7 +67,7 @@ void intermediatePressure(double *rhs2, double *uhat, int *tagsP, int *tagsPOut,
 
 		//SOUTH
 		//check if south velocity node is outside of the body
-		if (tagsP[ip-nx] == -1)
+		if (ghostTagsP[ip-nx] == -1)
 		{
 			if (distance_from_v_to_body[ip] > dy[J]/2 && distance_from_v_to_body[ip] < dy[J])
 			{
@@ -81,22 +81,22 @@ void intermediatePressure(double *rhs2, double *uhat, int *tagsP, int *tagsPOut,
 	}
 	//end outside immersed body
 	//if just inside body
-	else if (tagsP[ip] > 0)
+	else if (ghostTagsP[ip] > 0)
 	{
 		//EAST
-		if (tagsP[ip+1] == 0)
+		if (ghostTagsP[ip+1] == 0)
 			temp -= uhat[iu]/dx[I];
 
 		//WEST
-		if (tagsP[ip-1] == 0)
+		if (ghostTagsP[ip-1] == 0)
 			temp += uhat[iu - 1]/dx[I];
 
 		//NORTH
-		if (tagsP[ip+nx] == 0)
+		if (ghostTagsP[ip+nx] == 0)
 			temp -= uhat[iv]/dy[J];
 
 		//SOUTH
-		if (tagsP[ip-nx] == 0)
+		if (ghostTagsP[ip-nx] == 0)
 			temp += uhat[iv-nx]/dy[J];
 
 	}

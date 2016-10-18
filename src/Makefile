@@ -164,6 +164,19 @@ oscflowo:
 	
 oscflowp:
 	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow/p
+
+oscflowq:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow/q
+	
+oscflowr:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow/r
+
+oscflows:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow/s
+	
+oscflowt:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow/t
+############################
 ############################
 #VIV
 ############################

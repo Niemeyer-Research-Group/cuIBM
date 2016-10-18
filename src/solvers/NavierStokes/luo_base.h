@@ -14,11 +14,11 @@ class luo_base : public NavierStokesSolver
 {
 protected:
 	cusp::array1d<int, cusp::device_memory> //names are changed to keep consistency with the luo paper, tags the same points as modifiedFadlun
-		ghostTagsUV,		///< velocity nodes just inside the boundary  (tagsIn)
+		ghostTagsUV,		///< velocity nodes just inside the boundary  (ghostTagsUV)
 		ghostTagsP,			///< pressure nodes just inside the boundary  (tagsP)
 		hybridTagsUV,		///< velocity nodes just outside the boundary (tags)
-		hybridTagsUV2,		///< velocity nodes 2 outside the boundary    (tags2)
-		hybridTagsP,		///< pressure nodes just outside the boundary (tagsPout)
+		hybridTagsUV2,		///< velocity nodes 2 outside the boundary    (hybridTagsUV2)
+		hybridTagsP,		///< pressure nodes just outside the boundary (hybridTagsP)
 		index1,
 		index2,
 		index3,
@@ -40,7 +40,7 @@ protected:
 		image_point_p_x,
 		image_point_p_y,
 		distance_from_intersection_to_node,			///< distance between IB and tagged node on the device
-		distance_between_nodes_at_IB,			///< distance between tags and tags2 on the device
+		distance_between_nodes_at_IB,			///< distance between tags and hybridTagsUV2 on the device
 		distance_from_u_to_body,
 		distance_from_v_to_body,
 		uv;									///< velocity at the IB on the device

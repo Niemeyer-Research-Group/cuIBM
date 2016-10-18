@@ -1,0 +1,21 @@
+- type: simulation
+  dt: 0.005
+  scaleCV: 5.0
+  nt: 12000
+  nsave: 6000
+  startStep: 0
+  SolverType: LUO
+  #SolverType: OSC_CYLINDER
+  VIV: 1
+  Ured: 8
+  linearSolvers:
+    - system: velocity
+      solver: CG
+      preconditioner: DIAGONAL
+      tolerance: 1e-5
+      maxIterations: 10000
+    - system: Poisson
+      solver: CG
+      preconditioner: SMOOTHED_AGGREGATION
+      tolerance: 1e-5
+      maxIterations: 20000

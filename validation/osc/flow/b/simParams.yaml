@@ -4,7 +4,7 @@
   nt: 1000
   nsave: 2000
   startStep: 0
-  SolverType: LUO
+  SolverType: FADLUN
   linearSolvers:
     - system: velocity
       solver: CG

@@ -21,8 +21,8 @@ __global__
 void updateBoundaryY(double *u, double *xp, double *dx, double dt, double Vinf, int nx, int ny);
 
 __global__
-void updateRHS1forIBX(int *tags, int *tagsIn, double *rhs, double *a, double *b, double *uv, int nx, int ny);
+void updateRHS1forIBX(int *hybridTagsUV, int *ghostTagsUV, double *rhs, double *a, double *b, double *uv, int nx, int ny);
 
 __global__
-void updateRHS1forIBY(int *tags, int *tagsIn, double *rhs, double *a, double *b, double *uv, int nx, int ny);
+void updateRHS1forIBY(int *hybridTagsUV, int *ghostTagsUV, double *rhs, double *a, double *b, double *uv, int nx, int ny);
 } // end of namespace kernels
