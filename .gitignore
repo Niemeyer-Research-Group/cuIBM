@@ -25,6 +25,10 @@ run.info
 midPosition
 output
 grid
+xu
+yu
+xv
+yv
 scripts/python/*.bdy
 *.txt
 .metadata/

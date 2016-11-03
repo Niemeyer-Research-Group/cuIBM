@@ -25,7 +25,6 @@ void fadlunModified::generateRHS1()
 
 	updateRobinBoundary();
 
-	NavierStokesSolver::Nold = NavierStokesSolver::N;
 	NavierStokesSolver::generateN();
 
 	NavierStokesSolver::generateL();

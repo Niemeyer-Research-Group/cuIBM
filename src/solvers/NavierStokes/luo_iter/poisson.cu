@@ -43,10 +43,8 @@ void luo_iter::poisson_setup()
 		PC.generate2(LHS2, (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
 	else
 		PC.update2(LHS2);
-
 	//update rhs
 	poisson_update_rhs();
-
 	logger.stopTimer("Poisson Setup");
 }
 

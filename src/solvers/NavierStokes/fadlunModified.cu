@@ -7,6 +7,7 @@
 
 #include "fadlunModified.h"
 #include <sys/stat.h>
+#include <solvers/NavierStokes/FadlunModified/kernels/projectVelocity.h>
 
 /**
  * \brief Constructor. Copies the database and information about the computational grid.
@@ -102,6 +103,23 @@ void fadlunModified::_pressure()
 {
 	generateRHS2();
 	solvePoisson();
+}
+
+void fadlunModified::_project_velocity()
+{
+	logger.startTimer("Velocity Projection");
+
+	const int blocksize = 256;
+
+	dim3 dimGridU( int( ((nx-1)*ny-0.5)/blocksize ) +1, 1);
+	dim3 dimBlockU(blocksize, 1);
+	dim3 dimGridV( int( (nx*(ny-1)-0.5)/blocksize ) +1, 1);
+	dim3 dimBlockV(blocksize, 1);
+
+	kernels::project_velocity_X<<<dimGridU,dimBlockU>>>(u_r, uhat_r, uold_r, pressure_r, ghostTagsP_r, dx_r, dt, nx, ny);
+	kernels::project_velocity_Y<<<dimGridV,dimBlockV>>>(u_r, uhat_r, uold_r, pressure_r, ghostTagsP_r, dy_r, dt, nx, ny);
+
+	logger.stopTimer("Velocity Projection");
 }
 
 /**

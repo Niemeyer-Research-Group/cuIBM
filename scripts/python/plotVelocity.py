@@ -83,35 +83,39 @@ def main():
 	for ite in xrange(start_step+nsave, nt+1, nsave):
 		print 'iteration %d' % ite
 		# read the velocity data at the given time-step
-		u, v = readVelocityData(folder, ite, nx, ny, dx, dy)
-		if u is None or v is None:
-			break
-
-		# plot u-velocity contourf
-		CS = plt.contourf(Xu, Yu, u.reshape((ny, nx-1)), levels=np.linspace(-args.u_lim, args.u_lim, 21))
-		plt.title("U-Velocity @ time = {0}".format(ite*dt))
-		plt.xlabel('x')
-		plt.ylabel('y')
-		plt.colorbar(CS)
-		plt.gca().set_aspect('equal',adjustable='box')
-		plt.xlim([x_start,x_end])
-		plt.ylim([y_start,y_end])
-		plt.savefig('%s/u%07d.png' % (folder, ite/nsave))
-		plt.clf()
+		try:
+			u, v = readVelocityData(folder, ite, nx, ny, dx, dy)
+			if u is None or v is None:
+				break
+		
+			# plot u-velocity contourf
+			CS = plt.contourf(Xu, Yu, u.reshape((ny, nx-1)), levels=np.linspace(-args.u_lim, args.u_lim, 21))
+			plt.title("U-Velocity @ time = {0}".format(ite*dt))
+			plt.xlabel('x')
+			plt.ylabel('y')
+			plt.colorbar(CS)
+			plt.gca().set_aspect('equal',adjustable='box')
+			plt.xlim([x_start,x_end])
+			plt.ylim([y_start,y_end])
+			plt.savefig('%s/u%07d.png' % (folder, ite/nsave))
+			plt.clf()
 		
 	
-		# plot v-velocity contourf
-		CS = plt.contourf(Xv, Yv, v.reshape((ny-1, nx)), 
-					levels=np.linspace(-args.v_lim, args.v_lim, 21))
-		plt.title("V-Velocity @ time = {0}".format(ite*dt))
-		plt.xlabel('x')
-		plt.ylabel('y')
-		plt.colorbar(CS)
-		plt.gca().set_aspect('equal',adjustable='box')
-		plt.xlim([x_start,x_end])
-		plt.ylim([y_start,y_end])
-		plt.savefig('%s/v%07d.png' % (folder, ite/nsave))
-		plt.clf()
+			# plot v-velocity contourf
+			CS = plt.contourf(Xv, Yv, v.reshape((ny-1, nx)), 
+						levels=np.linspace(-args.v_lim, args.v_lim, 21))
+			plt.title("V-Velocity @ time = {0}".format(ite*dt))
+			plt.xlabel('x')
+			plt.ylabel('y')
+			plt.colorbar(CS)
+			plt.gca().set_aspect('equal',adjustable='box')
+			plt.xlim([x_start,x_end])
+			plt.ylim([y_start,y_end])
+			plt.savefig('%s/v%07d.png' % (folder, ite/nsave))
+			plt.clf()
+
+		except:
+			print '\tno data found for timestep: ' + str(ite)
 
 if __name__ == '__main__':
 	main()

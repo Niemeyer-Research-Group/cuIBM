@@ -189,8 +189,6 @@ void luo_base::writeCommon()
 		B.writeToFile(folder, NavierStokesSolver::timeStep);
 	}
 
-	// write the number of iterations for each solve
-	iterationsFile << timeStep << '\t' << iterationCount1 << '\t' << iterationCount2 << std::endl;
 	if (timeStep == 1)
 	{
 		midPositionFile << "ts"
@@ -209,22 +207,25 @@ void luo_base::writeCommon()
 void luo_base::stepTime()
 {
 	_pre_step();
-
-	tol = 0.0001;
 	if ( (*paramDB)["simulation"]["VIV"].get<int>()==2 )
-		tol=1;
-	int counter = 0;
-	while (abs(tol)>0.001 || counter < 2)
+	{
+		tol = 0.0001;
+		int counter = 0;
+		while (abs(tol)>0.001 || counter < 2)
+		{
+			_intermediate_velocity();
+			_pressure();
+			_project_velocity();
+			_update_body();
+			counter ++;
+		}
+	}
+	else
 	{
 		_intermediate_velocity();
-
 		_pressure();
-
 		_project_velocity();
-
 		_update_body();
-
-		counter ++;
 	}
 	_post_step();
 }
@@ -264,11 +265,12 @@ void luo_base::_post_step()
 {
 	//update time
 	timeStep++;
-	if (timeStep%100 == 0)
+	if (timeStep%500 == 0)
 		std::cout << float(timeStep)/float((*paramDB)["simulation"]["nt"].get<int>())*100 << "%\n";
 
 	//print stuff if its done
-	if (timeStep%(*paramDB)["simulation"]["nt"].get<int>() == 0)
+	//if (timeStep%(*paramDB)["simulation"]["nt"].get<int>() == 0)
+	if (timeStep%(*paramDB)["simulation"]["nsave"].get<int>() == 0)
 	{
 		std::cout<<"Maximun CFL: " << cfl_max << std::endl;
 		std::cout<<"Expected CFL: " << (*paramDB)["simulation"]["dt"].get<double>()*bc[XMINUS][0]/domInfo->mid_h << std::endl;
@@ -281,12 +283,13 @@ void luo_base::_post_step()
 
 void luo_base::crash()
 {
-	arrayprint(uhat,"uhat","x",-1);
-	arrayprint(uhat,"vhat","y",-1);
-	arrayprint(uold,"uold","x",-1);
-	arrayprint(uold,"vold","y",-1);
-	arrayprint(pressure_old,"pold","p",-1);
-	arrayprint(rhs2,"rhs2","p",-1);
+	std::cout<<"Maximun CFL: " << cfl_max << std::endl;
+	//arrayprint(uhat,"uhat","x",-1);
+	//arrayprint(uhat,"vhat","y",-1);
+	//arrayprint(uold,"uold","x",-1);
+	//arrayprint(uold,"vold","y",-1);
+	//arrayprint(pressure_old,"pold","p",-1);
+	//arrayprint(rhs2,"rhs2","p",-1);
 	arrayprint(u,"u","x",-1);
 	arrayprint(u,"v","y",-1);
 	arrayprint(pressure,"p","p",-1);
@@ -296,7 +299,25 @@ void luo_base::crash()
 	arrayprint(hybridTagsUV,"hybridv","x",-1);
 	arrayprint(ghostTagsP,"ghostp","p",-1);
 	arrayprint(hybridTagsP,"hybridp","p",-1);
-	std::cout<<"Printing domain\n";
+	/*std::cout<<"Printing domain\n";
+	std::ofstream xu;
+	std::string folder = (*paramDB)["inputs"]["caseFolder"].get<std::string>();
+	std::stringstream out;
+	out << folder << "/xu";
+	xu.open(out.str().c_str());
+	std::ofstream yu;
+	std::string folder2 = (*paramDB)["inputs"]["caseFolder"].get<std::string>();
+	std::stringstream out2;
+	out2 << folder2 <<"/yu";
+	yu.open(out2.str().c_str());
+	for (int i=0; i<nx-1; i++)
+	{
+		xu<<domInfo->xu[i]<<"\n";
+	}
+	for (int i=0; i<ny; i++)
+	{
+		yu<<domInfo->yu[i]<<"\n";
+	}
 	for (int i=0; i<ny; i++)
 	{
 		std::cout<<domInfo->xv[i]<<"\t"<<domInfo->yu[i]<<"\n";
@@ -306,6 +327,7 @@ void luo_base::crash()
 	{
 		std::cout<<B.x[i]<<"\t"<<B.y[i]<<"\n";
 	}
+	*/
 }
 
 /**

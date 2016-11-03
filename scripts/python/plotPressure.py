@@ -64,22 +64,25 @@ def main():
 
 	# time-loop
 	for ite in xrange(start_step+nsave, nt+1, nsave):
-		# read the velocity data at the given time-step
-		p = readPressureData(folder, ite, nx, ny)
-		p = p.reshape((ny, nx))
+		try:
+			# read the velocity data at the given time-step
+			p = readPressureData(folder, ite, nx, ny)
+			p = p.reshape((ny, nx))
 
-		# calculate and write the vorticity
-		for j in xrange(j_start, j_end+1):
-			P[j-j_start, :] = p[j, i_start:i_end+1]
+			# calculate and write the vorticity
+			for j in xrange(j_start, j_end+1):
+				P[j-j_start, :] = p[j, i_start:i_end+1]
 
-		CS = plt.contourf(X, Y, P, levels=np.linspace(args.plimlow, args.plim, args.numlevels))
-		plt.title("Pressure")
-		plt.colorbar(CS)
-		plt.axis([xv[i_start], xv[i_end], yu[j_start], yu[j_end]])
-		plt.gca().set_aspect('equal', adjustable='box')
-		plt.savefig('{0} {1}.png'.format(folder,ite))
-		plt.clf()
-		print "Saved figure {0} {1}.png".format(folder,ite)
+			CS = plt.contourf(X, Y, P, levels=np.linspace(args.plimlow, args.plim, args.numlevels))
+			plt.title("Pressure")
+			plt.colorbar(CS)
+			plt.axis([xv[i_start], xv[i_end], yu[j_start], yu[j_end]])
+			plt.gca().set_aspect('equal', adjustable='box')
+			plt.savefig('{0} {1}.png'.format(folder,ite))
+			plt.clf()
+			print "Saved figure {0} {1}.png".format(folder,ite)
+		except:
+			print 'data not found at timestep: ' + str(ite)
 	
 	print 'DONE!'
 

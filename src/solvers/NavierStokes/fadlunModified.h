@@ -26,6 +26,7 @@ public:
 	virtual void shutDown();
 	virtual void _intermediate_velocity();
 	virtual void _pressure();
+	virtual void _project_velocity();
 
 	//////////////////////////
 	//intermediatePressure

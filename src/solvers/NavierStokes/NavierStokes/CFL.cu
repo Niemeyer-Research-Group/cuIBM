@@ -24,7 +24,8 @@ void NavierStokesSolver::CFL()
 	if (max_val > cfl_max)
 	{
 		if (timeStep>100 && max_val > cfl_max*1.2)
-			crash();
+			std::cout<<"WARNING: Significant maximum CFL change detected, potential crash imminent.\n";
+			//crash();
 		cfl_max = max_val;
 		cfl_I = position%nx;
 		cfl_J = int(position/nx);

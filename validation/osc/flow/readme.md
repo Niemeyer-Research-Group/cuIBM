@@ -5,7 +5,7 @@ f g h i j
 k l m n o
 p q r s t
 The first row is a coarse grid(h = 0.0625) with a low maximum CFL (0.35).  
-The bottom three rows have a finer grid(h=0.3125) with an increasing maximum CFL(0.35, 0.7, 1).  
+The bottom three rows have a finer grid(h=0.03125) with an increasing maximum CFL(0.35, 0.7, 1).  
 The first column is non-iteratively solved (GN and HN interpolaitons done outside of the linear solve) with an alpha weighting value calculated as discussed in luo et al.  
 The seoncd colum is a fadlun method.
 The third column is non-iteratively solved with alpha set to 1. This means it is being solved only using the interpolation solutions.  
