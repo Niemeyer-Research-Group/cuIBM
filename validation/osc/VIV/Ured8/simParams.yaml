@@ -6,7 +6,7 @@
   startStep: 0
   #SolverType: LUO
   SolverType: OSC_CYLINDER
-  VIV: 2
+  VIV: 1
   Ured: 8
   linearSolvers:
     - system: velocity
