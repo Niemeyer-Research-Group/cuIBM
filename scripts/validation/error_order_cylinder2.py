@@ -119,8 +119,19 @@ def find_error(yfine,ycoarse,xfine,xcoarse,ufine,ucoarse,tags):
 	return errorsum/(len(xcoarse)*len(ycoarse)-count)
 
 if __name__ == "__main__":
-	main()
-
-
-
-
+	#main()
+	t1 = [i*0.1+0.1 for i in xrange(5)]
+	t2 = [i*0.05+0.05 for i in xrange(10)]
+	fadlun = [1.6140209093498898, 1.6148363116, 1.6176514595, 1.6147082774, 1.6073691433, 1.593866169, 1.5897889254, 1.4269754258, 1.5622941351, 1.6658890443071641]
+	external = [1.7053037843603716, 1.6785034208, 1.6584672088, 1.6672553451, 1.6962016987, 1.722117897, 1.6719717865, 1.6801085127, 1.6763200642, 1.7155542537]
+	embedded = [1.5184468141, 1.4529358104, 1.3968597912, 1.4376764196, 1.3463391108, 1.548904431, 1.2795229804, 1.1966260321, 1.2556144474, 1.1567078918761309]
+	plt.plot(t2,fadlun,'o-',label='Modified Fadlun')
+	plt.plot(t2,external,'s-',label='External')
+	plt.plot(t1,embedded[0:5],'^-',label='Embedded')
+	plt.xlabel('Time')
+	plt.ylabel('Order of accuracy')
+	plt.title('Order of accuracy for impulsively started cylinder')
+	plt.legend(loc='lower left', numpoints=1, fancybox=True)
+	plt.axis([0,0.5,1,2])
+	plt.savefig('/scratch/src/cuIBM/validation/error/cylinder/error_order_2_plt.pdf')
+	plt.clf

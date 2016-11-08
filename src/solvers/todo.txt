@@ -1,4 +1,4 @@
-//This is a place for me to jot down notes on things that I should eventually do as I think of them.
+//This is a place for me to jot down notes on things that I should eventually do as I think of them. and maybe solve them someday.
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //todo
@@ -8,17 +8,16 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //io/postprocessing
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//todo fix parse files to not grab a bunch of shit they don't need
-//todo add ured to parse, yaml
 //todo make shell scripts make output with the optimal ulims, xlims and vortlims
 //todo make robin bc controlled by yaml file
 //todo make midpoisitoni file not show up if mid position isn't moving
-//todo turn the appropriate output files into csv files
 //todo make video script smarter, eg check for run.info before running then check for pictures before making pictures
 //todo video files seem to make a lot of losses eg, its blurry, why? fix
 	//looks like it might be blending frames, moving the fps from 10 to 5 seems to improve it, but obviously it takes 2x longer
 //todo make solver spit out arrays when it fails
 //todo get rid of all gnuploting and replace it with matplotlib python plotting
+//todo currently you have to set the mid_h in both the body file and domain file
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //code cleanup
@@ -26,17 +25,17 @@
 //todo update what stuff is stored in the paramdb
 //todo remove multibody remants
 //todo detemplatize preconditioner.h //not sure if worth, it works as it is and is very confusing
-//todo merge newprecond.cu and preconditioner.h class?
+	//todo merge newprecond.cu and preconditioner.h class?
 //todo figure out where exactly the "NavierStokesSolver::variable" specifier is needed then clean it up
 //todo go after //flags
 //todo remove all testing remants from all code
 //todo eclipse is finding a lot of errors that are not errors, fix that
 //todo lots of unused functionality in body.h and bodies.cu
-//todo currently you have to set the mid_h in both the body file and domain file
 //todo go through all the thrust pointer casts and make sure they are being used
 //todo make sure all the things being passed into kernels are being used still
-//todo change naverstokes folder and spawn to fractional step
 //todo merge boundaryTypes.h and types.h
+//todo many kernels get passed variables they don't use anymore
+//todo on git delete master branch and make new-master the new branch
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -53,9 +52,8 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //solver methods
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//todo fix jank so it works
-//todo optimize various gpu routines
 //todo change tagpoints to use a tighter bounding box
+//****** I think that a peice of the advection term, N, might be discretized wrong. Might be worth it to rediscretize by hand and compare
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,25 +67,4 @@
 //todo turbulence
 //todo multiple fluids (vof)
 //todo add rotational degree of freedom
-//todo different force calculation method
 //todo add a verbose mode where it spits out more information about the timestep, should be able to turn on at runtime
-//todo when solving for pressure* at the first time step the initial pressure is 0 everywhere which makes the determinant 0 which makes our eventual pressure* nan, to remedy I'm
-	//going to solve the pressure for the timestep, then solve for pressure* with the updated pressure. not sure if this is ok or not
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//testing
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//todo is the code slower because the preconditioner is moved out of the main file
-//todo does the tagpoints file handle interpolation correctly when the points are coincident
-//todo is midx,midy set to 0 before calculating?
-//todo look at gpu memory over time
-//todo parsing time?
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//luo method
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//todo validate luo method with osc cylinder
-//todo validate luo method with fsi cylinder
-

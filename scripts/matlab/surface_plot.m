@@ -4,9 +4,9 @@ clear
 % close all
 figure
 %change these
-number = '1'; 
-type = 'u'; %p or u
-suffix = ''; %u: 0, star, hat, hatfinal, empty. p: 0, star, empty
+number = '275'; 
+type = 'v'; %p or u
+suffix = 'hat'; %u: 0, star, hat, hatfinal, empty. p: 0, star, empty
 view = 'out'; 
 
 %load data
@@ -14,8 +14,8 @@ view = 'out';
 % caseFolder = '/scratch/src/cuIBM/validation/cylinder/Re40/output/';
 % caseFolder = '/scratch/src/cuIBM/validation/osc/gh/output/';
 % caseFolder = '/scratch/src/cuIBM/validation/osc/static/output/';
-%caseFolder = '/scratch/src/cuIBM/validation/osc/VIV/Ured4/output/';
-caseFolder = '/scratch/src/cuIBM/validation/error/cylinder/fadlun3/output/';
+caseFolder = '/scratch/src/cuIBM/validation/osc/VIV/Ured4/output/';
+% caseFolder = '/scratch/src/cuIBM/validation/error/cylinder/fadlun3/output/';
 path = strcat(caseFolder,number,type,suffix,'.csv');
 ghostpath = strcat(caseFolder,number,'ghost',type,'.csv');
 delim = '\t';
@@ -24,8 +24,8 @@ test = u;
 N = dlmread(ghostpath,delim,1,0);
 
 % manipulate inside/outside
-for i =1:length(u(:,1))
-    for j = 1:length(u(1,:))
+for i =1:length(u(:,1))-1
+    for j = 1:length(u(1,:))-1
         if strcmp(view,'out')
             if N(i,j)~=-1
                 u(i,j) = nan;
@@ -42,7 +42,8 @@ midy = round(length(u(:,1))/2);
 midx = round(length(u(1,:))/2);
 % surf(u((midy-50):(midy+50),(midx-50):(midx+50)))
 % surf(u(60:100,1:127)), hold on
-surf(u)
+surf(u((midy-50):(midy+50),(midx-150):(midx)))
+% surf(u)
 title(strcat(type,suffix))
 xlabel('x')
 ylabel('y')
