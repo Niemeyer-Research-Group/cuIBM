@@ -227,10 +227,10 @@ void luo_base::stepTime()
 		_pressure();
 		_project_velocity();
 		_update_body();
-		size_t _free, _total;
+		/*size_t _free, _total;
 		cudaMemGetInfo(&_free, &_total);
 		std::cout<<timeStep<<"\t"<<cfl_max<< ": Memory Usage " << std::setprecision(3) << (_total-_free)/(1024.0*1024*1024) \
-		          << " / " << std::setprecision(3) << _total/(1024.0*1024*1024) << " GB" << std::setprecision(6) << '\n' << std::endl;
+		          << " / " << std::setprecision(3) << _total/(1024.0*1024*1024) << " GB" << std::setprecision(6) << '\n' << std::endl;*/
 	}
 	_post_step();
 }
@@ -289,7 +289,7 @@ void luo_base::_post_step()
 void luo_base::crash()
 {
 	std::cout<<"Maximun CFL: " << cfl_max << std::endl;
-	arrayprint(uhat,"uhat","x",-1);
+	/*arrayprint(uhat,"uhat","x",-1);
 	arrayprint(uhat,"vhat","y",-1);
 	arrayprint(uold,"uold","x",-1);
 	arrayprint(uold,"vold","y",-1);
@@ -303,8 +303,8 @@ void luo_base::crash()
 	arrayprint(hybridTagsUV,"hybridu","x",-1);
 	arrayprint(hybridTagsUV,"hybridv","x",-1);
 	arrayprint(ghostTagsP,"ghostp","p",-1);
-	arrayprint(hybridTagsP,"hybridp","p",-1);
-	std::cout<<"Printing domain\n";
+	arrayprint(hybridTagsP,"hybridp","p",-1);*/
+	/*std::cout<<"Printing domain\n";
 	std::ofstream xu;
 	std::string folder = (*paramDB)["inputs"]["caseFolder"].get<std::string>();
 	std::stringstream out;
@@ -331,7 +331,7 @@ void luo_base::crash()
 	for (int i=0; i<B.totalPoints; i++)
 	{
 		std::cout<<B.x[i]<<"\t"<<B.y[i]<<"\n";
-	}
+	}*/
 }
 
 /**

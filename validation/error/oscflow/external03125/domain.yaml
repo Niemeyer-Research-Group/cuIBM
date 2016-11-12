@@ -2,23 +2,23 @@
   start: -15.0
   mid_h: 0.03125
   subDomains:
-    - end: -2.0
-      stretchRatio: 1.02
-    - end: 2.0
+    - end: -1.5
+      stretchRatio: 1.05
+    - end: 1.5
       stretchRatio: 1.0
     - end: 15.0
-      stretchRatio: 1.02
+      stretchRatio: 1.05
 
 - direction: y
   start: -15.0
   mid_h: 0.03125
   subDomains:
-    - end: -2.0
-      stretchRatio: 1.02
-    - end: 2.0
+    - end: -1.5
+      stretchRatio: 1.05
+    - end: 1.5
       stretchRatio: 1.0
     - end: 15.0
-      stretchRatio: 1.02
+      stretchRatio: 1.05
 
 
 

@@ -1,6 +1,6 @@
 - type: simulation
   dt: 0.005
-  scaleCV: 2.0
+  scaleCV: 5.0
   nt: 2000
   nsave: 2500
   startStep: 0
