@@ -17,7 +17,6 @@
 #include "domain.h"
 #include "io/io.h"
 #include "solvers/NavierStokes/NavierStokesSolver.h"
-#include "solvers/NavierStokes/FSI.h"
 #include "solvers/NavierStokes/luo_iter.h"
 #include "solvers/NavierStokes/fadlunModified.h"
 #include "solvers/NavierStokes/luoIBM.h"
