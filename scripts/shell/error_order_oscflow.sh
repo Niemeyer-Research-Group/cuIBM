@@ -4,7 +4,7 @@
 CUIBM_DIR=/scratch/src/cuIBM
 #Run Lid Driven Cavity Validation
 cd /scratch/src/cuIBM/src
-for var1 in 015625 02 03125 0625 
+for var1 in 015625 02 #03125 0625 
 do
 	for var2 in external embedded
 	do

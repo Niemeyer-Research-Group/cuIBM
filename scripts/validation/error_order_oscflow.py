@@ -21,8 +21,8 @@ def main():
 	fileid = '/forces'
 	typeid = ['external', 'embedded']
 	for methodtype in typeid:
-		d1 = genfromtxt(name + methodtype + '01' + fileid,dtype=float,delimiter='\t',skip_header=1)
-		d2 = genfromtxt(name + methodtype + '015625' + fileid,dtype=float,delimiter='\t',skip_header=1)
+		d1 = genfromtxt(name + methodtype + '015625' + fileid,dtype=float,delimiter='\t',skip_header=1)
+		d2 = genfromtxt(name + methodtype + '02' + fileid,dtype=float,delimiter='\t',skip_header=1)
 		d3 = genfromtxt(name + methodtype + '03125' + fileid,dtype=float,delimiter='\t',skip_header=1)
 		d4 = genfromtxt(name + methodtype + '0625' + fileid,dtype=float,delimiter='\t',skip_header=1)
 
@@ -41,7 +41,7 @@ def main():
 		error[1] = find_error(t1,t3,y1,y3)
 		error[2] = find_error(t1,t2,y1,y2)
 		
-		h=[0.0625, 0.03125, 0.015625]
+		h=[0.0625, 0.03125, 0.02]
 
 		plt.loglog(h,error,'-o')
 		plt.xlabel('Grid Spacing')
