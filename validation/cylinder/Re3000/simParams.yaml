@@ -3,7 +3,7 @@
   scaleCV: 5.0
   nt: 5000
   nsave: 10000
-  SolverType: FADLUN
+  SolverType: LUO
   linearSolvers:
     - system: velocity
       solver: CG

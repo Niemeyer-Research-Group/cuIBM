@@ -20,6 +20,8 @@ def main():
 	name = '/scratch/src/cuIBM/validation/error/oscflow/'
 	fileid = '/forces'
 	typeid = ['external', 'embedded']
+	val=[0]*2
+	place = 0
 	for methodtype in typeid:
 		d1 = genfromtxt(name + methodtype + '015625' + fileid,dtype=float,delimiter='\t',skip_header=1)
 		d2 = genfromtxt(name + methodtype + '02' + fileid,dtype=float,delimiter='\t',skip_header=1)
@@ -41,18 +43,20 @@ def main():
 		error[1] = find_error(t1,t3,y1,y3)
 		error[2] = find_error(t1,t2,y1,y2)
 		
-		h=[0.0625, 0.03125, 0.02]
+		val[place] = error
+		place +=1
 
-		plt.loglog(h,error,'-o')
-		plt.xlabel('Grid Spacing')
-		plt.ylabel('Error')
-		#plt.xlim([2,9])
-		#plt.ylim([0,0.6])
-		#plt.legend()
-		plt.savefig('/scratch/src/cuIBM/validation/error/oscflow/error_'+methodtype+'.pdf')
-		plt.clf()
+	h=[0.0625, 0.03125, 0.02]
+	plt.loglog(h,val[0],'-s',label='External')
+	plt.loglog(h,val[1],'-^',label='Embedded')
+	plt.xlabel('Grid Spacing')
+	plt.ylabel('Error')
+	plt.title('Flow over in-line oscillating cylinder')
+	plt.legend(loc='upper left', numpoints=1, fancybox=True)
+	plt.savefig('/scratch/src/cuIBM/validation/error/oscflow/error_oscflow.pdf')
+	plt.clf()
 
-		print "\nDone plotting" + methodtype + "!\n"
+	print "\nDone plotting!\n"
 
 def find_error(tfine, tcourse, yfine, ycourse):
 	error=[0]*len(tcourse)

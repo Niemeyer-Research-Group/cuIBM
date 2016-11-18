@@ -128,6 +128,7 @@ axis([0 10 0 2])
 %row 3
 subplot(4,2,5)
 plot(k(:,1),k(:,2),'k')
+ylabel('force')
 axis([0 10 0 2])
 
 subplot(4,2,6)
@@ -145,5 +146,5 @@ subplot(4,2,8)
 plot(t(:,1),t(:,2),'k')
 xlabel('time')
 axis([0 10 0 2])
-
+suptitle('Drag force for flow over an in-line oscillating cylinder')
 hold off

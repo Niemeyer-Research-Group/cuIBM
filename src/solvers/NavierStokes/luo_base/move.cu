@@ -74,7 +74,7 @@ void luo_base::viv_movement_SC()
 			vnew,
 			ynew,
 			relax = 0.9; //this should be set somewhere else
-	tol = B.midY;
+	SCtol = B.midY;
 
 	double a = dt*M_PI*M_PI*4/(Ured*Ured),
 		   b = dt*dt*2*M_PI*M_PI/(Ured*Ured);
@@ -89,7 +89,7 @@ void luo_base::viv_movement_SC()
 	dim3 grid( int( (totalPoints)/blocksize ) +1, 1);
 	dim3 block(blocksize, 1);
 	kernels::update_body_viv<<<grid,block>>>(B.y_r, B.vB_r, B.dy_r, vnew, B.midY, totalPoints);
-	std::cout<<timeStep<<"\t"<<B.midY<<"\t"<<cfl_max<<"\n";
+	//std::cout<<timeStep<<"\t"<<B.midY<<"\t"<<cfl_max<<"\n";
 
-	tol = (tol-ynew)/tol;
+	SCtol = (SCtol-ynew)/SCtol;
 }
