@@ -139,7 +139,6 @@ void preconditioner<Matrix>::update(const Matrix &A)
 	else
 	if (type == SMOOTHED_AGGREGATION)
 	{
-		std::cout<<"updating smoothed aggregation\n";
 		*LO = cusp::precond::aggregation::smoothed_aggregation<IndexType, ValueType, MemorySpace>(A);
 	}
 	else

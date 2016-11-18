@@ -15,7 +15,6 @@
 void luo_iter::poisson_setup()
 {
 	logger.startTimer("Poisson Setup");
-	size_t _free, _total;
 	const int blocksize = 256;
 	dim3 grid( int( (numP-0.5)/blocksize ) +1, 1);
 	dim3 block(blocksize, 1);
@@ -37,24 +36,14 @@ void luo_iter::poisson_setup()
 
 	//sort
 	LHS2.sort_by_row_and_column();
-	cudaMemGetInfo(&_free, &_total);
-	std::cout<< "\tpre preconditioner: Memory Usage " << std::setprecision(3) << (_total-_free)/(1024.0*1024*1024) \
-	          << " / " << std::setprecision(3) << _total/(1024.0*1024*1024) << " GB" << std::setprecision(6) << '\n' << std::endl;
 
 	//update preconditioner
-	if (timeStep == 0)
+	if (timeStep == 0 && SC_count == 0)
 	{
 		PC.generate2(LHS2, (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
-		cudaMemGetInfo(&_free, &_total);
-		std::cout<< "\tinter preconditioner: Memory Usage " << std::setprecision(3) << (_total-_free)/(1024.0*1024*1024) \
-		          << " / " << std::setprecision(3) << _total/(1024.0*1024*1024) << " GB" << std::setprecision(6) << '\n' << std::endl;
-		PC.update2(LHS2);
 	}
 	else
 		PC.update2(LHS2);
-	cudaMemGetInfo(&_free, &_total);
-	std::cout<< "\tpost preconditioner: Memory Usage " << std::setprecision(3) << (_total-_free)/(1024.0*1024*1024) \
-	          << " / " << std::setprecision(3) << _total/(1024.0*1024*1024) << " GB" << std::setprecision(6) << '\n' << std::endl;
 	//update rhs
 	poisson_update_rhs();
 

@@ -170,7 +170,8 @@ protected:
 
 	bodies 	B;		///< bodies in the flow
 
-	double SCtol;
+	double	SCtol,
+			SC_count;
 
 	std::ofstream forceFile;
 	std::ofstream midPositionFile;

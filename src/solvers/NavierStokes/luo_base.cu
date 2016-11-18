@@ -210,20 +210,16 @@ void luo_base::stepTime()
 	if ( (*paramDB)["simulation"]["VIV"].get<int>()==2 )
 	{
 		SCtol = 0.0001;
-		int counter = 0;
-		while (abs(SCtol)>0.001 || counter < 2)
+		SC_count = 0;
+		while (abs(SCtol)>0.001 || SC_count < 2)
 		//while (counter < 2)
 		{
-			std::cout<<timeStep<<"\t"<<counter<<"\t"<<SCtol<<"\t";
-			size_t _free, _total;
-			cudaMemGetInfo(&_free, &_total);
-			std::cout<<cfl_max<< ": Memory Usage " << std::setprecision(3) << (_total-_free)/(1024.0*1024*1024) \
-			          << " / " << std::setprecision(3) << _total/(1024.0*1024*1024) << " GB" << std::setprecision(6) << '\n' << std::endl;
+			std::cout<<timeStep<<"\t"<<SC_count<<"\t"<<SCtol<<"\n";
 			_intermediate_velocity();
 			_pressure();
 			_project_velocity();
 			_update_body();
-			counter ++;
+			SC_count ++;
 		}
 		//std::cout<<counter<<"\t"<<timeStep<<"\t"<<cfl_max<<"\n";
 	}
