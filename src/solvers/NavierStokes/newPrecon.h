@@ -25,5 +25,4 @@ class newPrecon
 	void update1(cusp::coo_matrix<int, double, cusp::device_memory>LHS1);
 
 	void update2(cusp::coo_matrix<int, double, cusp::device_memory>LHS2);
-
 };

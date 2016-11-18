@@ -43,11 +43,17 @@ void luo_iter::poisson_setup()
 
 	//update preconditioner
 	if (timeStep == 0)
+	{
 		PC.generate2(LHS2, (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
+		cudaMemGetInfo(&_free, &_total);
+		std::cout<< "\tinter preconditioner: Memory Usage " << std::setprecision(3) << (_total-_free)/(1024.0*1024*1024) \
+		          << " / " << std::setprecision(3) << _total/(1024.0*1024*1024) << " GB" << std::setprecision(6) << '\n' << std::endl;
+		PC.update2(LHS2);
+	}
 	else
 		PC.update2(LHS2);
 	cudaMemGetInfo(&_free, &_total);
-	std::cout<< "\tpre preconditioner: Memory Usage " << std::setprecision(3) << (_total-_free)/(1024.0*1024*1024) \
+	std::cout<< "\tpost preconditioner: Memory Usage " << std::setprecision(3) << (_total-_free)/(1024.0*1024*1024) \
 	          << " / " << std::setprecision(3) << _total/(1024.0*1024*1024) << " GB" << std::setprecision(6) << '\n' << std::endl;
 	//update rhs
 	poisson_update_rhs();
