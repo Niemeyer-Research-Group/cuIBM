@@ -211,17 +211,14 @@ void luo_base::stepTime()
 	{
 		SCtol = 0.0001;
 		SC_count = 0;
-		while (abs(SCtol)>0.001 || SC_count < 2)
-		//while (counter < 2)
+		while (abs(SCtol)>0.001 || SC_count < 2) //set sccount higher or the tolerence lower to reduce oscillations at the expense of computational time
 		{
-			std::cout<<timeStep<<"\t"<<SC_count<<"\t"<<SCtol<<"\n";
 			_intermediate_velocity();
 			_pressure();
 			_project_velocity();
 			_update_body();
 			SC_count ++;
 		}
-		//std::cout<<counter<<"\t"<<timeStep<<"\t"<<cfl_max<<"\n";
 	}
 	else
 	{
@@ -229,10 +226,6 @@ void luo_base::stepTime()
 		_pressure();
 		_project_velocity();
 		_update_body();
-		/*size_t _free, _total;
-		cudaMemGetInfo(&_free, &_total);
-		std::cout<<timeStep<<"\t"<<cfl_max<< ": Memory Usage " << std::setprecision(3) << (_total-_free)/(1024.0*1024*1024) \
-		          << " / " << std::setprecision(3) << _total/(1024.0*1024*1024) << " GB" << std::setprecision(6) << '\n' << std::endl;*/
 	}
 	_post_step();
 }
@@ -271,6 +264,7 @@ void luo_base::_update_body()
 void luo_base::_post_step()
 {
 	//update time
+	std::cout<<timeStep<<"\t"<<SC_count<<"\t"<<B.forceY<<"\n";
 	timeStep++;
 	if (timeStep%500 == 0)
 		std::cout << float(timeStep)/float((*paramDB)["simulation"]["nt"].get<int>())*100 << "%\n";

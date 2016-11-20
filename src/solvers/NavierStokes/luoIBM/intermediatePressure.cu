@@ -14,6 +14,7 @@
 
 void luoIBM::generateRHS2()
 {
+	//should there be a p=pold in here like there is in the iv setup?
 	NavierStokesSolver::logger.startTimer("Poisson Setup");
 
 	const int blocksize = 256;

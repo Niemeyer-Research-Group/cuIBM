@@ -26,11 +26,13 @@ void luo_iter::intermediate_velocity_setup()
 	dim3 grid_inside( int( (numUV-0.5)/blocksize ) +1, 1);
 	dim3 block_inside(blocksize, 1);
 
+	u=uold;
+
 	//update right boundary of the domain for the convective boundary condition
 	updateRobinBoundary();
 
 	//set Nold to N
-	Nold = N;
+	//Nold = N;
 
 	//set inside velocity to the velocity of the body
 	kernels::setInsideVelocity<<<grid_inside,block_inside>>>(ghostTagsUV_r, u_r, B.uB_r, B.vB_r, nx, ny);

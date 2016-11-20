@@ -18,4 +18,4 @@
       solver: CG
       preconditioner: SMOOTHED_AGGREGATION
       tolerance: 1e-5
-      maxIterations: 100000
+      maxIterations: 20000

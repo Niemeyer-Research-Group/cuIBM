@@ -38,7 +38,6 @@ void luo_base::set_movement()
 void luo_base::viv_movement_LC()
 {
 	double	Cy	= B.forceY*2.0,
-			U	= bc[XMINUS][0],
 			Mred= 2.0,
 			Ured= (*paramDB)["simulation"]["Ured"].get<int>(),
 			totalPoints=B.totalPoints,
@@ -65,7 +64,6 @@ void luo_base::viv_movement_LC()
 void luo_base::viv_movement_SC()
 {
 	double	Cy	= B.forceY*2.0,
-			U	= bc[XMINUS][0],
 			Mred= 2.0,
 			Ured= (*paramDB)["simulation"]["Ured"].get<int>(),
 			totalPoints=B.totalPoints,
