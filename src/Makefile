@@ -113,7 +113,12 @@ test:
 ############################
 oscStatic:
 	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/static
+	
+oscStaticExternal10:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/static/externalkc10
 
+oscStaticEmbedded10:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/static/embeddedkc10
 ############################
 #OSC CYLINDER WITH FLOW
 ############################

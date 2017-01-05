@@ -2,11 +2,11 @@
   dt: 0.005
   scaleCV: 5.0
   nt: 12000
-  nsave: 6000
+  nsave: 10
   startStep: 0
-  #SolverType: LUO
-  SolverType: OSC_CYLINDER
-  VIV: 2
+  SolverType: LUO
+  #SolverType: OSC_CYLINDER
+  VIV: 1
   Ured: 4
   linearSolvers:
     - system: velocity

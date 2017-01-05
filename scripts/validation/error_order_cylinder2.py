@@ -58,9 +58,9 @@ def main():
 			else:
 				print 'No solver type found'
 
-			error[0] = find_error(y4,y1,x4,x1,u4,u1,tags1)
-			error[1] = find_error(y4,y2,x4,x2,u4,u2,tags2)
-			error[2] = find_error(y4,y3,x4,x3,u4,u3,tags3)
+			L1[0], L2[0] = error_norm(y4,y1,x4,x1,u4,u1,tags1)
+			L1[1] = error_norm(y4,y2,x4,x2,u4,u2,tags2)
+			error[2] = error_norm(y4,y3,x4,x3,u4,u3,tags3)
 			
 			eoa[0] = log(error[1]/error[0])/log(h[1]/h[0])
 			eoa[1] = log(error[2]/error[1])/log(h[2]/h[1])
@@ -84,12 +84,10 @@ def main():
 	print ooa_ex
 	print "\nembedded"
 	print ooa_em
-	
-			
 
-
-def find_error(yfine,ycoarse,xfine,xcoarse,ufine,ucoarse,tags):
-	error = np.zeros((len(xcoarse),len(ycoarse)))
+def error_norm(yfine,ycoarse,xfine,xcoarse,ufine,ucoarse,tags):
+	L1 = np.zeros((len(xcoarse),len(ycoarse)))
+	L2 = np.zeros((len(xcoarse),len(ycoarse)))
 	uf = 0.0
 	count = 0
 	for i in xrange(1,len(xcoarse)-1):
@@ -108,15 +106,18 @@ def find_error(yfine,ycoarse,xfine,xcoarse,ufine,ucoarse,tags):
 				print yfine[n-1], ycoarse[j]
 			uf = 1.0/(xfine[m]-xfine[m-1])/(yfine[n]-yfine[n-1]) * (ufine[m-1][n-1]*(xfine[m]-xcoarse[i])*(yfine[n]-ycoarse[j]) + ufine[m][n-1]*(xcoarse[i]-xfine[m-1])*(yfine[n]-ycoarse[j]) + ufine[m-1][n]*(xfine[m]-xcoarse[i])*(ycoarse[j]-yfine[n-1]) + ufine[m][n]*(xcoarse[i]-xfine[m-1])*(ycoarse[j]-yfine[n-1]))
 			if tags[i][j] > -1 or tags[i][j+1] > -1 or tags[i][j-1] > -1 or tags[i+1][j] > -1 or tags[i-1][j] > -1 or tags[i][j] == 0 or uf == 0:
-				error[i][j] = 0
+				L1[i][j] = 0
 				count += 1
 			else:
-				error[i][j]=abs(uf-ucoarse[i][j])/abs(uf)
-			if error[i][j] >5:
-				error[i][j] = 0
+				L1[i][j]=abs(uf-ucoarse[i][j])
+				L2[i][j]=L1[i][j]**2
+			if L1[i][j] > 5:
+				L1[i][j] = 0
+				L2[i][j] = 0
 				count +=1
-	errorsum = sum(sum(error))
-	return errorsum/(len(xcoarse)*len(ycoarse)-count)
+	L1_error = sum(sum(L1))
+	L2_error = sqrt(sum(sum(L2))
+	return L1_error, L2_error
 
 if __name__ == "__main__":
 	#main()

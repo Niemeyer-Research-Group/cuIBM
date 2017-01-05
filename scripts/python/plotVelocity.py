@@ -100,7 +100,7 @@ def main():
 			plt.savefig('%s/u%07d.png' % (folder, ite/nsave))
 			plt.clf()
 		
-	
+			"""
 			# plot v-velocity contourf
 			CS = plt.contourf(Xv, Yv, v.reshape((ny-1, nx)), 
 						levels=np.linspace(-args.v_lim, args.v_lim, 21))
@@ -113,7 +113,7 @@ def main():
 			plt.ylim([y_start,y_end])
 			plt.savefig('%s/v%07d.png' % (folder, ite/nsave))
 			plt.clf()
-
+			"""
 		except:
 			print '\tno data found for timestep: ' + str(ite)
 

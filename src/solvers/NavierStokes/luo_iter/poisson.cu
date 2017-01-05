@@ -36,16 +36,17 @@ void luo_iter::poisson_setup()
 
 	//sort
 	LHS2.sort_by_row_and_column();
-
 	//update preconditioner
 	if (timeStep == 0 && SC_count == 0)
 	{
 		PC.generate2(LHS2, (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
 	}
-	else
-		PC.update2(LHS2);
+	else{
+		PC.update2(LHS2);}
 	//update rhs
+
 	poisson_update_rhs();
+
 
 	logger.stopTimer("Poisson Setup");
 }

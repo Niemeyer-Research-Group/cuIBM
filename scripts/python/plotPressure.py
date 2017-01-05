@@ -78,7 +78,7 @@ def main():
 			plt.colorbar(CS)
 			plt.axis([xv[i_start], xv[i_end], yu[j_start], yu[j_end]])
 			plt.gca().set_aspect('equal', adjustable='box')
-			plt.savefig('{0} {1}.png'.format(folder,ite))
+			plt.savefig('{0}p{1:0=5d}.png'.format(folder,ite))
 			plt.clf()
 			print "Saved figure {0} {1}.png".format(folder,ite)
 		except:

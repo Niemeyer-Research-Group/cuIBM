@@ -222,6 +222,7 @@ void luo_base::stepTime()
 	}
 	else
 	{
+		SC_count = 0;
 		_intermediate_velocity();
 		_pressure();
 		_project_velocity();
@@ -264,7 +265,7 @@ void luo_base::_update_body()
 void luo_base::_post_step()
 {
 	//update time
-	std::cout<<timeStep<<"\t"<<SC_count<<"\t"<<B.forceY<<"\n";
+	//std::cout<<timeStep<<"\t"<<B.forceX<<"\n";
 	timeStep++;
 	if (timeStep%500 == 0)
 		std::cout << float(timeStep)/float((*paramDB)["simulation"]["nt"].get<int>())*100 << "%\n";
