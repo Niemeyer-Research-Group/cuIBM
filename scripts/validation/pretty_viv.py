@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+#This script makes a bunch of plots to be used in the making of videos
 #import csv
 #import argparse
 import numpy as np

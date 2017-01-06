@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+#This script calculates and plots the order of accuracy for an oscillating cylinder
 #import csv
 #import argparse
 import numpy as np

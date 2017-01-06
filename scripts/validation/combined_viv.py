@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+#This script makes the plot for all four VIVs results on the same plot
 #import csv
 #import argparse
 import numpy as np

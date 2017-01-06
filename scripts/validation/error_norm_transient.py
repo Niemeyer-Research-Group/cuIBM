@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+#this script claculates and plots transient error norms.
 #import csv
 #import argparse
 import numpy as np

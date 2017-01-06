@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+# This script runs and plots the drag validaiton for an impulsively started cylinder
 import argparse
 import os
 import os.path

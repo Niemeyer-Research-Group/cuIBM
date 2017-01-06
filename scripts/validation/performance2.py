@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+#This script plots oscillating cylinder performance
 #import csv
 #import argparse
 import numpy as np

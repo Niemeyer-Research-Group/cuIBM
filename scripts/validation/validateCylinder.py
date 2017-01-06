@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+#generates a validation plot of an impulsivley started cylinder without running it.
 import csv
 import argparse
 import numpy as np

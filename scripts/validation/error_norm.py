@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+#This script calculated the error norms for an impulsively started cylinder with main() and then all the data was reorgainzed in fancy_plot() to be ploted.
 
 #import csv
 #import argparse

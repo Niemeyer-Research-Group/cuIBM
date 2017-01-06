@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+#generates validation plots of a lid driven cavity flow without running it
 import csv
 import argparse
 import numpy as np
