@@ -32,7 +32,6 @@
 //todo eclipse is finding a lot of errors that are not errors, fix that
 //todo lots of unused functionality in body.h and bodies.cu
 //todo go through all the thrust pointer casts and make sure they are being used
-//todo move thurst pointer cast from .inl files into initialization file
 //todo make sure all the things being passed into kernels are being used still
 //todo merge boundaryTypes.h and types.h
 //todo many kernels get passed variables they don't use anymore
@@ -60,7 +59,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //functionality
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//todo enable robin bc on all sides, should be chooseable at runtime
+//todo enable robin bc on all sides
 //todo periodic boundary conditions
 //todo unit tests
 //todo upgrade to amgx

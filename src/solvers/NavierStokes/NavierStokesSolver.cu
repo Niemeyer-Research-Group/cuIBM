@@ -143,11 +143,6 @@ void NavierStokesSolver::initialiseNoBody()
  */
 void NavierStokesSolver::initialiseLHS()
 {
-	int nx = domInfo->nx,
-		ny = domInfo->ny,
-		numUV = (nx-1)*ny + (ny-1)*nx;
-	LHS1.resize(numUV, numUV, (nx-1)*ny*5 - 2*ny-2*(nx-1)       +        (ny-1)*nx*5 - 2*(ny-1) - 2*nx);
-	LHS2.resize(nx*ny, nx*ny, 5*nx*ny - 2*ny-2*nx);
 	generateLHS1();
 	generateLHS2();
 	std::cout << "NavierStokesSolver: Initialised LHS!" << std::endl;
@@ -229,8 +224,7 @@ void NavierStokesSolver::solveIntermediateVelocity()
 	double relTol = (*paramDB)["velocitySolve"]["tolerance"].get<double>();
 
 	cusp::monitor<double> sys1Mon(rhs1,maxIters,relTol);//flag currently this takes much more time than it should.
-	//cusp::krylov::bicgstab(LHS1, uhat, rhs1, sys1Mon, *PC.PC1);
-	cusp::krylov::bicgstab(LHS1, uhat, rhs1, sys1Mon);
+	cusp::krylov::bicgstab(LHS1, uhat, rhs1, sys1Mon, *PC.PC1);
 
 	iterationCount1 = sys1Mon.iteration_count();
 
@@ -326,52 +320,14 @@ void NavierStokesSolver::arrayprint(cusp::array1d<double, cusp::device_memory> v
 		for (int I = 0; I < x_length; I++)
 		{
 			i = row_length*J + I + pad;
-			//myfile<<round(10000*value[i])/10000;
-			myfile<<value[i];
+			myfile<<round(10000*value[i])/10000;
+			//myfile<<value[i];
 			myfile<<'\t';
 		}
 		myfile<<"\n";
 	}
 	myfile.close();
 	std::cout<<"printed "<<name <<"\n";
-	logger.stopTimer("output");
-}
-
-void NavierStokesSolver::printLHS()
-{
-	logger.startTimer("output");
-	int nx = domInfo->nx;
-	int ny = domInfo->ny;
-
-	std::ofstream myfile;
-	std::string folder = (*paramDB)["inputs"]["caseFolder"].get<std::string>();
-	std::stringstream out;
-	std::stringstream convert; convert << "/output/" << timeStep << "LHS" << ".csv";
-	std::string folder_name = convert.str();
-	out<<folder<<folder_name;
-	myfile.open(out.str().c_str());
-	cusp::coo_matrix<int, double, cusp::host_memory> LHS = LHS2;
-	std::cout<<"done copying LHS\n";
-	int	idx = 0;
-	for (int j=0; j < nx*ny; j++)
-	{
-		for (int i=0; i < nx*ny; i++)
-		{
-			//if we are at an occupied node
-			if (i == LHS.column_indices[idx] && j == LHS.row_indices[idx])
-			{
-				myfile<<LHS.values[idx]<<"\t";
-				idx +=1;
-			}
-			else
-			{
-				myfile<<"\t";
-			}
-		}
-		myfile<<"\n";
-	}
-	myfile.close();
-	std::cout<<"printed lhs\n";
 	logger.stopTimer("output");
 }
 
