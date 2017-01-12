@@ -142,14 +142,21 @@ These steps will import the code into Nsight.
 9. Select CUDA Toolkit 7.5 in the toolchain box and hit `finish`.  
 
 
-Numerical schemes
+Immersed Boundary Methods
+-------------------------
+
+### Modified Fadlun
+Based on the work of Fadlun et al. Modifications to prevent mass destruction at immersed boundary.
+
+### External
+Based on the work of Luo et al. Operations take place outside of linear algebra
+
+### Embedded
+Based on the work of Luo et al. Operations take place inside the linear algebra
+
+
+Numerical Schemes
 -----------------
-
-### FADLUN
-
-### LUO
-
-### Luo_iter
 
 ### Temporal discretisation
 The convection terms are calculated using Crank-Nicolson and the advection terms are calculated using 2nd order explicit Adams-Bashforth.
@@ -163,45 +170,30 @@ second-order central difference scheme.
 Examples
 --------
 
-The following examples are available:
+Try some of the followng examples:
 
-lidDrivenCavityRe + ###
-Example: lidDrivenCavityRe100
-* `100`: Flow in a lid-driven cavity with Reynolds number
-100.
-* `1000`: Flow in a lid-driven cavity with Reynolds number
-1000.
-* `10000`: Flow in a lid-driven cavity with Reynolds number
-10000.
-cylinderRe + ###
-Example : cylinderRe40
-* `40`: Flow over a circular cylinder at Reynolds number 40. The
-flow eventually reaches a steady state.
-* `75`: Flow over a circular cylinder at Reynolds number 75. The
-initial flow field has an asymmetric perturbation that triggers instability in
-the flow and vortex shedding is observed in the wake.
-* `100`: Flow over a circular cylinder at Reynolds number 100. The
-initial flow field has an asymmetric perturbation that triggers instability in
-the flow and vortex shedding is observed in the wake.
-* `150`: Flow over a circular cylinder at Reynolds number 150. The
-initial flow field has an asymmetric perturbation that triggers instability in
-the flow and vortex shedding is observed in the wake.
-* `550`: Initial flow over an impulsively started cylinder at
-Reynolds number 550.
-* `3000`: Initial flow over an impulsively started cylinder at
-Reynolds number 3000.
-Static flow with oscillating cylinder.
-Impulsivly started oscillating cylinder.
-Vorticity induced vibrations
+## Shorter
+### Lid driven cavity
+Example: make lidDrivenCavityRe100
+Reynolds numbers availible: 100, 1000
 
-### Run the tests
+### Impulsively started cylinder
+Example: make cylinderRe40
+Reynolds numbers availible: 40, 550, 3000
+
+## Longer
+For these simulations try switching between the external and embedded methods. The embedded method generally takes 10x longer. To do this, navigate to the simParams.yaml file for the simulation you want to modify. For example 'validaiton/osc/VIV/Ured4/simParams.yaml'.
+Change the line '  SolverType: xxx'. Set xxx to LUO for the external method or OSC_CYLINDER for the embedded emthod.
+
+### In-line oscillating cylinder driven flow
+Example: make oscStaticExternal10
+
+### Vorticity induced vibration
+Example: make vivUred4
 
 Post-processing
 ---------------
-
-
-Known issues
-------------
+There are a bunch of post processing scripts under scripts/validaiton and scripts/python
 
 
 Contact
