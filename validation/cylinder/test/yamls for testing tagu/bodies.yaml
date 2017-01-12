@@ -1,3 +1,0 @@
-- type: circle
-  circleOptions: [0.0, 0.0, 0.5, 100, false, 0.025]
-  initialOffset: [0.0, 0.0]

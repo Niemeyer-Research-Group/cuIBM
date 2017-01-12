@@ -1,7 +1,9 @@
 - type: simulation
-  dt: 0.005
-  nt: 1
-  nsave: 2000
+  dt: 0.001
+  scaleCV: 5.0
+  nt: 14000
+  nsave: 10000
+  startStep: 0
   SolverType: LUO
   linearSolvers:
     - system: velocity
@@ -13,4 +15,4 @@
       solver: CG
       preconditioner: SMOOTHED_AGGREGATION
       tolerance: 1e-5
-      maxIterations: 20000
+      maxIterations: 100000
