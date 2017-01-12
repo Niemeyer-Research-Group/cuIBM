@@ -1,22 +1,7 @@
 %plot pressure
 clc
 clear
-<<<<<<< HEAD
 close all
-<<<<<<< HEAD
-% figure
-%change these
-number = '1000';
-type = 'u'; %p or u
-suffix = ''; %u: 0, star, hat, hatfinal, empty. p: 0, star, empty
-view = 'out';
-
-%load data
-% caseFolder = '/scratch/src/cuIBM/validation/luo/test/output/'
-caseFolder = '/scratch/src/cuIBM/validation/cylinder/Re40/output/';
-% caseFolder = '/scratch/src/cuIBM/validation/osc/flow/output/';
-=======
-% close all
 figure
 %change these
 number = '275'; 
@@ -31,7 +16,7 @@ view = 'out';
 % caseFolder = '/scratch/src/cuIBM/validation/osc/static/output/';
 caseFolder = '/scratch/src/cuIBM/validation/osc/VIV/Ured4/output/';
 % caseFolder = '/scratch/src/cuIBM/validation/error/cylinder/fadlun3/output/';
->>>>>>> new-master
+
 path = strcat(caseFolder,number,type,suffix,'.csv');
 ghostpath = strcat(caseFolder,number,'ghost',type,'.csv');
 delim = '\t';
@@ -56,16 +41,10 @@ end
 %plot area round body
 midy = round(length(u(:,1))/2);
 midx = round(length(u(1,:))/2);
-<<<<<<< HEAD
-% surf(M((midy-50):(midy+50),(midx-50):(midx+50)))
-% surf(u(60:100,1:127)), hold on
-surf(u);
-=======
 % surf(u((midy-50):(midy+50),(midx-50):(midx+50)))
 % surf(u(60:100,1:127)), hold on
 surf(u((midy-50):(midy+50),(midx-150):(midx)))
 % surf(u)
->>>>>>> new-master
 title(strcat(type,suffix))
 xlabel('x')
 ylabel('y')
@@ -194,11 +173,6 @@ caseFolder = '/scratch/src/cuIBM/validation/osc/flow/output/';
 % caseFolder = '/scratch/src/cuIBM/validation/osc/static/output/';
 path = strcat(caseFolder,number,'p.csv');
 ghostpath = strcat(caseFolder,number,'ghostp.csv');
-=======
-number = '1000';
-type = 'v';
-path = strcat('/scratch/src/cuIBM/validation/luo/test/output/',number,type,'.csv');
->>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
 delim = '\t';
 p = dlmread(path,delim,1,0);
 ghost = dlmread(ghostpath,delim,1,0);

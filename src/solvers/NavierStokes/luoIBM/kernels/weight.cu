@@ -18,7 +18,7 @@ void weightX(double *uhat, double *ustar, int *ghostTagsUV, int *hybridTagsUV, d
 		I	= i_start[0] + i,
 		J	= j_start[0] + j,
 		iu = J*(nx-1) + I;
-	if (iu > ny*(nx-1)) //return if we're out of bounds
+	if (iu > J*(nx-1) + I) //return if we're out of bounds
 		return;
 	if (hybridTagsUV[iu]<=0) //return if we're not at a hybrid node point
 		return;
@@ -40,7 +40,7 @@ void weightX(double *uhat, double *ustar, int *ghostTagsUV, int *hybridTagsUV, d
 	if (ghostTagsUV[iu-(nx-1)]>0)
 		delta_2 = sqrt( pow( body_intercept_x[iu-(nx-1)]-xu[I],2 ) + pow( body_intercept_y[iu-(nx-1)]-yu[J-1], 2 ) );
 	//north is inside
-	else if (ghostTagsUV[iu+(nx-1)]>0)
+	if (ghostTagsUV[iu+(nx-1)]>0)
 		delta_2 = sqrt( pow( body_intercept_x[iu+(nx-1)]-xu[I],2 ) + pow( body_intercept_y[iu+(nx-1)]-yu[J+1], 2 ) );
 	//calculate alpha
 	alpha = sqrt( pow( delta_1/dx , 2 ) + pow( delta_2/dy , 2 ) );
@@ -82,7 +82,7 @@ void weightY(double *uhat, double *ustar, int *ghostTagsUV, int *hybridTagsUV, d
 	if (ghostTagsUV[iv-nx]>0)
 		delta_2 = sqrt( pow( body_intercept_x[iv-nx]-xv[I],2 ) + pow( body_intercept_y[iv-nx]-yv[J-1], 2 ) );
 	//north is inside
-	else if (ghostTagsUV[iv+nx]>0)
+	if (ghostTagsUV[iv+nx]>0)
 		delta_2 = sqrt( pow( body_intercept_x[iv+nx]-xv[I],2 ) + pow( body_intercept_y[iv+nx]-yv[J+1], 2 ) );
 	//calculate alpha
 	alpha = sqrt( pow( delta_1/dx , 2 ) + pow( delta_2/dy , 2 ) );
@@ -92,8 +92,8 @@ void weightY(double *uhat, double *ustar, int *ghostTagsUV, int *hybridTagsUV, d
 }
 
 __global__
-void alpha_(double *alpha, int *ghostTagsP, int *hybridTagsP, double *yu, double *xv,
-				double *body_intercept_x, double *body_intercept_y,
+void weightP(double *pressure, double *pressureStar, int *ghostTagsP, int *hybridTagsP, double *yu, double *xv,
+				double *body_intercept_x, double *body_intercept_y, double *image_point_x, double *image_point_y,
 				int *i_start, int *j_start, int width, int nx, int ny)
 {
 	int idx	= threadIdx.x + blockDim.x * blockIdx.x,
@@ -109,9 +109,9 @@ void alpha_(double *alpha, int *ghostTagsP, int *hybridTagsP, double *yu, double
 
 	double  delta_1 = 0,
 			delta_2 = 0,
+			alpha = 1,
 			dx = xv[I]-xv[I-1],
 			dy = yu[J]-yu[J-1];
-	alpha[ip] = 1;
 	//find ghost node in x direction
 	//west is inside
 	if (ghostTagsP[ip-1]>0)
@@ -124,17 +124,13 @@ void alpha_(double *alpha, int *ghostTagsP, int *hybridTagsP, double *yu, double
 	if (ghostTagsP[ip-nx]>0)
 		delta_2 = sqrt( pow( body_intercept_x[ip-nx]-xv[I],2 ) + pow( body_intercept_y[ip-nx]-yu[J-1], 2 ) );
 	//north is inside
-	else if (ghostTagsP[ip+nx]>0)
+	if (ghostTagsP[ip+nx]>0)
 		delta_2 = sqrt( pow( body_intercept_x[ip+nx]-xv[I],2 ) + pow( body_intercept_y[ip+nx]-yu[J+1], 2 ) );
 	//calculate alpha
-<<<<<<< HEAD
-	alpha[ip] = sqrt( pow( delta_1/dx , 2 ) + pow( delta_2/dy , 2 ) );
-=======
 	alpha = sqrt( pow( delta_1/dx , 2 ) + pow( delta_2/dy , 2 ) );
 	//alpha = 1;
 	//blend uhat
 	pressure[ip] = (1-alpha)*pressure[ip] + alpha*pressureStar[ip];
->>>>>>> new-master
 }
 
 }

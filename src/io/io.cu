@@ -177,13 +177,8 @@ void initialiseDefaultDB(parameterDB &DB)
 	DB[sim]["nsave"].set<int>(100);
 	DB[sim]["restart"].set<bool>(false);
 	DB[sim]["startStep"].set<bool>(0);
-<<<<<<< HEAD
-	DB[sim]["solverType"].set<int>(0);
-	DB[sim]["Ured"].set<double>(3);
-=======
 	DB[sim]["Ured"].set<int>(3);
 	DB[sim]["VIV"].set<int>(0);
->>>>>>> new-master
 	DB[sim]["SolverType"].set<solverType>(NAVIERSTOKES);
 
 	// velocity solver

@@ -8,17 +8,9 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //io/postprocessing
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-<<<<<<< HEAD
-//todo fix parse files to not grab a bunch of stuff they don't need
-//todo add ured to parse, yaml
-//todo make shell scripts make output with the optimal ulims, xlims and vortlims
-//todo make robin bc controlled by yaml file
-//todo turn the appropriate output files into csv files
-=======
 //todo make shell scripts make output with the optimal ulims, xlims and vortlims
 //todo make robin bc controlled by yaml file
 //todo make midpoisitoni file not show up if mid position isn't moving
->>>>>>> new-master
 //todo make video script smarter, eg check for run.info before running then check for pictures before making pictures
 //todo video files seem to make a lot of losses eg, its blurry, why? fix
 	//looks like it might be blending frames, moving the fps from 10 to 5 seems to improve it, but obviously it takes 2x longer
@@ -61,10 +53,6 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //solver methods
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-<<<<<<< HEAD
-//todo optimize various gpu routines
-=======
->>>>>>> new-master
 //todo change tagpoints to use a tighter bounding box
 //****** I think that a peice of the advection term, N, might be discretized wrong. Might be worth it to rediscretize by hand and compare
 
@@ -80,73 +68,4 @@
 //todo turbulence
 //todo multiple fluids (vof)
 //todo add rotational degree of freedom
-<<<<<<< HEAD
-//todo different force calculation method
 //todo add a verbose mode where it spits out more information about the timestep, should be able to turn on at runtime
-//todo when solving for pressure* at the first time step the initial pressure is 0 everywhere which makes the determinant 0 which makes our eventual pressure* nan, to remedy I'm
-	//going to solve the pressure for the timestep, then solve for pressure* with the updated pressure. not sure if this is ok or not
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//testing
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//todo is the code slower because the preconditioner is moved out of the main file
-//todo does the tagpoints file handle interpolation correctly when the points are coincident
-//todo test different krylov solvers
-//todo test different preconds
-//todo optimize when the precondtioner needs to be updated
-//todo is midx,midy set to 0 before calculating?
-//todo look at gpu memory over time
-//todo parsing time?
-//todo look at testing
-//todo write funciton to output LHS matrix
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//luo method
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//todo validate luo method with osc cylinder
-//todo validate luo method with osc cylinder in flow
-//todo validate luo method with fsi cylinder
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//luo method
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//done
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//make the compiler not compile this file
-//remove device/host from dominfo
-//the current way we handle grid sizing sucks, should be more automated/needs built in derp check
-//solver is unreasonably unsteady when it comes to grid/body sizing
-//move osccylinder initialise body out of stepTime()
-//seperate ns and fadlun solvers
-//git is tracking strage, annoying eclipse things
-//change mid_h to mid_h
-//change domainl.yaml for all cases
-//make shell cleanup script not delete whole computer
-//remove old solverType int
-//luo method framework
-//luo method point tagging
-	// ghost nodes
-	// hybrid nodes
-//luo method extrapolation for ghost nodes
-	//u
-	//v
-	//p
-//luo method treatment at hybrid cells
-	//blend function
-	//interpolation vel
-	//NS vel
-//luo method treatment of pressure at hybrid nodes 
-//validate luo method with lid driven cavity
-//validate luo method with static cylinder
-//fix jank so it works
-//cylinderRe3000 isn't working, fix it
-//make midpoisitoni file not show up if mid position isn't moving
-=======
-//todo add a verbose mode where it spits out more information about the timestep, should be able to turn on at runtime
->>>>>>> new-master

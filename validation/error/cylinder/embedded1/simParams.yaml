@@ -1,21 +1,8 @@
 - type: simulation
-<<<<<<< HEAD:validation/osc/static/simParams.yaml
-  dt: 0.002
-  scaleCV: 5.0
-  nt: 1000
-<<<<<<< HEAD:validation/osc/static/simParams.yaml
-  nsave: 100
-=======
-  nsave: 1000
->>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder:validation/luo/test/simParams.yaml
-  startStep: 0
-  SolverType: OSC
-=======
   dt: 0.001
   nt: 1000
   nsave: 100
   SolverType: OSC_CYLINDER
->>>>>>> new-master:validation/error/cylinder/embedded1/simParams.yaml
   linearSolvers:
     - system: velocity
       solver: CG

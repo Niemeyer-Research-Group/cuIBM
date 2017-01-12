@@ -26,42 +26,8 @@ fadlunModified::fadlunModified(parameterDB *pDB, domain *dInfo)
  */
 void fadlunModified::initialise()
 {
-<<<<<<< HEAD
-
-	NavierStokesSolver::initialiseNoBody();
-	NavierStokesSolver::logger.startTimer("initialise");
-
-	int nx = NavierStokesSolver::domInfo->nx,
-		ny = NavierStokesSolver::domInfo->ny;
-
-	int numUV = (nx-1)*ny + nx*(ny-1);
-	int numP  = nx*ny;
-	////////////////////////////////////////////////////////////////////////////////////////////////
-	//ARRAYS
-	////////////////////////////////////////////////////////////////////////////////////////////////
-	//tagpoints, size uv, device
-	tags.resize(numUV);//used in lhs1
-	tagsOld.resize(numUV);
-	tagsPOld.resize(numP);
-	tags2.resize(numUV);//used in lhs1
-	tagsIn.resize(numUV);//used in lhs1
-	distance_from_intersection_to_node.resize(numUV);
-	distance_between_nodes_at_IB.resize(numUV);
-	uv.resize(numUV);
-
-	//tagpoints, size np, device
-	tagsP.resize(numP);//flag
-	tagsPOut.resize(numP);//flag
-	distance_from_u_to_body.resize(numP);
-	distance_from_v_to_body.resize(numP);
-	test.resize(numP); //flag
-
-	cusp::blas::fill(tagsOld,-1);
-	cusp::blas::fill(tagsPOld,-1);
-=======
 	luo_base::initialise();
 	logger.startTimer("initialise");
->>>>>>> new-master
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	//cast
@@ -134,10 +100,7 @@ void fadlunModified::_intermediate_velocity()
 {
 	generateRHS1();
 	solveIntermediateVelocity();
-<<<<<<< HEAD
-=======
 }
->>>>>>> new-master
 
 void fadlunModified::_pressure()
 {

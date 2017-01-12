@@ -1,15 +1,9 @@
 - type: simulation
   dt: 0.001
   scaleCV: 5.0
-<<<<<<< HEAD
-  nt: 50000
-  nsave: 1000
-  SolverType: FADLUN
-=======
   nt: 5000
   nsave: 10000
   SolverType: LUO
->>>>>>> new-master
   linearSolvers:
     - system: velocity
       solver: CG

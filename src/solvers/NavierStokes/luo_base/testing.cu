@@ -52,67 +52,7 @@ void luo_base::divergence()
 	test_output.close();
 }
 
-<<<<<<< HEAD:src/solvers/NavierStokes/luoIBM/testing.inl
-
-void luoIBM::outputPressure()
-{
-	std::cout<<"Outputing pressure\n";
-	int ip;
-	int nx = NavierStokesSolver::domInfo->nx,
-		i_start = B.startI[0],
-		j_start = B.startJ[0],
-		width_i = B.numCellsX[0],
-		height_j = B.numCellsY[0],
-		i_end = i_start + width_i,
-		j_end = j_start + height_j;
-	std::ofstream inside;
-	std::ofstream outside;
-	std::ofstream body;
-	std::string folder = (*paramDB)["inputs"]["caseFolder"].get<std::string>();
-	std::stringstream out;
-	std::stringstream out2;
-	std::stringstream out3;
-	out << folder << "/insidePressure.csv";
-	out2 <<folder << "/outsidePressure.csv";
-	out3 << folder << "/body.csv";
-	inside.open(out.str().c_str());
-	outside.open(out2.str().c_str());
-	body.open(out3.str().c_str());
-	for (int J=j_start;  J<j_end;  J++)
-	{
-		for (int I=i_start;  I<i_end;  I++)
-		{
-			ip = J*nx + I;
-			if (ghostTagsP[ip] > 0)
-			{
-				inside << domInfo->xv[I]<<"\t";
-				inside << domInfo->yu[J]<<"\t";
-				inside << pressure[ip]<<"\n";
-			}
-			if (hybridTagsP[ip] > 0)
-			{
-				outside << domInfo->xv[I]<<"\t";
-				outside << domInfo->yu[J]<<"\t";
-				outside << pressure[ip]<<"\n";
-			}
-		}
-	}
-	for (int i=0; i<B.totalPoints;i++)
-	{
-		body << B.x[i] <<"\t";
-		body << B.y[i] <<"\n";
-	}
-	inside.close();
-	outside.close();
-	body.close();
-}
-
-
-
-void luoIBM::testInterpX()
-=======
 void luo_base::testInterpX()//flag split this into ghost node and hybrid node function
->>>>>>> new-master:src/solvers/NavierStokes/luo_base/testing.cu
 {
 	std::cout<<"Outputing for interpolation of the u values\n";
 	int iu;
@@ -162,8 +102,8 @@ void luo_base::testInterpX()//flag split this into ghost node and hybrid node fu
 		for (int I=i_start;  I<i_end;  I++)
 		{
 			iu = J*(nx-1) + I;
-			if (ghostTagsUV[iu] >0)//for inside
-			//if (hybridTagsUV[iu] >0)//for outside
+			//if (ghostTagsUV[iu] >0)//for inside
+			if (hybridTagsUV[iu] >0)//for outside
 			{
 				body_nodes << x1_ip[iu]<<"\t";
 				body_nodes << y1_ip[iu]<<"\t";
@@ -187,17 +127,6 @@ void luo_base::testInterpX()//flag split this into ghost node and hybrid node fu
 				body_nodes << q2[iu] <<"\t";
 				body_nodes << q3[iu] <<"\t";
 				body_nodes << q4[iu] <<"\t";
-<<<<<<< HEAD:src/solvers/NavierStokes/luoIBM/testing.inl
-<<<<<<< HEAD
-				//body_nodes << u[iu] <<"\t";//inside
-				body_nodes << ustar[iu] <<"\t";//outside
-				body_nodes << image_point_u[iu]<<"\n";
-=======
-				body_nodes << u[iu] <<"\t";//inside
-				//body_nodes << ustar[iu] <<"\t";//outside
-				body_nodes << ip_u[iu]<<"\n";
->>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
-=======
 				body_nodes << u[iu] <<"\t";//inside
 				//body_nodes << ustar[iu] <<"\t";//outside
 				body_nodes << image_point_u[iu]<<"\t";
@@ -205,7 +134,6 @@ void luo_base::testInterpX()//flag split this into ghost node and hybrid node fu
 				body_nodes << q2coef[iu] << "\t";
 				body_nodes << q3coef[iu] << "\t";
 				body_nodes << q4coef[iu] << "\n";
->>>>>>> new-master:src/solvers/NavierStokes/luo_base/testing.cu
 			}
 		}
 	}
@@ -372,12 +300,8 @@ void luo_base::testInterpP()
 				body_nodes << q2_p[ip] <<"\t";
 				body_nodes << q3_p[ip] <<"\t";
 				body_nodes << q4_p[ip] <<"\t";
-<<<<<<< HEAD
-				body_nodes << pressureStar[ip] <<"\t";//outside
-				//body_nodes << pressure[ip] <<"\t";//inside
-=======
-				body_nodes << pressure[ip] <<"\t";//outside
->>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
+				//body_nodes << pressureStar[ip] <<"\t";//outside
+				body_nodes << pressure[ip] <<"\t";//inside
 				body_nodes << a0[ip] <<"\t";
 				body_nodes << a1[ip] <<"\t";
 				body_nodes << a2[ip] <<"\t";

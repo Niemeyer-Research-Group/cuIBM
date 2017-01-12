@@ -38,12 +38,7 @@ M = dlmread('/scratch/src/cuIBM/validation/cylinder/Re40/interp_testX.csv','\t',
 X = zeros(1,7);
 Y = zeros(1,7);
 Z = zeros(1,7);
-<<<<<<< HEAD
-for i =1:length(M)
-%     close
-=======
 for i =10%:length(M)
->>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
     X(1) = M(i,5); %ghost node
     X(2) = M(i,7); %body intercept
     X(3) = M(i,11); %corner1
@@ -61,11 +56,7 @@ for i =10%:length(M)
     Y(7) = M(i,10);
     y1 = [M(i,2),M(i,4)];
     Z(1) = M(i,23);
-<<<<<<< HEAD
-    Z(2) = 0.0;
-=======
     Z(2) = 0;
->>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
     Z(3) = M(i,19);
     Z(4) = M(i,20);
     Z(5) = M(i,21);
@@ -79,19 +70,6 @@ for i =10%:length(M)
     scatter3(X(1),Y(1),Z(1),'ks') %ghost node
     scatter3(X(2),Y(2),Z(2),'ko') %body intercept
     scatter3(X(7),Y(7),Z(7),'kd') %image point
-<<<<<<< HEAD
-%     scatter3(X(7),Y(7),ip_u,'kx') %ml image point
-    plot3([X(3:4) X(6) X(5) X(3)], [Y(3:4) Y(6) Y(5) Y(3)], [Z(3:4) Z(6) Z(5) Z(3)],'kx-'); %interp corners
-%     plot3([X(2) X(7)], [Y(2) Y(7)], [Z(2),Z(7)],'--') %line between gn and cpp ip
-%     plot3([X(2) X(7)], [Y(2) Y(7)], [Z(2),ip_u],'-') %line between gn and ml ip
-end
-hold off
-axis square
-% legend('Ghost node', 'Body Intercept', 'Image Point','Matlab Image Point','cpp','ml')
-legend('GN','BI','IP','corner')
-% end
-%% ghost node velocity interpolation X 2d
-=======
     scatter3(X(7),Y(7),ip_u,'kx') %ml image point
     %plot3([X(3:4) X(6) X(5) X(3)], [Y(3:4) Y(6) Y(5) Y(3)], [Z(3:4) Z(6) Z(5) Z(3)],'kx-'); %interp corners
     plot3([X(1) X(7)], [Y(1) Y(7)], [Z(1),Z(7)],'--') %line between gn and cpp ip
@@ -102,7 +80,6 @@ axis square
 legend('Ghost node', 'Body Intercept', 'Image Point','Matlab Image Point')
 
 %% hybrid node velocity interpolation X 2d
->>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
 clc
 clear
 close all

@@ -67,25 +67,6 @@ void NavierStokesSolver::initialiseNoBody()
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	//ARRAYS
 	////////////////////////////////////////////////////////////////////////////////////////////////
-<<<<<<< HEAD
-	//Doubles, size uv, device
-	u.resize(numUV);
-	uhat.resize(numUV);
-	uold.resize(numUV);
-	N.resize(numUV);
-	Nold.resize(numUV);
-	L.resize(numUV);
-	Lnew.resize(numUV);
-	rhs1.resize(numUV);
-	bc1.resize(numUV);
-
-	//doubles, size np, device
-	pressure.resize(numP);
-	rhs2.resize(numP);
-	pressure_old.resize(numP);
-
-=======
->>>>>>> new-master
 	cusp::blas::fill(rhs2, 0);//flag
 	cusp::blas::fill(uhat, 0);//flag
 	cusp::blas::fill(Nold, 0);//flag
