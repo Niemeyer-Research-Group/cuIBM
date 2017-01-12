@@ -47,11 +47,6 @@ void fadlunModified::initialise()
 void fadlunModified::initialiseLHS()
 {
 	parameterDB  &db = *NavierStokesSolver::paramDB;
-	int nx = domInfo->nx,
-		ny = domInfo->ny,
-		numUV = (nx-1)*ny + (ny-1)*nx;
-	LHS1.resize(numUV, numUV, (nx-1)*ny*5 - 2*ny-2*(nx-1)       +        (ny-1)*nx*5 - 2*(ny-1) - 2*nx);
-	LHS2.resize(nx*ny, nx*ny, 5*nx*ny - 2*ny-2*nx); //flag this should have some zero terms in it because no nodes are being removing to account for the different stencil at the body
 	generateLHS1();
 	generateLHS2();
 	LHS1.sort_by_row_and_column();
@@ -68,13 +63,15 @@ void fadlunModified::initialiseLHS()
 void fadlunModified::writeData()
 {
 	logger.startTimer("output");
-
 	writeCommon();
+	logger.stopTimer("output");
+
 	calculateForce();
+
+	logger.startTimer("output");
 	if (NavierStokesSolver::timeStep == 0)
 		forceFile<<"timestep\tFx\tFxX\tFxY\tFxU\tFy\n";
-	forceFile << timeStep*dt << '\t' << B.forceX[0] << '\t'<<fxx<<"\t"<<fxy<<"\t"<<fxu<<"\t" << B.forceY[0] << std::endl;
-
+	forceFile << timeStep*dt << '\t' << B.forceX << '\t'<<fxx<<"\t"<<fxy<<"\t"<<fxu<<"\t" << B.forceY << std::endl;
 	logger.stopTimer("output");
 }
 
