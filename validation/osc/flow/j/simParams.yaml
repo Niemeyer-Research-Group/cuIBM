@@ -1,0 +1,23 @@
+- type: simulation
+  dt: 0.005
+  scaleCV: 2.0
+<<<<<<< HEAD:validation/osc/flow/simParams.yaml
+  nt: 800
+  nsave: 1000
+=======
+  nt: 2000
+  nsave: 3000
+>>>>>>> new-master:validation/osc/flow/j/simParams.yaml
+  startStep: 0
+  SolverType: OSC_CYLINDER
+  linearSolvers:
+    - system: velocity
+      solver: CG
+      preconditioner: DIAGONAL
+      tolerance: 1e-5
+      maxIterations: 10000
+    - system: Poisson
+      solver: CG
+      preconditioner: SMOOTHED_AGGREGATION
+      tolerance: 1e-5
+      maxIterations: 20000

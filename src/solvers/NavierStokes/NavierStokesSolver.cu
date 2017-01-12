@@ -43,13 +43,13 @@ void NavierStokesSolver::initialise()
  */
 void NavierStokesSolver::initialiseNoBody()
 {
-	printf("NS initalising\n");
-	int nx = domInfo->nx,
-		ny = domInfo->ny;
+	printf("Initalising...\n");
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+	//Resize and Cast
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+	NavierStokesSolver::cast();
 
-	int numUV = (nx-1)*ny + nx*(ny-1);
-	int numP  = nx*ny;
-
+	std::cout << "NavierStokesSolver: Arrays resized and cast!" << std::endl;
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	//COMMON STUFF
 	//////////////////////////////////////////////////////////////////////////////////////////////////
@@ -58,16 +58,16 @@ void NavierStokesSolver::initialiseNoBody()
 
 	// creates directory
 	std::string folder = (*paramDB)["inputs"]["caseFolder"].get<std::string>();
-	io::makeDirectory(folder);;
+	io::makeDirectory(folder);
 
 	// writes the grids information to a file
 	io::writeGrid(folder, *domInfo);
 
-	std::cout << "Initialised common stuff!" << std::endl;
-
+	std::cout << "NavierStokesSolver: Initialised common stuff!" << std::endl;
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	//ARRAYS
 	////////////////////////////////////////////////////////////////////////////////////////////////
+<<<<<<< HEAD
 	//Doubles, size uv, device
 	u.resize(numUV);
 	uhat.resize(numUV);
@@ -84,11 +84,13 @@ void NavierStokesSolver::initialiseNoBody()
 	rhs2.resize(numP);
 	pressure_old.resize(numP);
 
+=======
+>>>>>>> new-master
 	cusp::blas::fill(rhs2, 0);//flag
 	cusp::blas::fill(uhat, 0);//flag
 	cusp::blas::fill(Nold, 0);//flag
 	cusp::blas::fill(N, 0);//flag
-	std::cout<<"Initialised Arrays!" <<std::endl;
+	std::cout<<"NavierStokesSolver: Initialised Arrays!" <<std::endl;
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	//Initialise velocity arrays
@@ -107,18 +109,12 @@ void NavierStokesSolver::initialiseNoBody()
 	dim3 dimBlock(blocksize, 1);
 	dim3 dimGridV( int( (nx*(ny-1)-0.5)/blocksize ) +1, 1);
 
-	double *u_r		= thrust::raw_pointer_cast( &(u[0]) ),
-		   *xu_r	= thrust::raw_pointer_cast( &(domInfo->xu[0]) ),
-		   *xv_r	= thrust::raw_pointer_cast( &(domInfo->xv[0]) ),
-		   *yu_r	= thrust::raw_pointer_cast( &(domInfo->yu[0]) ),
-		   *yv_r	= thrust::raw_pointer_cast( &(domInfo->yv[0]) );
-
 	kernels::initialiseU<<<dimGridU,dimBlock>>>(u_r, xu_r, yu_r, uInitial, uPerturb, M_PI, xmax, xmin, ymax, ymin, nx, ny);
 	kernels::initialiseV<<<dimGridV,dimBlock>>>(u_r, xv_r, yv_r, vInitial, vPerturb, M_PI, xmax, xmin, ymax, ymin, nx, ny);
 
 	uhat=u;
 
-	std::cout<<"Initialised Velocities!" <<std::endl;
+	std::cout<<"NavierStokesSolver: Initialised Velocities!" <<std::endl;
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//Initialise boundary condition arrays
@@ -126,12 +122,6 @@ void NavierStokesSolver::initialiseNoBody()
 	boundaryCondition
 		**bcInfo
 		 = (*paramDB)["flow"]["boundaryConditions"].get<boundaryCondition **>();
-
-	//resize boundary arrays by the number of velocity points on boundaries (u and v points)
-	bc[XMINUS].resize(2*ny-1);
-	bc[XPLUS].resize(2*ny-1);
-	bc[YMINUS].resize(2*nx-1);
-	bc[YPLUS].resize(2*nx-1);
 
 	//Top and Bottom
 	for(int i=0; i<nx-1; i++)
@@ -155,11 +145,12 @@ void NavierStokesSolver::initialiseNoBody()
 	bc[XMINUS][ny-1] = bcInfo[XMINUS][0].value;
 	bc[XPLUS][ny-1]  = bcInfo[XPLUS][0].value;
 
-	std::cout << "Initialised boundary conditions!" << std::endl;
+	std::cout << "NavierStokesSolver: Initialised boundary conditions!" << std::endl;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	//OUTPUT
 	////////////////////////////////////////////////////////////////////////////////////////////////
+	cfl_max = 0;
 	std::stringstream outiter;
 	outiter << folder << "/iterations";
 	iterationsFile.open(outiter.str().c_str());
@@ -178,9 +169,11 @@ void NavierStokesSolver::initialiseLHS()
 	LHS2.resize(nx*ny, nx*ny, 5*nx*ny - 2*ny-2*nx);
 	generateLHS1();
 	generateLHS2();
+	std::cout << "NavierStokesSolver: Initialised LHS!" << std::endl;
 
-	PC.generate(LHS1,LHS2, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>(), (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
-	std::cout << "Assembled LHS matrices!" << std::endl;
+	PC.generate1(LHS1, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>());
+	PC.generate2(LHS2, (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
+	std::cout << "NavierStokesSolver: Initialised Preconditioners!" << std::endl;
 }
 
 //##############################################################################
@@ -194,26 +187,25 @@ void NavierStokesSolver::stepTime()
 {
 	//1: Solve for intermediate velocity
 	generateRHS1();
-	//arrayprint(rhs1,"rhs1","x");
 	solveIntermediateVelocity();
-	//arrayprint(uhat,"uhat","x");
-	//arrayprint(uhat,"vhat","y");
 
 	//2: Solve for pressure correction
 	generateRHS2();
-	//arrayprint(rhs2,"rhs2","p");
 	solvePoisson();
-	//arrayprint(pressure,"pressure","p");
 
 	//3: Project velocity
 	velocityProjection();
-	//arrayprint(u,"u","x");
-	//arrayprint(u,"v","y");
 
 	//4: update time
 	timeStep++;
-	if (timeStep%(*paramDB)["simulation"]["nsave"].get<int>() == 0)
+	CFL();
+	if (timeStep%(*paramDB)["simulation"]["nt"].get<int>() == 0)
 	{
+		std::cout<<"Maximun CFL: " << cfl_max << std::endl;
+		std::cout<<"Expected CFL: " << (*paramDB)["simulation"]["dt"].get<double>()*bc[XMINUS][0]/domInfo->mid_h << std::endl;
+		std::cout<<"CFL I: " << cfl_I << std::endl;
+		std::cout<<"CFL J: " << cfl_J << std::endl;
+		std::cout<<"CFL ts: " << cfl_ts << std::endl;
 	}
 	//std::cout<<"Timestep: "<<timeStep<<"\n";
 }
@@ -251,7 +243,7 @@ NavierStokesSolver::NavierStokesSolver(parameterDB *pDB, domain *dInfo)
 
 void NavierStokesSolver::solveIntermediateVelocity()
 {
-	logger.startTimer("solveIntermediateVel");
+	logger.startTimer("Intermediate Velocity Solve");
 	int  maxIters = (*paramDB)["velocitySolve"]["maxIterations"].get<int>();
 	double relTol = (*paramDB)["velocitySolve"]["tolerance"].get<double>();
 
@@ -267,10 +259,11 @@ void NavierStokesSolver::solveIntermediateVelocity()
 		std::cout << "Iterations   : " << iterationCount1 << std::endl;
 		std::cout << "Residual norm: " << sys1Mon.residual_norm() << std::endl;
 		std::cout << "Tolerance    : " << sys1Mon.tolerance() << std::endl;
+		crash();
 		std::exit(-1);
 	}
 
-	logger.stopTimer("solveIntermediateVel");
+	logger.stopTimer("Intermediate Velocity Solve");
 }
 
 /**
@@ -279,7 +272,7 @@ void NavierStokesSolver::solveIntermediateVelocity()
 
 void NavierStokesSolver::solvePoisson()
 {
-	logger.startTimer("solvePoisson");
+	logger.startTimer("Poisson Solve");
 
 	int  maxIters = (*paramDB)["PoissonSolve"]["maxIterations"].get<int>();
 	double relTol   = (*paramDB)["PoissonSolve"]["tolerance"].get<double>();
@@ -294,10 +287,11 @@ void NavierStokesSolver::solvePoisson()
 		std::cout << "Iterations   : " << iterationCount2 << std::endl;
 		std::cout << "Residual norm: " << sys2Mon.residual_norm() << std::endl;
 		std::cout << "Tolerance    : " << sys2Mon.tolerance() << std::endl;
+		crash();
 		std::exit(-1);
 	}
 
-	logger.stopTimer("solvePoisson");
+	logger.stopTimer("Poisson Solve");
 }
 
 //##############################################################################
@@ -310,13 +304,15 @@ void NavierStokesSolver::solvePoisson()
  * param type type of array, p, x, y
  */
 
+void NavierStokesSolver::crash()
+{
+}
+
 void NavierStokesSolver::arrayprint(cusp::array1d<double, cusp::device_memory> value, std::string name, std::string type, int time)
 {
 	if (timeStep != time && time > 0) //set time to a negative number to always print
 		return;
 	logger.startTimer("output");
-	int nx = domInfo->nx;
-	int ny = domInfo->ny;
 
 	int x_length = nx;
 	int y_length = ny;
@@ -436,8 +432,3 @@ void NavierStokesSolver::shutDown()
 	io::printTimingInfo(logger);
 	iterationsFile.close();
 }
-
-// include inline files
-#include "NavierStokes/intermediateVelocity.inl"
-#include "NavierStokes/intermediatePressure.inl"
-#include "NavierStokes/projectVelocity.inl"

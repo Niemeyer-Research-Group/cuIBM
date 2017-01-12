@@ -7,6 +7,7 @@
 
 #include "fadlunModified.h"
 #include <sys/stat.h>
+#include <solvers/NavierStokes/FadlunModified/kernels/projectVelocity.h>
 
 /**
  * \brief Constructor. Copies the database and information about the computational grid.
@@ -25,6 +26,7 @@ fadlunModified::fadlunModified(parameterDB *pDB, domain *dInfo)
  */
 void fadlunModified::initialise()
 {
+<<<<<<< HEAD
 
 	NavierStokesSolver::initialiseNoBody();
 	NavierStokesSolver::logger.startTimer("initialise");
@@ -56,34 +58,21 @@ void fadlunModified::initialise()
 
 	cusp::blas::fill(tagsOld,-1);
 	cusp::blas::fill(tagsPOld,-1);
+=======
+	luo_base::initialise();
+	logger.startTimer("initialise");
+>>>>>>> new-master
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	//Initialize Bodies
+	//cast
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	B.initialise((*paramDB), *domInfo);
-	std::cout << "Initialised bodies!" << std::endl;
-
-	/////////////////////////////////////////////////////////////////////////////////////////////////
-	//TAG POINTS
-	/////////////////////////////////////////////////////////////////////////////////////////////////
-	tagPoints();
-	std::cout << "Tagged points!" << std::endl;
+	fadlunModified::cast();
+	std::cout << "fadlun arrays resized and cast!" << std::endl;
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	//LHS
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	initialiseLHS();
-
-	/////////////////////////////////////////////////////////////////////////////////////////////////
-	//OUTPUT
-	/////////////////////////////////////////////////////////////////////////////////////////////////
-	parameterDB  &db = *NavierStokesSolver::paramDB;
-	std::string folder = db["inputs"]["caseFolder"].get<std::string>();
-	std::stringstream out;
-	out << folder << "/forces";
-	forceFile.open(out.str().c_str());
-
-	logger.stopTimer("initialise");
 }
 
 /*
@@ -99,21 +88,19 @@ void fadlunModified::initialiseLHS()
 	LHS2.resize(nx*ny, nx*ny, 5*nx*ny - 2*ny-2*nx); //flag this should have some zero terms in it because no nodes are being removing to account for the different stencil at the body
 	generateLHS1();
 	generateLHS2();
+	LHS1.sort_by_row_and_column();
+	LHS2.sort_by_row_and_column();
 
-	NavierStokesSolver::PC.generate(NavierStokesSolver::LHS1,NavierStokesSolver::LHS2, db["velocitySolve"]["preconditioner"].get<preconditionerType>(), db["PoissonSolve"]["preconditioner"].get<preconditionerType>());
+	NavierStokesSolver::PC.generate1(NavierStokesSolver::LHS1, db["velocitySolve"]["preconditioner"].get<preconditionerType>());
+	NavierStokesSolver::PC.generate2(NavierStokesSolver::LHS2, db["PoissonSolve"]["preconditioner"].get<preconditionerType>());
 	std::cout << "Assembled FADLUN LHS matrices!" << std::endl;
 }
-
 
 /**
  * \brief Writes data into files.
  */
 void fadlunModified::writeData()
 {
-
-	parameterDB  &db = *NavierStokesSolver::paramDB;
-	double dt  = db["simulation"]["dt"].get<double>();
-
 	logger.startTimer("output");
 
 	writeCommon();
@@ -143,18 +130,36 @@ void fadlunModified::writeCommon()
 	}
 }
 
-void fadlunModified::stepTime()
+void fadlunModified::_intermediate_velocity()
 {
 	generateRHS1();
 	solveIntermediateVelocity();
+<<<<<<< HEAD
+=======
+}
+>>>>>>> new-master
 
+void fadlunModified::_pressure()
+{
 	generateRHS2();
 	solvePoisson();
+}
 
-	velocityProjection();
+void fadlunModified::_project_velocity()
+{
+	logger.startTimer("Velocity Projection");
 
-	//std::cout<<timeStep<<std::endl;
-	timeStep++;
+	const int blocksize = 256;
+
+	dim3 dimGridU( int( ((nx-1)*ny-0.5)/blocksize ) +1, 1);
+	dim3 dimBlockU(blocksize, 1);
+	dim3 dimGridV( int( (nx*(ny-1)-0.5)/blocksize ) +1, 1);
+	dim3 dimBlockV(blocksize, 1);
+
+	kernels::project_velocity_X<<<dimGridU,dimBlockU>>>(u_r, uhat_r, uold_r, pressure_r, ghostTagsP_r, dx_r, dt, nx, ny);
+	kernels::project_velocity_Y<<<dimGridV,dimBlockV>>>(u_r, uhat_r, uold_r, pressure_r, ghostTagsP_r, dy_r, dt, nx, ny);
+
+	logger.stopTimer("Velocity Projection");
 }
 
 /**
@@ -165,10 +170,3 @@ void fadlunModified::shutDown()
 	NavierStokesSolver::shutDown();
 	forceFile.close();
 }
-
-#include "FadlunModified/intermediateVelocity.inl"
-#include "FadlunModified/intermediatePressure.inl"
-#include "FadlunModified/projectVelocity.inl"
-#include "FadlunModified/tagpoints.inl"
-#include "FadlunModified/calculateForce.inl"
-#include "FadlunModified/checkTags.inl"

@@ -29,8 +29,8 @@ protected:
 		u,			///< velocity vector (u_l and u_l+1, depending on where)
 		uhat,		///< intermediate velocity vector
 		uold,		///< old velocity vector (u_l-1)
-		pressure,			///< pressure vector (p_l+1)
-		pressure_old,		///< old pressure vector (p_l)
+		pressure,	///< pressure vector (p_l+1)
+		pressure_old,	///< old pressure vector (p_l)
 		Nold,		///< convection term for N(uold)
 		N,			///< convection term for N(u)
 		L,			///< Laplacian of u
@@ -39,6 +39,11 @@ protected:
 		rhs1,		///< -G*p -1.5N(u) + 0.5 N(uold) + 0.5 L(u)
 		rhs2,		///< rhs for the intermediate pressure
 		bc[4];		///< array that contains the boundary conditions of the rectangular
+
+	cusp::array1d<double, cusp::device_memory> //substep variables.
+		uk,
+		uhatk,//flag not needed?
+		pressurek;
 
 	size_t
 		timeStep,			///< time iteration number
@@ -62,6 +67,61 @@ protected:
 	
 	std::ofstream iterationsFile;	///< file that contains the number of iterations
 	
+	double	*u_r,
+			*uhat_r,
+			*uold_r,
+			*pressure_r,
+			*pressure_old_r,
+			*Nold_r,
+			*N_r,
+			*L_r,
+			*Lnew_r,
+			*bc1_r,
+			*rhs1_r,
+			*rhs2_r,
+			*xp_r,
+			*xm_r,
+			*yp_r,
+			*ym_r,
+			*x_r,
+			*y_r,
+			*dx_r,
+			*dy_r,
+			*xu_r,
+			*xv_r,
+			*yu_r,
+			*yv_r,
+			*LHS1_val_r,
+			*LHS2_val_r;
+
+	double	*uk_r,
+			*uhatk_r,
+			*pressurek_r;
+
+	int 	*LHS1_row_r,
+			*LHS1_col_r,
+			*LHS2_row_r,
+			*LHS2_col_r;
+
+	double	nu,
+			dt;
+
+	int		nx,
+			ny,
+			numU,
+			numV,
+			numUV,
+			numP;
+
+	cusp::array1d<double, cusp::device_memory> cfl,
+												distance;
+	double	cfl_max,
+			cfl_I,
+			cfl_J,
+			cfl_ts;
+	double 	*cfl_r,
+			*distance_r;
+
 	//////////////////////////
 	//NavierStokesSolver.cu
 	//////////////////////////
@@ -72,12 +132,17 @@ protected:
 	void printLHS();
 
 	//////////////////////////
-	//intermediateVelocity.inl
+	//intermediateVelocity.cu
 	//////////////////////////
 	void generateN();
 	void generateL();
 	void generateBC1();
 
+	//////////////////////////
+	//CFL
+	//////////////////////////
+	void CFL();
+	void calcDistance();
 public:
 	// constructor -- copy the database and information about the computational grid
 	NavierStokesSolver(parameterDB *pDB=NULL, domain *dInfo=NULL);
@@ -92,25 +157,30 @@ public:
 	virtual void writeData();
 	bool finished();
 	virtual void shutDown();
+	virtual void crash();
 
 	//////////////////////////
-	//intermediatepressure.inl
+	//intermediatepressure.cu
 	//////////////////////////
 	virtual void generateRHS2();
 	virtual void generateLHS2();
 
 	//////////////////////////
-	//intermediateVelocity.inl
+	//intermediateVelocity.cu
 	//////////////////////////
 	virtual void generateRHS1();
 	virtual void generateLHS1();
 
 	//////////////////////////
-	//projectVelocity.inl
+	//projectVelocity.cu
 	//////////////////////////
 	virtual void velocityProjection();
-
 	
+	//////////////////////////
+	//cast.cu
+	//////////////////////////
+	virtual void cast();
+
 	std::string name()
 	{
 		return "Navier-Stokes";

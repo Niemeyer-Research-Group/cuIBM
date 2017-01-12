@@ -123,8 +123,7 @@ void Nbcx(double *N, double *u, double *dx, double *dy, double *ym, double *yp, 
 				   u[i+nx-1] * dy[J]/(dy[J]*(dy[J+1]+dy[J]))//North
 				 + u[i-nx+1] * (dy[J-1]/(dy[J]*(dy[J]+dy[J-1])) -1/dy[J])//South
 				 + u[i]      * (-dy[J]/(dy[J]*(dy[J+1]+dy[J])) - (dy[J-1]/(dy[J]*(dy[J]+dy[J-1])) -1/dy[J]))//more center
-				);//flag why is this = instead of +=
-
+				);
 	N[i] = temp;
 }
 

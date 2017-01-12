@@ -25,35 +25,23 @@ luoIBM::luoIBM(parameterDB *pDB, domain *dInfo)
  */
 void luoIBM::initialise()
 {
+<<<<<<< HEAD
 
 	NavierStokesSolver::initialiseNoBody();
 	NavierStokesSolver::logger.startTimer("initialise");
 	int nx = NavierStokesSolver::domInfo->nx,
 		ny = NavierStokesSolver::domInfo->ny;
+=======
+	luo_base::initialise();
+	logger.startTimer("initialise");
+>>>>>>> new-master
 
-	int numUV = (nx-1)*ny + nx*(ny-1);
-	int numP  = nx*ny;
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	//ARRAYS
+	//Cast Luo
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	pressureStar.resize(numP);
-	ustar.resize(numUV);
-	ghostTagsUV.resize(numUV);
-	hybridTagsUV.resize(numUV);
-	hybridTagsUV2.resize(numUV);
-	body_intercept_x.resize(numUV);
-	body_intercept_y.resize(numUV);
-	image_point_x.resize(numUV);
-	image_point_y.resize(numUV);
-	body_intercept_p_x.resize(numP);
-	body_intercept_p_y.resize(numP);
-	body_intercept_p.resize(numP);
-	image_point_p_x.resize(numP);
-	image_point_p_y.resize(numP);
-	distance_from_intersection_to_node.resize(numUV);
-	distance_between_nodes_at_IB.resize(numUV);
-	uv.resize(numUV);
+	luoIBM::cast();
 
+<<<<<<< HEAD
 	//testing
 	x1_ip.resize(numUV);
 	x2_ip.resize(numUV);
@@ -148,27 +136,21 @@ void luoIBM::initialise()
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	tagPoints();
 	std::cout << "Tagged points!" << std::endl;
+=======
+	std::cout << "luoIBM: resized and cast!" << std::endl;
+>>>>>>> new-master
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	//Initialize Velocity
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	zeroVelocity();//sets the velocity inside the body to 0
-	std::cout << "Inside velocity set to body velocity!" << std::endl;
+	std::cout << "luoIBM: Inside velocity set to body velocity!" << std::endl;
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	//LHS
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	initialiseLHS();
-	std::cout << "LHS Initialised!" << std::endl;
-
-	/////////////////////////////////////////////////////////////////////////////////////////////////
-	//OUTPUT
-	/////////////////////////////////////////////////////////////////////////////////////////////////
-	parameterDB  &db = *NavierStokesSolver::paramDB;
-	std::string folder = db["inputs"]["caseFolder"].get<std::string>();
-	std::stringstream out;
-	out << folder << "/forces";
-	forceFile.open(out.str().c_str());
+	std::cout << "luoIBM: LHS Initialised!" << std::endl;
 
 	logger.stopTimer("initialise");
 }
@@ -178,17 +160,25 @@ void luoIBM::initialise()
  */
 void luoIBM::initialiseLHS()
 {
+<<<<<<< HEAD
 	parameterDB  &db = *NavierStokesSolver::paramDB;
 	int nx = domInfo->nx,
 		ny = domInfo->ny,
 		numUV = (nx-1)*ny + (ny-1)*nx;
 	LHS1.resize(numUV, numUV, (nx-1)*ny*5 - 2*ny-2*(nx-1)       +        (ny-1)*nx*5 - 2*(ny-1) - 2*nx);
 	//LHS2.resize(nx*ny, nx*ny, 5*nx*ny - 2*ny-2*nx + nx*ny*3); //flag
+=======
+>>>>>>> new-master
 	generateLHS1();
 	//generateLHS2();
 
+<<<<<<< HEAD
 	//NavierStokesSolver::PC.generate(NavierStokesSolver::LHS1,NavierStokesSolver::LHS2, db["velocitySolve"]["preconditioner"].get<preconditionerType>(), db["PoissonSolve"]["preconditioner"].get<preconditionerType>());
 	std::cout << "Assembled LUO LHS matrices!" << std::endl;
+=======
+	PC.generate1(LHS1, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>());
+	PC.generate2(LHS2, (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
+>>>>>>> new-master
 }
 
 /**
@@ -196,20 +186,13 @@ void luoIBM::initialiseLHS()
  */
 void luoIBM::writeData()
 {
-	parameterDB  &db = *NavierStokesSolver::paramDB;
-	double dt  = db["simulation"]["dt"].get<double>();
-
 	logger.startTimer("output");
 	writeCommon();
 	logger.stopTimer("output");
 
-	logger.startTimer("calculateForce");
-	calculateForce();
-	//luoForce();
-	logger.stopTimer("calculateForce");
-
 	logger.startTimer("output");
 	if (NavierStokesSolver::timeStep == 1)
+<<<<<<< HEAD
 <<<<<<< HEAD
 		forceFile<<"timestep\told\tPressure\tdudn\tnew\n";
 	forceFile << timeStep*dt << '\t' << B.forceX << '\t'<<fxx<<"\t"<<fxy<<"\t"<<fxu<<"\t" << B.forceY << std::endl;
@@ -218,6 +201,10 @@ void luoIBM::writeData()
 	forceFile << timeStep*dt << '\t' << B.forceX[0] << '\t'<<fxx<<"\t"<<fxy<<"\t"<<fxu<<"\t" << B.forceY[0] << std::endl;
 
 >>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
+=======
+		forceFile<<"timestep\tFx\tFy\n";
+	forceFile << timeStep*dt << '\t' << B.forceX << '\t'<< B.forceY << std::endl;
+>>>>>>> new-master
 	logger.stopTimer("output");
 }
 
@@ -227,6 +214,7 @@ void luoIBM::writeData()
  */
 void luoIBM::writeCommon()
 {
+<<<<<<< HEAD
 	NavierStokesSolver::writeCommon();
 	parameterDB  &db = *NavierStokesSolver::paramDB;
 	int nsave = db["simulation"]["nsave"].get<int>();
@@ -237,20 +225,26 @@ void luoIBM::writeCommon()
 	{
 		B.writeToFile(folder, NavierStokesSolver::timeStep);
 	}
+=======
+	luo_base::writeCommon();
+>>>>>>> new-master
 }
 
-/**
- * \brief Calculates the variables at the next time step.
- */
-void luoIBM::stepTime()
+void luoIBM::_intermediate_velocity()
 {
 	generateRHS1();
 	solveIntermediateVelocity();
 	weightUhat();
+<<<<<<< HEAD
 
 	preRHS2();
 	sizeLHS2();
 	generateLHS2();
+=======
+}
+void luoIBM::_pressure()
+{
+>>>>>>> new-master
 	generateRHS2();
 	LHS2.sort_by_row_and_column();
 	//print(LHS2);
@@ -258,6 +252,7 @@ void luoIBM::stepTime()
 	PC.generate(LHS1,LHS2, (*paramDB)["velocitySolve"]["preconditioner"].get<preconditionerType>(), (*paramDB)["PoissonSolve"]["preconditioner"].get<preconditionerType>());
 
 	solvePoisson();
+<<<<<<< HEAD
 
 	interpPGN();
 	velocityProjection();
@@ -280,6 +275,9 @@ void luoIBM::stepTime()
 		divergence();
 >>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
 	}
+=======
+	weightPressure();
+>>>>>>> new-master
 }
 
 /**
@@ -287,13 +285,5 @@ void luoIBM::stepTime()
  */
 void luoIBM::shutDown()
 {
-	NavierStokesSolver::shutDown();
-	forceFile.close();
+	luo_base::shutDown();
 }
-
-#include "luoIBM/intermediateVelocity.inl"
-#include "luoIBM/intermediatePressure.inl"
-#include "luoIBM/projectVelocity.inl"
-#include "luoIBM/tagpoints.inl"
-#include "luoIBM/calculateForce.inl"
-#include "luoIBM/testing.inl"

@@ -50,10 +50,15 @@ class body
          pitchOscillation[3]; ///< amplitude, angular frequency and phase difference of pitch oscillation
 
 	double	xCoefficient, ///< used in oscillating cylinder movement
+			yCoefficient,
 			uCoefficient,
-			frequency,
+			vCoefficient,
+			xfrequency,
+			yfrequency,
 			xPhase,
-			uPhase;
+			yPhase,
+			uPhase,
+			vPhase;
 	// Note that the angular amplitude & phase difference are stored in radians, and angular frequncy is radians/time
 	// But the inputs in bodies.yaml are provided in degrees, and degrees/time.
     

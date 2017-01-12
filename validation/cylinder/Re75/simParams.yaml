@@ -2,8 +2,13 @@
   dt: 0.005
   scaleCV: 5.0
   nt: 1000
+<<<<<<< HEAD
   nsave: 1000
   SolverType: FADLUN
+=======
+  nsave: 10000
+  SolverType: LUO
+>>>>>>> new-master
   linearSolvers:
     - system: velocity
       solver: CG

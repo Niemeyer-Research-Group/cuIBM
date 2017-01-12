@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+# This script runs and plots verticle and horizontal centerline velocity validations for a lid driven cavity flow
 import argparse
 import numpy as np
 

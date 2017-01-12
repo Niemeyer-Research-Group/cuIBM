@@ -2,7 +2,7 @@
   dt: 0.005
 <<<<<<< HEAD
   nt: 1000
-  nsave: 1000
+  nsave: 2000
   SolverType: LUO
   scaleCV: 2.0
 =======

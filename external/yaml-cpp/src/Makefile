@@ -1,7 +1,7 @@
 .PHONY: lib
 .SUFFIXES: .cpp
 
-CC = /usr/local/apps/cuda/cuda-7.0.28/bin/nvcc ${OSXOPTS}
+CC = /usr/local/cuda-7.5/bin/nvcc ${OSXOPTS}
 OPTS = -arch=compute_20 -O3 -I../include
 
 SRC=$(wildcard *.cpp)

@@ -7,12 +7,13 @@
 
 #pragma once
 
-#include "NavierStokesSolver.h"
+#include "luo_base.h"
 
 
-class luoIBM : public NavierStokesSolver
+class luoIBM : public luo_base
 {
 protected:
+<<<<<<< HEAD
 	cusp::array1d<int, cusp::device_memory> //names are changed to keep consistency with the luo paper, tags the same points as modifiedFadlun
 		ghostTagsUV,		///< velocity nodes just inside the boundary  (tagsIn)
 		ghostTagsP,			///< pressure nodes just inside the boundary  (tagsP)
@@ -136,17 +137,19 @@ protected:
 	void calculateForce();
 	void luoForce();
 
+=======
+>>>>>>> new-master
 	//////////////////////////
-	//intermediateVelocity.inl
+	//intermediateVelocity
 	//////////////////////////
-	void updateRobinBoundary();
 	void weightUhat();
 	void preRHS1Interpolation();
 	void zeroVelocity();
 
 	//////////////////////////
-	//intermediatePressure.inl
+	//intermediatePressure
 	//////////////////////////
+<<<<<<< HEAD
 	void preRHS2();
 	void interpPGN();
 	void sizeLHS2();
@@ -163,46 +166,46 @@ protected:
 
 	//////////////////////////
 	//testing.inl
-	//////////////////////////
-	void divergence();
-	void testInterpX(); //x
-	void testInterpY(); //y
-	void testInterpP(); //for pressure
-	void testOutputX(); //for tagpoipnts
-	void testOutputY(); //for tagpoints
-	void testForce_p();
-	void testForce_dudn();
+=======
+	void preRHS2Interpolation();
+	void weightPressure();
 
+	//////////////////////////
+	//testing
+>>>>>>> new-master
+	//////////////////////////
 
 public:
 	//constructor -- copy the database and information about the computational grid
 	luoIBM(parameterDB *pDB=NULL, domain *dInfo=NULL);
 
 	//////////////////////////
-	//luoIBM.cu
+	//luoIBM
 	//////////////////////////
 	virtual void initialise();
 	virtual void initialiseLHS();
 	virtual void writeData();
 	virtual void writeCommon();
-	void outputPressure();
-	virtual void stepTime();
+	virtual void _intermediate_velocity();
+	virtual void _pressure();
 	virtual void shutDown();
 
 	//////////////////////////
-	//intermediatePressure.inl
+	//intermediatePressure
 	//////////////////////////
 	virtual void generateRHS2();
 	virtual void generateLHS2();
 
 	//////////////////////////
-	//intermediateVelocity.inl
+	//intermediateVelocity
 	//////////////////////////
 	virtual void generateRHS1();
+<<<<<<< HEAD
+=======
+	void rhs1GNInterpolation();
+	void rhs1HNInterpolation();
+>>>>>>> new-master
 	virtual void generateLHS1();
 
-	//////////////////////////
-	//projectVelocity.inl
-	//////////////////////////
-	virtual void velocityProjection();
+	virtual void cast();
 };

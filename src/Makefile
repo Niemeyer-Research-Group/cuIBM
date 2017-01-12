@@ -4,8 +4,7 @@
 
 
 # compiler: nvcc is NVIDIA's CUDA compiler
-#CC = /usr/local/apps/cuda/cuda-7.0.28/bin/nvcc $(OSXOPTS)
-CC = /usr/local/apps/cuda/cuda-7.5.18/bin/nvcc $(OSXOPTS)
+CC = /usr/local/cuda-7.5/bin/nvcc $(OSXOPTS)
 
 # compiler options
 # -O3: optimization flag
@@ -107,27 +106,106 @@ cleanall: clean cleanexternal cleandoc
 ################################################################################
 
 # commands to run cuIBM simulations
+test:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/cylinder/test
+############################
+#OSC CLYINDER IN NO FLOW
+############################
 oscStatic:
 	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/static
-
-oscflow:
-	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow
 	
-oscflowab:
-	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/ab
+oscStaticExternal10:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/static/externalkc10
 
-oscflowcd:
-	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/cd
-	
-oscflowef:
-	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/ef
-	
-oscflowgh:
-	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/gh
+oscStaticEmbedded10:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/static/embeddedkc10
+############################
+#OSC CYLINDER WITH FLOW
+############################
+oscflowa:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow/a
 
+oscflowb:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow/b
+	
+oscflowc:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow/c
+	
+oscflowd:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow/d
+	
+oscflowe:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow/e
+	
+oscflowf:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow/f
+	
+oscflowg:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow/g
+	
+oscflowh:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow/h
+	
+oscflowi:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow/i
+	
+oscflowj:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow/j
+	
+oscflowk:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow/k
+	
+oscflowl:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow/l
+	
+oscflowm:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow/m
+	
+oscflown:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow/n
+
+oscflowo:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow/o
+	
+oscflowp:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow/p
+
+oscflowq:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow/q
+	
+oscflowr:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow/r
+
+oscflows:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow/s
+	
+oscflowt:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/flow/t
+############################
+############################
+#VIV
+############################
 vivUred3:
-	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/viv/Ured3
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/VIV/Ured3
+	
+vivUred4:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/VIV/Ured4
+	
+vivUred5:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/VIV/Ured5
+	
+vivUred6:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/VIV/Ured6
+	
+vivUred7:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/VIV/Ured7
+	
+vivUred8:
+	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/osc/VIV/Ured8
 
+############################
+#CYLINDER
+############################
 cylinderRe40:
 	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/cylinder/Re40
 	
@@ -151,6 +229,10 @@ cylinderRe550:
 	
 cylinderRe3000:
 	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/cylinder/Re3000
+	
+############################
+#LID DRIVEN CAVITY
+############################
 
 lidDrivenCavityRe100:
 	$(PROJ_ROOT)/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/lidDrivenCavity/Re100

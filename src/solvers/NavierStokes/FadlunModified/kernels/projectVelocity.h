@@ -14,8 +14,8 @@
 namespace kernels
 {
 __global__
-void project_velocity_X(double *u, double *uhat, double *uold, double *pressure, int *tagsP, int *tagsIn, double *dx, double dt, int nx, int ny);
+void project_velocity_X(double *u, double *uhat, double *uold, double *pressure, int *ghostTagsP, double *dx, double dt, int nx, int ny);
 
 __global__
-void project_velocity_Y(double *u, double *uhat, double *uold, double *pressure, int *tagsP, int *tagsIn, double *dy, double dt, int nx, int ny);
+void project_velocity_Y(double *u, double *uhat, double *uold, double *pressure, int *ghostTagsP, double *dy, double dt, int nx, int ny);
 }

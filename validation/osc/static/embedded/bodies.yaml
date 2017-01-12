@@ -1,0 +1,8 @@
+- type: circle
+  initialOffset: [0.0, 0.0]
+  circleOptions: [0.0, 0.0, 0.1, 158, true, 0.005]
+  xCoefficient: -0.1591549431 #(1/2pi)
+  xPhase: 0 #0 = sin, -90 = cos
+  uCoefficient: -1
+  uPhase: 0 #0=cos, 90 = sin
+  xfrequency: 1

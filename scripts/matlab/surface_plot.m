@@ -1,6 +1,7 @@
 %plot pressure
 clc
 clear
+<<<<<<< HEAD
 close all
 <<<<<<< HEAD
 % figure
@@ -14,6 +15,23 @@ view = 'out';
 % caseFolder = '/scratch/src/cuIBM/validation/luo/test/output/'
 caseFolder = '/scratch/src/cuIBM/validation/cylinder/Re40/output/';
 % caseFolder = '/scratch/src/cuIBM/validation/osc/flow/output/';
+=======
+% close all
+figure
+%change these
+number = '275'; 
+type = 'v'; %p or u
+suffix = 'hat'; %u: 0, star, hat, hatfinal, empty. p: 0, star, empty
+view = 'out'; 
+
+%load data
+% caseFolder = '/scratch/src/cuIBM/validation/luo/test/output/'
+% caseFolder = '/scratch/src/cuIBM/validation/cylinder/Re40/output/';
+% caseFolder = '/scratch/src/cuIBM/validation/osc/gh/output/';
+% caseFolder = '/scratch/src/cuIBM/validation/osc/static/output/';
+caseFolder = '/scratch/src/cuIBM/validation/osc/VIV/Ured4/output/';
+% caseFolder = '/scratch/src/cuIBM/validation/error/cylinder/fadlun3/output/';
+>>>>>>> new-master
 path = strcat(caseFolder,number,type,suffix,'.csv');
 ghostpath = strcat(caseFolder,number,'ghost',type,'.csv');
 delim = '\t';
@@ -22,14 +40,14 @@ test = u;
 N = dlmread(ghostpath,delim,1,0);
 
 % manipulate inside/outside
-for i =1:length(u(:,1))
-    for j = 1:length(u(1,:))
+for i =1:length(u(:,1))-1
+    for j = 1:length(u(1,:))-1
         if strcmp(view,'out')
             if N(i,j)~=-1
                 u(i,j) = nan;
             end
         elseif strcmp(view,'in')
-            if N(i,j)==-1
+            if N(i,j)==0
                 u(i,j) = nan;
             end
         end
@@ -38,9 +56,16 @@ end
 %plot area round body
 midy = round(length(u(:,1))/2);
 midx = round(length(u(1,:))/2);
+<<<<<<< HEAD
 % surf(M((midy-50):(midy+50),(midx-50):(midx+50)))
 % surf(u(60:100,1:127)), hold on
 surf(u);
+=======
+% surf(u((midy-50):(midy+50),(midx-50):(midx+50)))
+% surf(u(60:100,1:127)), hold on
+surf(u((midy-50):(midy+50),(midx-150):(midx)))
+% surf(u)
+>>>>>>> new-master
 title(strcat(type,suffix))
 xlabel('x')
 ylabel('y')

@@ -59,6 +59,6 @@ void initialiseV(double *u, double *xv, double *yv, double vInitial, double vPer
 			j = idx/nx;
 	idx +=  (nx-1)*ny;
 
-	u[idx] = vInitial + vPerturb * cos(0.5*pi*(2*yv[i]-ymax-ymin)/(ymax-ymin)) * sin( pi * (2*xv[j]-xmax-xmin)/(xmax-xmin));
+	u[idx] = vInitial + vPerturb * cos(0.5*pi*(2*yv[j]-ymax-ymin)/(ymax-ymin)) * sin( pi * (2*xv[i]-xmax-xmin)/(xmax-xmin));
 }
 }

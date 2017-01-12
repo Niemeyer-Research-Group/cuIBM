@@ -97,7 +97,9 @@ preconditioner<Matrix>::preconditioner(const Matrix &A, preconditionerType _type
 		LO = new cusp::precond::diagonal<ValueType, MemorySpace>(A);
 	else
 	if (type == SMOOTHED_AGGREGATION)
+	{
 		LO = new cusp::precond::aggregation::smoothed_aggregation<IndexType, ValueType, MemorySpace>(A);
+	}
 	else
 	if (type == AINV)
 		LO = new cusp::precond::nonsym_bridson_ainv<ValueType, MemorySpace>(A);
@@ -136,7 +138,9 @@ void preconditioner<Matrix>::update(const Matrix &A)
 		*LO = cusp::precond::diagonal<ValueType, MemorySpace>(A);
 	else
 	if (type == SMOOTHED_AGGREGATION)
+	{
 		*LO = cusp::precond::aggregation::smoothed_aggregation<IndexType, ValueType, MemorySpace>(A);
+	}
 	else
 	if (type == AINV)
 		*LO = cusp::precond::nonsym_bridson_ainv<ValueType, MemorySpace>(A);

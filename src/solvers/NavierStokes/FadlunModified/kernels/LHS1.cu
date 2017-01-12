@@ -9,7 +9,7 @@
 namespace kernels
 {
 __global__
-void LHS_mid_X(int *row, int *col, double *val, int *tags, int *tags2, int *tagsIn, double *distance_from_intersection_to_node, double *distance_between_nodes_at_IB, double *dx, double *dy, double dt, double nu, int nx, int ny)
+void LHS_mid_X(int *row, int *col, double *val, int *hybridTagsUV, int *hybridTagsUV2, int *ghostTagsUV, double *distance_from_intersection_to_node, double *distance_between_nodes_at_IB, double *dx, double *dy, double dt, double nu, int nx, int ny)
 {
 	if (threadIdx.x + blockDim.x * blockIdx.x >= (nx-1)*ny)
 		return;
@@ -24,7 +24,7 @@ void LHS_mid_X(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 	int numE = (nx-1)*4 - 2      + (J-1)*(5*(nx-1)  - 2) + I*5 - 1;
 
 	double temp = 1;
-	if( (tags[i] == -1  && tagsIn[i] == -1) || tagsIn[i] == 0)// if point isn't tagged
+	if( (hybridTagsUV[i] == -1  && ghostTagsUV[i] == -1) || ghostTagsUV[i] == 0)// if point isn't tagged
 	{
 		//EAST
 		row[numE] = i;
@@ -61,10 +61,10 @@ void LHS_mid_X(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 		numE++;
 	}
 	//end untagged
-	else if (tags[i]!=-1) //if point is tagged
+	else if (hybridTagsUV[i]!=-1) //if point is tagged
 	{
 		//ADJACENT POINT
-		if (tags[i] == tags2[i] - 1) // right is away from surface
+		if (hybridTagsUV[i] == hybridTagsUV2[i] - 1) // right is away from surface
 		{
 			row[numE] = i;
 			col[numE] = i - 1;
@@ -83,7 +83,7 @@ void LHS_mid_X(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 
 			col[numE] = i + 1;
 		}
-		else if (tags[i] == tags2[i] + 1) //left is away from surface
+		else if (hybridTagsUV[i] == hybridTagsUV2[i] + 1) //left is away from surface
 		{
 			row[numE] = i;
 			col[numE] = i + 1;
@@ -102,7 +102,7 @@ void LHS_mid_X(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 
 			col[numE] = i - 1;
 		}
-		else if (tags[i] == tags2[i] + (nx-1)) // below is away from surface
+		else if (hybridTagsUV[i] == hybridTagsUV2[i] + (nx-1)) // below is away from surface
 		{
 			row[numE] = i;
 			col[numE] = i - 1;
@@ -121,7 +121,7 @@ void LHS_mid_X(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 
 			col[numE] = i - (nx-1);
 		}
-		else if (tags[i] == tags2[i] - (nx-1)) // above is away from surface
+		else if (hybridTagsUV[i] == hybridTagsUV2[i] - (nx-1)) // above is away from surface
 		{
 			row[numE] = i;
 			col[numE] = i - 1;
@@ -154,10 +154,10 @@ void LHS_mid_X(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 		numE++;
 	}
 	//end tagged
-	else if (tagsIn[i] > 0) //inner point is tagged Note:: dx and dy must be uniform in a section with a body...
+	else if (ghostTagsUV[i] > 0) //inner point is tagged Note:: dx and dy must be uniform in a section with a body...
 	{
 		//ADJACENT POINT
-		if (tags[i+1] != -1)// go right to body
+		if (hybridTagsUV[i+1] != -1)// go right to body
 		{
 			row[numE] = i;
 			col[numE] = i + 1;
@@ -177,7 +177,7 @@ void LHS_mid_X(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 			col[numE] = i-1;
 			val[numE] = -(dx[I]-distance_from_intersection_to_node[i+1]) / (dx[I] - distance_from_intersection_to_node[i+1] + distance_between_nodes_at_IB[i+1]);
 		}
-		else if (tags[i-1] != -1) //go left to body
+		else if (hybridTagsUV[i-1] != -1) //go left to body
 		{
 			row[numE] = i;
 			col[numE] = i - 1;
@@ -197,7 +197,7 @@ void LHS_mid_X(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 			col[numE] = i + 1;
 			val[numE] = -(dx[I]-distance_from_intersection_to_node[i-1]) / (dx[I] - distance_from_intersection_to_node[i-1] + distance_between_nodes_at_IB[i-1]);
 		}
-		else if (tags[i+(nx-1)] != -1)//go north to body
+		else if (hybridTagsUV[i+(nx-1)] != -1)//go north to body
 		{
 			row[numE] = i;
 			col[numE] = i - 1;
@@ -217,7 +217,7 @@ void LHS_mid_X(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 			col[numE] = i - (nx-1);
 			val[numE] = -(dx[I]-distance_from_intersection_to_node[i+(nx-1)]) / (dx[I] - distance_from_intersection_to_node[i+(nx-1)] + distance_between_nodes_at_IB[i+(nx-1)]);
 		}
-		else if (tags[i-(nx-1)] != -1)//go south to body
+		else if (hybridTagsUV[i-(nx-1)] != -1)//go south to body
 		{
 			row[numE] = i;
 			col[numE] = i - 1;
@@ -249,7 +249,7 @@ void LHS_mid_X(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 }
 
 __global__
-void LHS_mid_Y(int *row, int *col, double *val, int *tags, int *tags2, int *tagsIn, double *distance_from_intersection_to_node, double *distance_between_nodes_at_IB, double *dx, double *dy, double dt, double nu, int nx, int ny)
+void LHS_mid_Y(int *row, int *col, double *val, int *hybridTagsUV, int *hybridTagsUV2, int *ghostTagsUV, double *distance_from_intersection_to_node, double *distance_between_nodes_at_IB, double *dx, double *dy, double dt, double nu, int nx, int ny)
 {
 	if (threadIdx.x + blockDim.x * blockIdx.x >= nx*(ny-1))
 		return;
@@ -263,7 +263,7 @@ void LHS_mid_Y(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 	int numE = (nx-1)*ny*5 - 2*ny-2*(nx-1)  +  nx*4-2  + (J-1)*(nx*5 - 2) + I*5 - 1;
 	double temp = 1;
 
-	if((tags[i] == -1 && tagsIn[i] == -1)||tagsIn[i] == 0)	//if not tagged
+	if((hybridTagsUV[i] == -1 && ghostTagsUV[i] == -1)||ghostTagsUV[i] == 0)	//if not tagged
 	{
 		//EAST
 		row[numE] = i;
@@ -300,9 +300,9 @@ void LHS_mid_Y(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 		numE++;
 	}
 	//end untagged section
-	else if (tags[i]>0) //if point is tagged
+	else if (hybridTagsUV[i]>0) //if point is tagged
 	{
-		if (tags[i] == tags2[i] - 1) //right is away from surface
+		if (hybridTagsUV[i] == hybridTagsUV2[i] - 1) //right is away from surface
 		{
 			row[numE] = i;
 			col[numE] = i - 1;
@@ -321,7 +321,7 @@ void LHS_mid_Y(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 
 			col[numE] = i + 1;
 		}
-		else if (tags[i] == tags2[i] + 1)//left  is away from surface
+		else if (hybridTagsUV[i] == hybridTagsUV2[i] + 1)//left  is away from surface
 		{
 			row[numE] = i;
 			col[numE] = i + 1;
@@ -340,7 +340,7 @@ void LHS_mid_Y(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 
 			col[numE] = i - 1;
 		}
-		else if (tags[i] == tags2[i] + nx)//below is away from surface
+		else if (hybridTagsUV[i] == hybridTagsUV2[i] + nx)//below is away from surface
 		{
 			row[numE] = i;
 			col[numE] = i - 1;
@@ -359,7 +359,7 @@ void LHS_mid_Y(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 
 			col[numE] = i - nx;
 		}
-		else if (tags[i] == tags2[i] - nx)//above is away from surface
+		else if (hybridTagsUV[i] == hybridTagsUV2[i] - nx)//above is away from surface
 		{
 			row[numE] = i;
 			col[numE] = i - 1;
@@ -388,10 +388,10 @@ void LHS_mid_Y(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 		numE++;
 	}//end tagged
 
-	else if (tagsIn[i] != -1) //inner point is tagged Note:: dx and dy must be uniform in a section with a body...
+	else if (ghostTagsUV[i] != -1) //inner point is tagged Note:: dx and dy must be uniform in a section with a body...
 	{
 		//setup adjacent point
-		if (tags[i+1] != -1)// go right to body
+		if (hybridTagsUV[i+1] != -1)// go right to body
 		{
 			row[numE] = i;
 			col[numE] = i + 1;
@@ -411,7 +411,7 @@ void LHS_mid_Y(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 			col[numE] = i-1;
 			val[numE] = -(dx[I]-distance_from_intersection_to_node[i+1]) / (dx[I] - distance_from_intersection_to_node[i+1] + distance_between_nodes_at_IB[i+1]);
 		}
-		else if (tags[i-1] != -1) //go left to body
+		else if (hybridTagsUV[i-1] != -1) //go left to body
 		{
 			row[numE] = i;
 			col[numE] = i - 1;
@@ -431,7 +431,7 @@ void LHS_mid_Y(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 			col[numE] = i + 1;
 			val[numE] = -(dx[I]-distance_from_intersection_to_node[i-1]) / (dx[I] - distance_from_intersection_to_node[i-1] + distance_between_nodes_at_IB[i-1]);
 		}
-		else if (tags[i+nx] != -1)//go north to body
+		else if (hybridTagsUV[i+nx] != -1)//go north to body
 		{
 			row[numE] = i;
 			col[numE] = i - 1;
@@ -451,7 +451,7 @@ void LHS_mid_Y(int *row, int *col, double *val, int *tags, int *tags2, int *tags
 			col[numE] = i - nx;
 			val[numE] = -(dx[I]-distance_from_intersection_to_node[i+nx]) / (dx[I] - distance_from_intersection_to_node[i+nx] + distance_between_nodes_at_IB[i+nx]);
 		}
-		else if (tags[i-nx] != -1)//go south to body
+		else if (hybridTagsUV[i-nx] != -1)//go south to body
 		{
 			row[numE] = i;
 			col[numE] = i - 1;

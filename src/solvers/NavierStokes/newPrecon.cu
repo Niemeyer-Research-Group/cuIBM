@@ -14,26 +14,28 @@ newPrecon::newPrecon()
 {
 }
 
-/*
- * Creates new preconditioners for the velocity and poission solve
- * param coo_matrix LHS1 the left hand side matrix for the velocity solve
- * param coo_matrix LHS1 the left hand side matrix for the poisson solve
- * param type1 the type of preconditioner desired for the velocity solve
- * param type2 the type of preconditioner desired for the poisson solve
- */
+void newPrecon::generate1(cusp::coo_matrix<int, double, cusp::device_memory>LHS1, preconditionerType type1)
+{
+	PC1 = new preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >(LHS1, type1);
+}
+
+void newPrecon::generate2(cusp::coo_matrix<int, double, cusp::device_memory>LHS2, preconditionerType type2)
+{
+	PC2 = new preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >(LHS2, type2);
+}
+
+void newPrecon::update1(cusp::coo_matrix<int, double, cusp::device_memory>LHS1)
+{
+	PC1->update(LHS1);
+}
+
+void newPrecon::update2(cusp::coo_matrix<int, double, cusp::device_memory>LHS2)
+{
+	PC2->update(LHS2);
+}
+
 void newPrecon::generate(cusp::coo_matrix<int, double, cusp::device_memory>LHS1, cusp::coo_matrix<int, double, cusp::device_memory>LHS2, preconditionerType type1, preconditionerType type2)
 {
 	PC1 = new preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >(LHS1, type1);
 	PC2 = new preconditioner< cusp::coo_matrix<int, double, cusp::device_memory> >(LHS2, type2);
-}
-
-/*
- * Updates the precondtioners with new left hand side matricies
- * param coo_matrix LHS1 the left hand side matrix for the velocity solve
- * param coo_matrix LHS1 the left hand side matrix for the poisson solve
- */
-void newPrecon::update(cusp::coo_matrix<int, double, cusp::device_memory>LHS1, cusp::coo_matrix<int, double, cusp::device_memory>LHS2)
-{
-	PC1->update(LHS1);
-	PC2->update(LHS2);
 }
