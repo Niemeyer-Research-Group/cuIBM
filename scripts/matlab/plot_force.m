@@ -1,3 +1,4 @@
+%A collection of scripts that plot forces for various simulations, useful for quick debugging
 clear
 close
 clc

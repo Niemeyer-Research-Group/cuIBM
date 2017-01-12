@@ -3,6 +3,7 @@
  * \author Anush Krishnan (anush@bu.edu)
  * \author Christopher Minar (minarc@oregonstate.edu)
  * \brief Definition of the class \c domain.
+ * \This class stores all the information about the background grid
  */
 
 

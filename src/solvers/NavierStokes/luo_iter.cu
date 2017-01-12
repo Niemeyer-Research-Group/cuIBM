@@ -3,6 +3,7 @@
  * \author Christopher Minar (minarc@oregonstate.edu)
  * \based on code by Anush Krishnan (anush@bu.edu)
  * \brief Declaration of the class luo_iter.
+ * \This is the embedded Luo et al. method, extends from luo_base
  */
 
 #include <solvers/NavierStokes/luo_base/kernels/structure.h>

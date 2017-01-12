@@ -2,7 +2,8 @@
  * \file  luoIBM.cu
  * \author Christopher Minar (minarc@oregonstate.edu)
  * \based on code by Anush Krishnan (anush@bu.edu)
- * \brief Declaration of the class oscCylinder.
+ * \brief Declaration of the class luoibm.
+ * \This is the external Luo et al. method, extends from luo_base
  */
 
 #include "luoIBM.h"

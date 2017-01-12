@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+#This script makes the validation plot for an in-line oscilatting cylinder driven flow with Re100 KC5
 
 import argparse
 import os

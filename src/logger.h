@@ -2,6 +2,7 @@
  * \file logger.h
  * \author Anush Krishnan (anush@bu.edu)
  * \brief Definition of the class \c Logger.
+ * \This class allows us to time various operations
  */
 
 

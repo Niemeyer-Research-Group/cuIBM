@@ -2,6 +2,7 @@
  * \file boundaryCondition.h
  * \author Anush Krishnan (anush@bu.edu)
  * \brief Definition of the class \c boundaryCondition.
+ * \This class is outdated from the old cuibm. setting a bc to dirichlet does nothing. All bcs are dirichelt except the ones that are hard coded.
  */
 
 

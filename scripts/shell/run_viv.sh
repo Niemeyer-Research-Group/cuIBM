@@ -1,6 +1,5 @@
 #!/bin/sh
-#runs all cases
-#plots all cases
+#runs all VIV simulations, then makes a valiation plot
 CUIBM_DIR=/scratch/src/cuIBM
 #Run Lid Driven Cavity Validation
 cd /scratch/src/cuIBM/src

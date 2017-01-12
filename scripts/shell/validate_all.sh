@@ -1,6 +1,5 @@
 #!/bin/sh
-#runs all cases
-#plots all cases
+#makes validation plots for lid driven cavity and impulsivly started cylinder (they must already have been run)
 CUIBM_DIR=/scratch/src/cuIBM
 #Run Lid Driven Cavity Validation
 for var1 in 100 1000 10000

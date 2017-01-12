@@ -2,6 +2,7 @@
  * \file body.h
  * \author Anush Krishnan (anush@bu.edu)
  * \brief Definition of the class \c body.
+ * Almost all of this class is outdated. Neither function is used.
  */
 
 

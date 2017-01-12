@@ -3,6 +3,7 @@
 /**
  * \enum  boundary
  * \brief Specifies the location of the boundary.
+ * \This file could be merged with types.h
  */
 enum boundary
 {

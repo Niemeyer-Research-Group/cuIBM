@@ -2,6 +2,8 @@
  * \file preconditioner.h
  * \author Anush Krishnan (anush@bu.edu)
  * \brief Definition of the class \c preconditioner.
+ * \ CUSP preconditioners are awkward in that it is hard to declare them without initializing them. This class
+ * \ makes that possible in a round about way and makes it possible to set the preconditioner type after it has been declared
  */
 
 

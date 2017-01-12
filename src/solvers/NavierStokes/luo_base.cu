@@ -2,7 +2,8 @@
  * \file  luo_base.cu
  * \author Christopher Minar (minarc@oregonstate.edu)
  * \based on code by Anush Krishnan (anush@bu.edu)
- * \brief Declaration of the class oscCylinder.
+ * \brief Declaration of the class luo_base.
+ * \This is the base functionality for the immersed boundary methods, extends from navierstokessolver
  */
 
 #include "luo_base.h"

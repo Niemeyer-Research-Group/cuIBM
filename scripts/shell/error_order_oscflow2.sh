@@ -1,6 +1,5 @@
 #!/bin/sh
-#runs all cases
-#plots all cases
+#runs all cases needed to make the second performance plot for oscflow, then plots it
 CUIBM_DIR=/scratch/src/cuIBM
 #Run Lid Driven Cavity Validation
 cd /scratch/src/cuIBM/src
@@ -12,4 +11,4 @@ do
 		/scratch/src/cuIBM/bin/cuIBM -caseFolder /scratch/src/cuIBM/validation/error/oscflow2/$var2$var1
 	done
 done
-#/scratch/src/cuIBM/scripts/validation/error_order_oscflow2.py
+/scratch/src/cuIBM/scripts/validation/error_order_oscflow2.py

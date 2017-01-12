@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+#This script makes validation plots for VIV flow
 #import csv
 #import argparse
 import numpy as np

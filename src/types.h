@@ -1,3 +1,4 @@
+//This file contains declarations for all the different solver types
 #pragma once
 
 enum solverType

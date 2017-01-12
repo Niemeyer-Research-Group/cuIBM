@@ -12,6 +12,7 @@
 /**
  * \class bodies
  * \brief Contains information about bodies in the flow.
+ * \Currently only supports 1 body
  */
 class bodies
 {

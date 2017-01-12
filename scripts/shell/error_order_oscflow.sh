@@ -1,6 +1,5 @@
 #!/bin/sh
-#runs all cases
-#plots all cases
+#runs all cases needed to make the order of accuracy oscflow plot then plots it
 CUIBM_DIR=/scratch/src/cuIBM
 #Run Lid Driven Cavity Validation
 cd /scratch/src/cuIBM/src

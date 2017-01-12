@@ -1,3 +1,4 @@
+%A collection of scripts that make surface plots of simulations. To use this you have to call the function arrayprint() in NavierStokesSolver somewhere in the code, then modifiy to script to plot that file 
 %plot pressure
 clc
 clear

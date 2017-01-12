@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+#Makes the output file "grid" which is used in various postprocessing scripts
 import argparse
 import numpy as np
 import sys

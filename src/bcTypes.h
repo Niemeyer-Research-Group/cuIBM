@@ -3,6 +3,7 @@
 /**
  * \enum  bcType
  * \brief Specifies the type of boundary condition.
+ * \not used, outdated from cuibm
  */
 enum bcType
 {

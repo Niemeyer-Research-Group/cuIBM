@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * \file newPrecon.cu
  * \author Christopher Minar (minarc@oregonstate.edu)
- * \brief a temporary way to move the preconditioner out of the main file so it doesn't take forever to compile
+ * \Compiling the preconditioner class takes a very very long time so it has been moved into its own class so it doesn't get flagged for recompiling every time something in the main files is changed.
  */
 #include "newPrecon.h"
 #include <cusp/precond/aggregation/smoothed_aggregation.h>//flag

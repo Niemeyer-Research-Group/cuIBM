@@ -2,6 +2,7 @@
  * \file NavierStokesSolver.cu
  * \author Anush Krishnan (anush@bu.edu), Christopher Minar (minarc@oreonstate.edu)
  * \brief Implementation of the methods of the class \c NavierStokesSolver.
+ * \The based navier stokes solver. This doesn't not handle bodies
  */
 
 #include "NavierStokesSolver.h"
