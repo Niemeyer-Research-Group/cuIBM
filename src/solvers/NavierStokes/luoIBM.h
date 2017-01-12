@@ -141,6 +141,7 @@ protected:
 	//////////////////////////
 	void updateRobinBoundary();
 	void weightUhat();
+	void preRHS1Interpolation();
 	void zeroVelocity();
 
 	//////////////////////////
@@ -198,7 +199,6 @@ public:
 	//intermediateVelocity.inl
 	//////////////////////////
 	virtual void generateRHS1();
-	virtual void preRHS1Interpolation();
 	virtual void generateLHS1();
 
 	//////////////////////////

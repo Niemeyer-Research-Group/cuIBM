@@ -579,13 +579,18 @@ void interpolateVelocityToHybridNodeY(double *u, double *ustar, int *hybridTagsU
 
 __global__
 void interpolatePressureToHybridNode(double *pressure, double *pressureStar, double *u, int *hybridTagsP, double *bx, double *by,
-									double *uB, double *uB0, double *vB, double  *vB0, double *yu, double *yv, double *xu, double *xv,
+									double *uB, double *uB0, double *vB, double  *vB0, double *yu, double *xv,
 									double *body_intercept_p_x, double *body_intercept_p_y, double *image_point_p_x, double *image_point_p_y,
 									int *i_start, int *j_start, int width, int nx, int ny, double dt, double totalPoints,
 									double *dudt, double *ududx, double *vdudy, double *dvdt, double *udvdx, double *vdvdy,
 									double *a0, double *a1, double *a2, double *a3,
+<<<<<<< HEAD
 									double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4, int timeStep)//test
 {//flag u not used anymore
+=======
+									double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4)//test
+{
+>>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
 	int idx	= threadIdx.x + blockDim.x * blockIdx.x,
 		i	= idx % (width),
 		j	= idx / (width),
@@ -631,6 +636,7 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 	y4[ip] = y3[ip];
 
 	//find q1,q2,q3,q4
+<<<<<<< HEAD
 	int	index1 = (jj-1)*nx+ii-1,
 		index2 = (jj-1)*nx+ii,
 		index3 = jj*nx+ii-1,
@@ -640,25 +646,35 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 	q2[ip] = pressure[index2];
 	q3[ip] = pressure[index3];
 	q4[ip] = pressure[index4];
+=======
+	q1[ip] = pressure[(jj-1)*nx+ii-1];
+	q2[ip] = pressure[(jj-1)*nx+ii];
+	q3[ip] = pressure[jj*nx+ii-1];
+	q4[ip] = pressure[jj*nx+ii];
+>>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
 
 	double a11 = 1, a12 = x1[ip],  a13 = y1[ip], a14 = x1[ip]*y1[ip];
 	double a21 = 1, a22 = x2[ip],  a23 = y2[ip], a24 = x2[ip]*y2[ip];
 	double a31 = 1, a32 = x3[ip],  a33 = y3[ip], a34 = x3[ip]*y3[ip];
 	double a41 = 1, a42 = x4[ip],  a43 = y4[ip], a44 = x4[ip]*y4[ip];
 
+<<<<<<< HEAD
 	//setup for neuman BC
 	double distance, distance2, min, min2, matDi, matDj, matD2i, matD2j, matDBIi, matDBIj;
 	int bodyindex, bodyindex2;
 	//move the closes node to the body to the surface then calculate the neuman boundary condition for it
+=======
+	//check if any points are inside of the body, then calculate the neuman boundary condition for them
+>>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
 	//point 1
-	if (hybridTagsP[index1] == ip)
+	if (hybridTagsP[(jj-1)*nx+ii-1] == ip)
 	{
-		//setup
 		x1[ip] = body_intercept_p_x[ip];
 		y1[ip] = body_intercept_p_y[ip];
 		n_x = image_point_p_x[ip] - x1[ip];
 		n_y = image_point_p_y[ip] - y1[ip];
 		nl = sqrt(n_x*n_x+n_y*n_y);
+<<<<<<< HEAD
 
 		//find two closest body nodes
 		min = 1;
@@ -695,19 +711,34 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 
 		q1[ip] = - ( matDBIi*n_x/nl + matDBIj*n_y/nl ) ;
 
+=======
+		du_dt = uB[0] - uB0[0];//flag doesn't work for rotating bodies
+		//velTemp = (u[iu]+u[iu-1]+u[iu-(nx-1)]+u[iu-(nx-1)-1])/4
+		u_du_dx = uB[0]*((u[iu]+u[iu-1]+u[iu-(nx-1)]+u[iu-(nx-1)-1])/4 - uB[0])/(xv[I]-x1[ip]); //flag this approximation of du/dx might be too rough as we are calculating our u values at different heights. One point is the body intercept and the second point is the v node between poitns 1 and 2
+		v_du_dy = vB[0]*(u[iu-1]-uB[0])/(yu[J]-y1[ip]);
+		dv_dt = vB[0] - vB0[0];
+		u_dv_dx = uB[0]*(u[iv-nx]-vB[0])/(xv[I]-x1[ip]);
+		v_dv_dy = vB[0]*((u[iv]+u[iv-nx]+u[iv-1]+u[iv-nx-1])/4 - vB[0])/(yu[J]-y1[ip]);
+		q1[ip] = -(n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt + u_dv_dx + v_dv_dy));
+>>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
 		a11 = 0;
 		a12 = n_x/nl;
 		a13 = n_y/nl;
 		a14 = a13*x1[ip]+a12*y1[ip];
 	}
 	//point 2
+<<<<<<< HEAD
 	else if (hybridTagsP[index2] == ip)
+=======
+	if (hybridTagsP[(jj-1)*nx+ii] == ip)
+>>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
 	{
 		x2[ip] = body_intercept_p_x[ip];
 		y2[ip] = body_intercept_p_y[ip];
 		n_x = image_point_p_x[ip] - x2[ip];
 		n_y = image_point_p_y[ip] - y2[ip];
 		nl = sqrt(n_x*n_x+n_y*n_y);
+<<<<<<< HEAD
 
 		//find two closest body nodes
 		min = 1;
@@ -744,19 +775,33 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 
 		q2[ip] = - ( matDBIi*n_x/nl + matDBIj*n_y/nl ) ;
 
+=======
+		du_dt = uB[0] - uB0[0];//flag doesn't work for rotating bodies
+		u_du_dx = uB[0]*(uB[0] - (u[iu]+u[iu-1]+u[iu-(nx-1)]+u[iu-(nx-1)-1])/4)/(x2[ip]-xv[I]); //flag this approximation of du/dx might be too rough as we are calculating our u values at different heights. One point is the body intercept and the second point is the v node between poitns 1 and 2
+		v_du_dy = vB[0]*(u[iu] -uB[0])/(yu[J]-y2[ip]);
+		dv_dt = vB[0] - vB0[0];
+		u_dv_dx = uB[0]*(vB[0]-u[iv-nx])/(x2[ip]-xv[I]);
+		v_dv_dy = vB[0]*((u[iv]+u[iv-nx]+u[iv+1]+u[iv-nx+1])/4 - vB[0])/(yu[J]-y2[ip]);
+		q2[ip] = -(n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt+u_dv_dx + v_dv_dy));
+>>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
 		a21 = 0;
 		a22 = n_x/nl;
 		a23 = n_y/nl;
 		a24 = a23*x2[ip]+a22*y2[ip];
 	}
 	//point 3
+<<<<<<< HEAD
 	else if (hybridTagsP[index3] == ip)
+=======
+	if (hybridTagsP[jj*nx+ii-1] == ip)
+>>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
 	{
 		x3[ip] = body_intercept_p_x[ip];
 		y3[ip] = body_intercept_p_y[ip];
 		n_x = image_point_p_x[ip] - x3[ip];
 		n_y = image_point_p_y[ip] - y3[ip];
 		nl = sqrt(n_x*n_x+n_y*n_y);
+<<<<<<< HEAD
 
 		//find two closest body nodes
 		min = 1;
@@ -793,19 +838,29 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 
 		q3[ip] = - ( matDBIi*n_x/nl + matDBIj*n_y/nl ) ;
 
+=======
+		du_dt = uB[0] - uB0[0];//flag doesn't work for rotating bodies
+		u_du_dx = uB[0]*((u[iu]+u[iu-1]+u[iu+(nx-1)]+u[iu+(nx-1)-1])/4 - uB[0])/(xv[I]-x3[ip]); //flag this approximation of du/dx might be too rough as we are calculating our u values at different heights. One point is the body intercept and the second point is the v node between poitns 1 and 2
+		v_du_dy = vB[0]*(uB[0] - u[iu-1])/(y3[ip] - yu[J]);
+		dv_dt = vB[0] - vB0[0];
+		u_dv_dx = uB[0]*(u[iv]-vB[0])/(xv[I]-x3[ip]);
+		v_dv_dy = vB[0]*(vB[0]- (u[iv]+u[iv-nx]+u[iv-1]+u[iv-nx-1])/4)/(y3[ip]-yu[J]);
+		q3[ip] = -(n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt+u_dv_dx + v_dv_dy));
+>>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
 		a31 = 0;
 		a32 = n_x/nl;
 		a33 = n_y/nl;
 		a34 = a33*x3[ip]+a32*y3[ip];
 	}
 	//4
-	if (hybridTagsP[index4] == ip)
+	if (hybridTagsP[jj*nx+ii] == ip)
 	{
 		x4[ip] = body_intercept_p_x[ip];
 		y4[ip] = body_intercept_p_y[ip];
 		n_x = image_point_p_x[ip] - x4[ip];
 		n_y = image_point_p_y[ip] - y4[ip];
 		nl = sqrt(n_x*n_x+n_y*n_y);
+<<<<<<< HEAD
 
 		//find two closest body nodes
 		min = 1;
@@ -842,6 +897,15 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 
 		q4[ip] = - ( matDBIi*n_x/nl + matDBIj*n_y/nl ) ;
 
+=======
+		du_dt = uB[0] - uB0[0];//flag doesn't work for rotating bodies
+		u_du_dx = uB[0]*(uB[0] - (u[iu]+u[iu-1]+u[iu+(nx-1)]+u[iu+(nx-1)-1])/4)/(x4[ip]-xv[I]); //flag this approximation of du/dx might be too rough as we are calculating our u values at different heights. One point is the body intercept and the second point is the v node between poitns 1 and 2
+		v_du_dy = vB[0]*(uB[0] - u[iu])/(y4[ip]-yu[J]);
+		dv_dt = vB[0] - vB0[0];
+		u_dv_dx = uB[0]*(vB[0]-u[iv])/(x4[ip]-xv[I]);
+		v_dv_dy = vB[0]*(vB[0]- (u[iv]+u[iv-nx]+u[iv+1]+u[iv-nx+1])/4)/(y4[ip]-yu[J]);
+		q4[ip] = -(n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt+u_dv_dx + v_dv_dy));
+>>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
 		a41 = 0;
 		a42 = n_x/nl;
 		a43 = n_y/nl;
@@ -911,13 +975,20 @@ void interpolatePressureToHybridNode(double *pressure, double *pressureStar, dou
 	pressureStar[ip] = a0[ip] + a1[ip]*xv[I] + a2[ip]*yu[J] + a3[ip]*xv[I]*yu[J];
 }
 
-//flag this function is a mess
+//YOU ARE HERE
+//SOMETHING IN THIS FUNCTION IS CAUSING THE PRESSURE VALUES to be wrong
 __global__
 void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP, double *bx, double *by,
+<<<<<<< HEAD
 									double *uB, double *uB0, double *vB, double  *vB0, double *yu, double *yv, double *xu, double *xv,
 									double *body_intercept_p_x, double *body_intercept_p_y, double *image_point_p_x, double *image_point_p_y, double *body_intercept_p,
 									int *i_start, int *j_start, int width, int nx, int ny, double dt, double totalPoints,
 									double *dudt, double *ududx, double *vdudy, double *dvdt, double *udvdx, double *vdvdy,
+=======
+									double *uB, double *uB0, double *vB, double  *vB0, double *yu, double *xv,
+									double *body_intercept_p_x, double *body_intercept_p_y, double *image_point_p_x, double *image_point_p_y,
+									int i_start, int j_start, int i_end, int j_end, int nx, int ny, int totalPoints,
+>>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
 									double *a0, double *a1, double *a2, double *a3,
 									double *x1, double *x2, double *x3, double *x4, double *y1, double *y2, double *y3, double *y4, double *q1, double *q2, double *q3, double *q4)//test
 {
@@ -927,6 +998,8 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		I	= i_start[0] + i,
 		J	= j_start[0] + j,
 		ip = J*nx + I,
+		iu = J*(nx-1)+I,
+		iv = ip + (nx-1)*ny,
 		ii= I-5,
 		jj = J-5;
 	if (ip > J*nx + I) //return if we're out of bound
@@ -1014,21 +1087,29 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		min = s;
 		close_index = index4;
 	}
+<<<<<<< HEAD
 
 	//setup for neuman BC
 	double distance, distance2, min2, matDi, matDj, matD2i, matD2j, matDBIi, matDBIj;
 	int bodyindex, bodyindex2;
 
 	//if the node is inside the body, move it to the surface then set it to be a neuman condition
+=======
+	//if the node is inside the body, set it to be a neuman condition
+>>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
 	//point 1
 	if (ghostTagsP[index1] != -1 || index1 == close_index)
 	{
+<<<<<<< HEAD
 		//setup
+=======
+>>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
 		x1[ip] = body_intercept_p_x[index1];
 		y1[ip] = body_intercept_p_y[index1];
 		n_x = image_point_p_x[index1] - x1[ip];
 		n_y = image_point_p_y[index1] - y1[ip];
 		nl = sqrt(n_x*n_x+n_y*n_y);
+<<<<<<< HEAD
 
 		//find two closest body nodes
 		min = 1;
@@ -1070,6 +1151,16 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		}
 		q1[ip] = - ( matDBIi*n_x/nl + matDBIj*n_y/nl );
 
+=======
+		du_dt = uB[0] - uB0[0];//flag doesn't work for rotating bodies
+		//velTemp = (u[iu]+u[iu-1]+u[iu-(nx-1)]+u[iu-(nx-1)-1])/4
+		u_du_dx = uB[0]*((u[iu]+u[iu-1]+u[iu-(nx-1)]+u[iu-(nx-1)-1])/4 - uB[0])/(xv[I]-x1[ip]); //flag the indexing for xv, yu for this is all wrong if were not at the closest BI
+		v_du_dy = vB[0]*(u[iu-1]-uB[0])/(yu[J]-y1[ip]);
+		dv_dt = vB[0] - vB0[0];
+		u_dv_dx = uB[0]*(u[iv-nx]-vB[0])/(xv[I]-x1[ip]);
+		v_dv_dy = vB[0]*((u[iv]+u[iv-nx]+u[iv-1]+u[iv-nx-1])/4 - vB[0])/(yu[J]-y1[ip]);
+		q1[ip] = -(n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt + u_dv_dx + v_dv_dy));
+>>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
 		a11 = 0;
 		a12 = n_x/nl;
 		a13 = n_y/nl;
@@ -1083,6 +1174,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		n_x = image_point_p_x[index2] - x2[ip];
 		n_y = image_point_p_y[index2] - y2[ip];
 		nl = sqrt(n_x*n_x+n_y*n_y);
+<<<<<<< HEAD
 
 		//find two closest body nodes
 		min = 1;
@@ -1129,6 +1221,15 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		}
 		q2[ip] = - ( matDBIi*n_x/nl + matDBIj*n_y/nl );
 
+=======
+		du_dt = uB[0] - uB0[0];//flag doesn't work for rotating bodies
+		u_du_dx = uB[0]*(uB[0] - (u[iu]+u[iu-1]+u[iu-(nx-1)]+u[iu-(nx-1)-1])/4)/(x2[ip]-xv[I]); //flag this approximation of du/dx might be too rough as we are calculating our u values at different heights. One point is the body intercept and the second point is the v node between poitns 1 and 2
+		v_du_dy = vB[0]*(u[iu] -uB[0])/(yu[J]-y2[ip]);
+		dv_dt = vB[0] - vB0[0];
+		u_dv_dx = uB[0]*(vB[0]-u[iv-nx])/(x2[ip]-xv[I]);
+		v_dv_dy = vB[0]*((u[iv]+u[iv-nx]+u[iv+1]+u[iv-nx+1])/4 - vB[0])/(yu[J]-y2[ip]);
+		q2[ip] = -(n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt+u_dv_dx + v_dv_dy));
+>>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
 		a21 = 0;
 		a22 = n_x/nl;
 		a23 = n_y/nl;
@@ -1142,6 +1243,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		n_x = image_point_p_x[index3] - x3[ip];
 		n_y = image_point_p_y[index3] - y3[ip];
 		nl = sqrt(n_x*n_x+n_y*n_y);
+<<<<<<< HEAD
 
 		//find two closest body nodes
 		min = 1;
@@ -1183,6 +1285,15 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		}
 		q3[ip] = - ( matDBIi*n_x/nl + matDBIj*n_y/nl );
 
+=======
+		du_dt = uB[0] - uB0[0];//flag doesn't work for rotating bodies
+		u_du_dx = uB[0]*((u[iu]+u[iu-1]+u[iu+(nx-1)]+u[iu+(nx-1)-1])/4 - uB[0])/(xv[I]-x3[ip]); //flag this approximation of du/dx might be too rough as we are calculating our u values at different heights. One point is the body intercept and the second point is the v node between poitns 1 and 2
+		v_du_dy = vB[0]*(uB[0] - u[iu-1])/(y3[ip] - yu[J]);
+		dv_dt = vB[0] - vB0[0];
+		u_dv_dx = uB[0]*(u[iv]-vB[0])/(xv[I]-x3[ip]);
+		v_dv_dy = vB[0]*(vB[0]- (u[iv]+u[iv-nx]+u[iv-1]+u[iv-nx-1])/4)/(y3[ip]-yu[J]);
+		q3[ip] = -(n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt+u_dv_dx + v_dv_dy));
+>>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
 		a31 = 0;
 		a32 = n_x/nl;
 		a33 = n_y/nl;
@@ -1196,6 +1307,7 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		n_x = image_point_p_x[index4] - x4[ip];
 		n_y = image_point_p_y[index4] - y4[ip];
 		nl = sqrt(n_x*n_x+n_y*n_y);
+<<<<<<< HEAD
 
 		//find two closest body nodes
 		min = 1;
@@ -1237,6 +1349,15 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 		}
 		q4[ip] = - ( matDBIi*n_x/nl + matDBIj*n_y/nl );
 
+=======
+		du_dt = uB[0] - uB0[0];//flag doesn't work for rotating bodies
+		u_du_dx = uB[0]*(uB[0] - (u[iu]+u[iu-1]+u[iu+(nx-1)]+u[iu+(nx-1)-1])/4)/(x4[ip]-xv[I]); //flag this approximation of du/dx might be too rough as we are calculating our u values at different heights. One point is the body intercept and the second point is the v node between poitns 1 and 2
+		v_du_dy = vB[0]*(uB[0] - u[iu])/(y4[ip]-yu[J]);
+		dv_dt = vB[0] - vB0[0];
+		u_dv_dx = uB[0]*(vB[0]-u[iv])/(x4[ip]-xv[I]);
+		v_dv_dy = vB[0]*(vB[0]- (u[iv]+u[iv-nx]+u[iv+1]+u[iv-nx+1])/4)/(y4[ip]-yu[J]);
+		q4[ip] = -(n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt+u_dv_dx + v_dv_dy));
+>>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
 		a41 = 0;
 		a42 = n_x/nl;
 		a43 = n_y/nl;
@@ -1308,10 +1429,70 @@ void interpolatePressureToGhostNode(double *pressure, double *u, int *ghostTagsP
 	a2[ip] = b31/detA*q1[ip]  +  b32/detA*q2[ip]  +  b33/detA*q3[ip]  +  b34/detA*q4[ip];
 	a3[ip] = b41/detA*q1[ip]  +  b42/detA*q2[ip]  +  b43/detA*q3[ip]  +  b44/detA*q4[ip];
 	//pressure at the image point
+<<<<<<< HEAD
 	double image_point_pressure = a0[ip] + a1[ip]*image_point_p_x[ip]    + a2[ip]*image_point_p_y[ip]    + a3[ip] * image_point_p_y[ip]   *image_point_p_x[ip];
 	body_intercept_p[ip]        = a0[ip] + a1[ip]*body_intercept_p_x[ip] + a2[ip]*body_intercept_p_y[ip] + a3[ip] * body_intercept_p_x[ip]*body_intercept_p_y[ip]; //used for force calc
 
 	//extrapolate pressure to the ghost node
 	pressure[ip] = image_point_pressure + sqrt(pow(image_point_p_x[ip]-xv[I],2)+pow(image_point_p_y[ip]-yu[J],2))*matDClose;
+=======
+	double image_point_pressure = a0[ip] + a1[ip]*image_point_p_x[ip] + a2[ip]*image_point_p_y[ip] + a3[ip]*image_point_p_y[ip]*image_point_p_x[ip];
+	//interpolate pressure to the ghost node
+	double matD = 0;
+	if (close_index == index1)
+	{
+		n_x = image_point_p_x[index1] - body_intercept_p_x[index1];
+		n_y = image_point_p_y[index1] - body_intercept_p_y[index1];
+		nl = sqrt(n_x*n_x+n_y*n_y);
+		du_dt = uB[0] - uB0[0];
+		u_du_dx = uB[0]*((u[iu]+u[iu-1]+u[iu-(nx-1)]+u[iu-(nx-1)-1])/4 - uB[0])/(xv[I]-body_intercept_p_x[index1]); //flag the indexing for xv, yu for this is all wrong if were not at the closest BI
+		v_du_dy = vB[0]*(u[iu-1]-uB[0])/(yu[J]-body_intercept_p_y[index1]);
+		dv_dt = vB[0] - vB0[0];
+		u_dv_dx = uB[0]*(u[iv-nx]-vB[0])/(xv[I]-body_intercept_p_x[index1]);
+		v_dv_dy = vB[0]*((u[iv]+u[iv-nx]+u[iv-1]+u[iv-nx-1])/4 - vB[0])/(yu[J]-body_intercept_p_y[index1]);
+		q1[ip] = -(n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt + u_dv_dx + v_dv_dy));
+		matD = (n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt + u_dv_dx + v_dv_dy));
+	}
+	else if (close_index == index2)
+	{
+		n_x = image_point_p_x[index2] - body_intercept_p_x[index2];
+		n_y = image_point_p_y[index2] - body_intercept_p_y[index2];
+		nl = sqrt(n_x*n_x+n_y*n_y);
+		du_dt = uB[0] - uB0[0];//flag doesn't work for rotating bodies
+		u_du_dx = uB[0]*(uB[0] - (u[iu]+u[iu-1]+u[iu-(nx-1)]+u[iu-(nx-1)-1])/4)/(body_intercept_p_x[index2]-xv[I]); //flag this approximation of du/dx might be too rough as we are calculating our u values at different heights. One point is the body intercept and the second point is the v node between poitns 1 and 2
+		v_du_dy = vB[0]*(u[iu] -uB[0])/(yu[J]-body_intercept_p_y[index2]);
+		dv_dt = vB[0] - vB0[0];
+		u_dv_dx = uB[0]*(vB[0]-u[iv-nx])/(body_intercept_p_x[index2]-xv[I]);
+		v_dv_dy = vB[0]*((u[iv]+u[iv-nx]+u[iv+1]+u[iv-nx+1])/4 - vB[0])/(yu[J]-body_intercept_p_y[index2]);
+		matD = (n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt+u_dv_dx + v_dv_dy));
+	}
+	else if (close_index == index3)
+	{
+		n_x = image_point_p_x[index3] - body_intercept_p_x[index3];
+		n_y = image_point_p_y[index3] - body_intercept_p_y[index3];
+		nl = sqrt(n_x*n_x+n_y*n_y);
+		du_dt = uB[0] - uB0[0];//flag doesn't work for rotating bodies
+		u_du_dx = uB[0]*((u[iu]+u[iu-1]+u[iu+(nx-1)]+u[iu+(nx-1)-1])/4 - uB[0])/(xv[I]-body_intercept_p_x[index3]); //flag this approximation of du/dx might be too rough as we are calculating our u values at different heights. One point is the body intercept and the second point is the v node between poitns 1 and 2
+		v_du_dy = vB[0]*(uB[0] - u[iu-1])/(body_intercept_p_y[index3] - yu[J]);
+		dv_dt = vB[0] - vB0[0];
+		u_dv_dx = uB[0]*(u[iv]-vB[0])/(xv[I]-body_intercept_p_x[index3]);
+		v_dv_dy = vB[0]*(vB[0]- (u[iv]+u[iv-nx]+u[iv-1]+u[iv-nx-1])/4)/(body_intercept_p_y[index3]-yu[J]);
+		matD = (n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt+u_dv_dx + v_dv_dy));
+	}
+	else if (close_index == index4)
+	{
+		n_x = image_point_p_x[index4] - body_intercept_p_x[index4];
+		n_y = image_point_p_y[index4] - body_intercept_p_y[index4];
+		nl = sqrt(n_x*n_x+n_y*n_y);
+		du_dt = uB[0] - uB0[0];//flag doesn't work for rotating bodies
+		u_du_dx = uB[0]*(uB[0] - (u[iu]+u[iu-1]+u[iu+(nx-1)]+u[iu+(nx-1)-1])/4)/(body_intercept_p_x[index4]-xv[I]); //flag this approximation of du/dx might be too rough as we are calculating our u values at different heights. One point is the body intercept and the second point is the v node between poitns 1 and 2
+		v_du_dy = vB[0]*(uB[0] - u[iu])/(body_intercept_p_y[index4]-yu[J]);
+		dv_dt = vB[0] - vB0[0];
+		u_dv_dx = uB[0]*(vB[0]-u[iv])/(body_intercept_p_x[index4]-xv[I]);
+		v_dv_dy = vB[0]*(vB[0]- (u[iv]+u[iv-nx]+u[iv+1]+u[iv-nx+1])/4)/(body_intercept_p_y[index4]-yu[J]);
+		matD = (n_x/nl*(du_dt+u_du_dx+v_du_dy) + n_y/nl*(dv_dt+u_dv_dx + v_dv_dy));
+	}
+	pressure[ip] = image_point_pressure + sqrt(pow(image_point_p_x[ip]-xv[I],2)+pow(image_point_p_y[ip]-yu[ip],2))*matD;
+>>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
 }
 }

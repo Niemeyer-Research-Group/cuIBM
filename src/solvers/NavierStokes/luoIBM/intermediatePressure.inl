@@ -278,7 +278,7 @@ void luoIBM::interpPGN()
 			*vB_r		= thrust::raw_pointer_cast ( &(B.vB[0]) ),
 			*bx_r		= thrust::raw_pointer_cast ( &(B.x[0]) ),
 			*by_r		= thrust::raw_pointer_cast ( &(B.y[0]) );
-
+	
 	double 	*x1_p_r = thrust::raw_pointer_cast ( &(x1_p[0]) ),
 			*x2_p_r = thrust::raw_pointer_cast ( &(x2_p[0]) ),
 			*x3_p_r = thrust::raw_pointer_cast ( &(x3_p[0]) ),
@@ -294,6 +294,7 @@ void luoIBM::interpPGN()
 			*a0_r	= thrust::raw_pointer_cast ( &(a0[0]) ),
 			*a1_r	= thrust::raw_pointer_cast ( &(a1[0]) ),
 			*a2_r	= thrust::raw_pointer_cast ( &(a2[0]) ),
+<<<<<<< HEAD
 			*a3_r	= thrust::raw_pointer_cast ( &(a3[0]) ),
 			*dudt_r	= thrust::raw_pointer_cast ( &(dudt[0]) ),
 			*dvdt_r	= thrust::raw_pointer_cast ( &(dvdt[0]) ),
@@ -321,6 +322,40 @@ void luoIBM::interpPGN()
 									body_intercept_p_x_r, body_intercept_p_y_r, image_point_p_x_r, image_point_p_y_r,  body_intercept_p_r,
 									i_start_r, j_start_r, width_i, nx, ny, dt, B.totalPoints,
 									dudt_r,ududx_r,dvdt_r,vdudy_r,udvdx_r,vdvdy_r,
+=======
+			*a3_r	= thrust::raw_pointer_cast ( &(a3[0]) );
+	
+	int 	*ghostTagsP_r		= thrust::raw_pointer_cast ( &(ghostTagsP[0]) ),
+			*hybridTagsP_r		= thrust::raw_pointer_cast ( &(hybridTagsP[0]) );
+
+	int nx = domInfo ->nx,
+		ny = domInfo ->ny,
+		totalPoints = B.totalPoints,
+		i_start = B.startI[0],
+		j_start = B.startJ[0],
+		width_i = B.numCellsX[0],
+		height_j = B.numCellsY[0],
+		i_end = i_start + width_i,
+		j_end = j_start + height_j;
+	
+	const int blocksize = 256;
+	dim3 grid( int( (width_i*height_j-0.5)/blocksize ) +1, 1);
+	dim3 block(blocksize, 1);
+	
+	kernels::interpolatePressureToHybridNode<<<grid,block>>>(pressure_r, pressureStar_r, u_r, hybridTagsP_r, bx_r, by_r,
+									uB_r, uB0_r, vB_r, vB0_r, yu_r, xv_r,
+									body_intercept_p_x_r, body_intercept_p_y_r, image_point_p_x_r, image_point_p_y_r,
+									i_start, j_start, i_end, j_end, nx, ny, totalPoints,
+									a0_r, a1_r, a2_r, a3_r,
+									x1_p_r, x2_p_r, x3_p_r, x4_p_r, y1_p_r, y2_p_r, y3_p_r, y4_p_r, q1_p_r, q2_p_r, q3_p_r, q4_p_r);
+	kernels::weightP<<<grid,block>>>(pressure_r, pressureStar_r, ghostTagsP_r, hybridTagsP_r, yu_r, xv_r,
+									body_intercept_p_x_r, body_intercept_p_y_r, image_point_p_x_r, image_point_p_y_r,
+									i_start, j_start, i_end, j_end, nx, ny);
+	kernels::interpolatePressureToGhostNode<<<grid,block>>>(pressure_r, u_r, ghostTagsP_r, bx_r, by_r,
+									uB_r, uB0_r, vB_r, vB0_r, yu_r, xv_r,
+									body_intercept_p_x_r, body_intercept_p_y_r, image_point_p_x_r, image_point_p_y_r,
+									i_start, j_start, i_end, j_end, nx, ny, totalPoints,
+>>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
 									a0_r, a1_r, a2_r, a3_r,
 									x1_p_r, x2_p_r, x3_p_r, x4_p_r, y1_p_r, y2_p_r, y3_p_r, y4_p_r, q1_p_r, q2_p_r, q3_p_r, q4_p_r);
 	logger.stopTimer("P interp");

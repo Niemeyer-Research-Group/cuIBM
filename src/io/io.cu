@@ -177,7 +177,7 @@ void initialiseDefaultDB(parameterDB &DB)
 	DB[sim]["nsave"].set<int>(100);
 	DB[sim]["restart"].set<bool>(false);
 	DB[sim]["startStep"].set<bool>(0);
-	//DB[sim]["solverType"].set<int>(0); //flag get rid of this?
+	DB[sim]["solverType"].set<int>(0);
 	DB[sim]["Ured"].set<double>(3);
 	DB[sim]["SolverType"].set<solverType>(NAVIERSTOKES);
 

@@ -25,6 +25,7 @@ luoIBM::luoIBM(parameterDB *pDB, domain *dInfo)
  */
 void luoIBM::initialise()
 {
+
 	NavierStokesSolver::initialiseNoBody();
 	NavierStokesSolver::logger.startTimer("initialise");
 	int nx = NavierStokesSolver::domInfo->nx,
@@ -209,8 +210,14 @@ void luoIBM::writeData()
 
 	logger.startTimer("output");
 	if (NavierStokesSolver::timeStep == 1)
+<<<<<<< HEAD
 		forceFile<<"timestep\told\tPressure\tdudn\tnew\n";
 	forceFile << timeStep*dt << '\t' << B.forceX << '\t'<<fxx<<"\t"<<fxy<<"\t"<<fxu<<"\t" << B.forceY << std::endl;
+=======
+		forceFile<<"timestep\tFx\tFxX\tFxY\tFxU\tFy\n";
+	forceFile << timeStep*dt << '\t' << B.forceX[0] << '\t'<<fxx<<"\t"<<fxy<<"\t"<<fxu<<"\t" << B.forceY[0] << std::endl;
+
+>>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
 	logger.stopTimer("output");
 }
 
@@ -259,12 +266,19 @@ void luoIBM::stepTime()
 	timeStep++;
 	if (timeStep == 1000)
 	{
+<<<<<<< HEAD
 		arrayprint(uhat,"uhat","x",-1);
 		arrayprint(pressure,"p","p",-1);
 		arrayprint(u,"u","x",-1);
 		arrayprint(ghostTagsP,"ghostp","p",-1);
 		arrayprint(ghostTagsUV,"ghostu","x",-1);
 		arrayprint(hybridTagsP,"hybridp","p",-1);
+=======
+		arrayprint(u,"u","x");
+		arrayprint(u,"v","y");
+		arrayprint(pressure,"pressure","p");
+		divergence();
+>>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
 	}
 }
 

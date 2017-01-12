@@ -1,9 +1,15 @@
 - type: simulation
   dt: 0.005
+<<<<<<< HEAD
   nt: 1000
   nsave: 1000
   SolverType: LUO
   scaleCV: 2.0
+=======
+  nt: 10000
+  nsave: 10000
+  SolverType: FADLUN
+>>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
   linearSolvers:
     - system: velocity
       solver: CG

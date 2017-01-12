@@ -57,11 +57,7 @@ solverType solverTypeFromString(string &s)
 	else if (s == "LUO")
 		return LUO;
 	else
-	{
-		std::cout<<"\nWARNING: unrecognized solverType\n"
-					"Seting to default: NavierStokes\n\n";
 		return NAVIERSTOKES;
-	}
 }
 
 /**

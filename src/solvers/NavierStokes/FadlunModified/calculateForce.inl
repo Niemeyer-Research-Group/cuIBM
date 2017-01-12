@@ -59,8 +59,8 @@ void fadlunModified::calculateForce()
 	fxx = thrust::reduce(FxX.begin(), FxX.end());
 	fxy = thrust::reduce(FxY.begin(), FxY.end());
 	fxu = thrust::reduce(FxU.begin(), FxU.end());
-	B.forceX =  fxx + fxy + fxu;
-	//std::cout<<timeStep<<"\tFx\t"<<B.forceX<<"\tFxX\t"<<fxx<<"\tFxY\t"<<fxy<<"\tFxU\t"<<fxu<<"\n";
+	B.forceX[0] =  fxx + fxy + fxu;
+	//std::cout<<timeStep<<"\tFx\t"<<B.forceX[0]<<"\tFxX\t"<<fxx<<"\tFxY\t"<<fxy<<"\tFxU\t"<<fxu<<"\n";
 
 	// Calculating lift
 	cusp::array1d<double, cusp::device_memory>
@@ -82,15 +82,15 @@ void fadlunModified::calculateForce()
 	kernels::liftUnsteady <<<dimGridY, dimBlock>>> (FyU_r, u_r, uold_r, tagsIn_r, dx, dy, dt, \
 	                                                nx, ny, B.startI[0], B.startJ[0], B.numCellsX[0], B.numCellsY[0]);
 
-	//B.forceY = thrust::reduce(FyX.begin(), FyX.end()) + thrust::reduce(FyY.begin(), FyY.end()) + thrust::reduce(FyU.begin(), FyU.end());
+	//B.forceY[0] = thrust::reduce(FyX.begin(), FyX.end()) + thrust::reduce(FyY.begin(), FyY.end()) + thrust::reduce(FyU.begin(), FyU.end());
 	//if (timeStep == 138 || timeStep == 139 || timeStep == 146 || timeStep == 147 ||  timeStep == 159 || timeStep == 160)
 		//print_forces(FyX, FyY, FyU);
 	//std::cout<<timeStep<<"\t";
-	//std::cout<<"Fy: "<< B.forceY<<"\t";
+	//std::cout<<"Fy: "<< B.forceY[0]<<"\t";
 	//std::cout<<"FyX: "<< thrust::reduce(FyX.begin(), FyX.end())<<"\t";
 	//std::cout<<"FyY: "<< thrust::reduce(FyY.begin(), FyY.end())<<"\t";
 	//std::cout<<"FyU: "<< thrust::reduce(FyU.begin(), FyU.end())<<"\n";
-	B.forceY = thrust::reduce(FyX.begin(), FyX.end()) + thrust::reduce(FyY.begin(), FyY.end()) + thrust::reduce(FyU.begin(), FyU.end());
+	B.forceY[0] = thrust::reduce(FyX.begin(), FyX.end()) + thrust::reduce(FyY.begin(), FyY.end()) + thrust::reduce(FyU.begin(), FyU.end());
 
 }
 /*

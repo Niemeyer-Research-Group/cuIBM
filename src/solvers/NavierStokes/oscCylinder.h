@@ -14,6 +14,7 @@ class oscCylinder : public luoIBM
 {
 protected:
 	std::ofstream midPositionFile;
+<<<<<<< HEAD
 	cusp::array1d<double, cusp::device_memory> cfl,
 												distance;
 	double	cfl_max,
@@ -37,19 +38,27 @@ protected:
 	//////////////////////////
 	void CFL();
 	void calcDistance();
+=======
+>>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
 public:
-	//////////////////////////
-	//oscCylinder.cu
-	//////////////////////////
+	//constructor -- copy the database and information about the computational grid
 	oscCylinder(parameterDB *pDB=NULL, domain *dInfo=NULL);
-	virtual void initialise();
-	virtual void stepTime();
-	virtual void writeData();
-	virtual void writeCommon();
-	virtual void shutDown();
 
-	//////////////////////////
-	//IntermediateVelocity.inl
-	//////////////////////////
-	virtual void preRHS1Interpolation();
+	//step forward in time
+	virtual void stepTime();
+
+	//recalculate LHS matrices
+	void updateSolver();
+
+	//write stuff
+	virtual void writeData();
+
+	virtual void writeCommon();
+
+	//perform motion calculation
+	void moveBody();
+
+	virtual void initialise();
+
+	virtual void shutDown();
 };

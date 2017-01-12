@@ -1,9 +1,10 @@
 - type: simulation
-  dt: 0.001
+  dt: 0.005
   scaleCV: 5.0
-  nt: 50000
+  nt: 1000
   nsave: 1000
-  SolverType: FADLUN
+  startStep: 0
+  SolverType: LUO
   linearSolvers:
     - system: velocity
       solver: CG

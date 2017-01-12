@@ -2,6 +2,7 @@
 clc
 clear
 close all
+<<<<<<< HEAD
 % figure
 %change these
 number = '1000';
@@ -168,6 +169,11 @@ caseFolder = '/scratch/src/cuIBM/validation/osc/flow/output/';
 % caseFolder = '/scratch/src/cuIBM/validation/osc/static/output/';
 path = strcat(caseFolder,number,'p.csv');
 ghostpath = strcat(caseFolder,number,'ghostp.csv');
+=======
+number = '1000';
+type = 'v';
+path = strcat('/scratch/src/cuIBM/validation/luo/test/output/',number,type,'.csv');
+>>>>>>> parent of 1831b5e... luo method works for all reynolds numbers for the stationary cylinder
 delim = '\t';
 p = dlmread(path,delim,1,0);
 ghost = dlmread(ghostpath,delim,1,0);
